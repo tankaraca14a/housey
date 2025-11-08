@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0a1929;
+  --foreground: #f0f9ff;
+  --muted: #9fb3c8;
+  --surface: #0f2537;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  color: var(--foreground);
+  background: linear-gradient(180deg, #0d2847 0%, #0a1929 120%);
+}
+
+.container {
+  @apply max-w-6xl mx-auto px-4;
+}
+
+/* simple prose defaults */
+.prose h1, .prose h2, .prose h3 { @apply font-semibold; }
