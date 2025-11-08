@@ -43,7 +43,7 @@ export default function ContactPage() {
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">Contact Us</h1>
           <p className="text-slate-300 text-lg">
-            Have questions? We'd love to hear from you.
+            Have questions? We&apos;d love to hear from you.
           </p>
         </div>
 
@@ -109,7 +109,7 @@ export default function ContactPage() {
 
           {submitted && (
             <div className="mb-6 p-4 bg-brand-500/20 border border-brand-400/50 rounded-xl text-brand-300">
-              Thank you for your message! We'll get back to you soon.
+              Thank you for your message! We&apos;ll get back to you soon.
             </div>
           )}
 

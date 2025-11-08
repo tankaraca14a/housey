@@ -40,7 +40,7 @@ export default function LocationPage() {
               </div>
             </div>
             <p className="text-slate-300 text-lg leading-relaxed mb-6">
-              Our house is located in Vela Luka on the beautiful island of Korčula, one of Croatia's
+              Our house is located in Vela Luka on the beautiful island of Korčula, one of Croatia&apos;s
               most stunning Adriatic islands. The property is easily accessible from major Croatian
               cities and airports.
             </p>
@@ -109,7 +109,7 @@ export default function LocationPage() {
               restaurants, cafes, and local markets where you can experience authentic Dalmatian culture.
             </p>
             <p className="text-slate-300 text-lg leading-relaxed">
-              Don't miss visiting the famous Korčula Old Town, local wineries, and nearby islands.
+              Don&apos;t miss visiting the famous Korčula Old Town, local wineries, and nearby islands.
               The area is perfect for sailing, diving, and enjoying the Mediterranean lifestyle.
             </p>
           </div>

@@ -59,7 +59,7 @@ export default function AboutPage() {
             <h2 className="text-3xl font-semibold text-white mb-4">The Location</h2>
             <p className="text-slate-300 text-lg leading-relaxed mb-4">
               The house is located in one of the most beautiful and peaceful areas of the Dalmatian coast.
-              Surrounded by the sea on almost all sides, you'll wake up to breathtaking views and the
+              Surrounded by the sea on almost all sides, you&apos;ll wake up to breathtaking views and the
               soothing sound of waves.
             </p>
             <p className="text-slate-300 text-lg leading-relaxed">

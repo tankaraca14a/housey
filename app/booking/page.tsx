@@ -51,7 +51,7 @@ export default function BookingPage() {
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">Book Your Stay</h1>
           <p className="text-slate-300 text-lg">
-            Fill out the form below and we'll get back to you shortly to confirm your reservation.
+            Fill out the form below and we&apos;ll get back to you shortly to confirm your reservation.
           </p>
         </div>
 
@@ -84,7 +84,7 @@ export default function BookingPage() {
 
           {/* Amenities */}
           <div className="bg-surface-800 border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-semibold text-white mb-6">What's Included</h2>
+            <h2 className="text-2xl font-semibold text-white mb-6">What&apos;s Included</h2>
             <ul className="space-y-3 text-slate-300">
               <li className="flex items-center gap-2">
                 <span className="text-brand-400">✓</span> Fully equipped kitchen
@@ -120,7 +120,7 @@ export default function BookingPage() {
 
           {submitted && (
             <div className="mb-6 p-4 bg-brand-500/20 border border-brand-400/50 rounded-xl text-brand-300">
-              Thank you! We've received your booking request and will contact you soon.
+              Thank you! We&apos;ve received your booking request and will contact you soon.
             </div>
           )}
 
