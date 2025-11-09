@@ -30,11 +30,15 @@ export default function BookingPage() {
 
   const onSubmit = async (data: BookingForm) => {
     try {
-      // Here you would normally send the data to your backend
-      console.log("Booking data:", data);
+      const response = await fetch('/api/booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        throw new Error('Failed to send booking request');
+      }
 
       setSubmitted(true);
       reset();
@@ -42,6 +46,7 @@ export default function BookingPage() {
       setTimeout(() => setSubmitted(false), 5000);
     } catch (error) {
       console.error("Error submitting form:", error);
+      alert('Failed to send booking request. Please try again or contact us directly.');
     }
   };
 

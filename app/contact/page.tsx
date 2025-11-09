@@ -27,13 +27,22 @@ export default function ContactPage() {
 
   const onSubmit = async (data: ContactForm) => {
     try {
-      console.log("Contact form data:", data);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
       setSubmitted(true);
       reset();
       setTimeout(() => setSubmitted(false), 5000);
     } catch (error) {
       console.error("Error submitting form:", error);
+      alert('Failed to send message. Please try again or email us directly.');
     }
   };
 
