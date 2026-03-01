@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 
-type Category = "all" | "aerial" | "coast";
+type Category = "all" | "aerial" | "coast" | "exterior" | "terrace" | "interior";
 
 interface GalleryImage {
   src: string;
@@ -13,6 +13,7 @@ interface GalleryImage {
 }
 
 const images: GalleryImage[] = [
+  // Aerial drone shots (original Nov 7 batch)
   { src: "/images/WhatsApp Image 2025-11-07 at 00.06.25.jpeg", alt: "Aerial view of the property and coastline", category: ["aerial"], featured: true },
   { src: "/images/WhatsApp Image 2025-11-07 at 00.06.26.jpeg", alt: "Aerial coastal view", category: ["aerial"], featured: true },
   { src: "/images/WhatsApp Image 2025-11-07 at 00.06.26 (1).jpeg", alt: "Aerial view of the coast", category: ["aerial"] },
@@ -29,24 +30,71 @@ const images: GalleryImage[] = [
   { src: "/images/WhatsApp Image 2025-11-07 at 00.06.28 (2).jpeg", alt: "Coastal land and sea from above", category: ["aerial"] },
   { src: "/images/WhatsApp Image 2025-11-07 at 00.06.28 (3).jpeg", alt: "Dalmatian coastline panorama", category: ["aerial"] },
   { src: "/images/WhatsApp Image 2025-11-07 at 00.06.28 (4).jpeg", alt: "Coastal area aerial perspective", category: ["aerial"] },
+  // Sea & coast close-ups (new March 2026 batch img01-06, and Nov 9 img03,05,10,13,23,25,26,28,30)
   { src: "/images/new/interior-01.jpg", alt: "Rocky shore and crystal clear water", category: ["coast"], featured: true },
   { src: "/images/new/interior-02.jpg", alt: "Clear water with distant hills", category: ["coast"] },
   { src: "/images/new/interior-03.jpg", alt: "Transparent sea over rocky bottom", category: ["coast"] },
   { src: "/images/new/interior-04.jpg", alt: "Coastal path to the sea", category: ["coast"] },
   { src: "/images/new/interior-05.jpg", alt: "Crystal clear Adriatic water", category: ["coast"] },
   { src: "/images/new/interior-06.jpg", alt: "Rocky shoreline and turquoise sea", category: ["coast"] },
+  { src: "/images/new2/img01.jpg", alt: "Calm sea view with rocky shoreline", category: ["coast"] },
+  { src: "/images/new2/img02.jpg", alt: "Serene coastline with clear water", category: ["coast"] },
+  { src: "/images/new2/img03.jpg", alt: "Crystal clear water and rocky seabed", category: ["coast"] },
+  { src: "/images/new2/img04.jpg", alt: "Rocky shore with clear water", category: ["coast"] },
+  { src: "/images/new2/img05.jpg", alt: "Path leading down to the sea", category: ["coast"] },
+  { src: "/images/new2/img06.jpg", alt: "Clear water and rocky shore", category: ["coast"] },
+  { src: "/images/new2/img10.jpg", alt: "Vibrant blue Adriatic waters", category: ["coast"] },
+  { src: "/images/new2/img13.jpg", alt: "Coastal dock and rocky beach", category: ["coast"] },
+  { src: "/images/new2/img25.jpg", alt: "Sailboat in a clear bay", category: ["coast"], featured: true },
+  { src: "/images/new2/img26.jpg", alt: "View from the sea towards the house", category: ["coast"] },
+  { src: "/images/new2/img28.jpg", alt: "Dock leading out to the sea", category: ["coast"] },
+  { src: "/images/new2/img30.jpg", alt: "Coastal path with rocky terrain", category: ["coast"] },
+  // Exterior & terrace
+  { src: "/images/new2/img07.jpg", alt: "Bright coastline with leisure area", category: ["exterior"], featured: true },
+  { src: "/images/new2/img08.jpg", alt: "Patio with seating and sea view", category: ["terrace"], featured: true },
+  { src: "/images/new2/img09.jpg", alt: "Shaded outdoor area with panoramic sea view", category: ["terrace"] },
+  { src: "/images/new2/img11.jpg", alt: "Garden with sea in the background at night", category: ["exterior"] },
+  { src: "/images/new2/img18.jpg", alt: "Outdoor patio with ocean view and climbing plants", category: ["terrace"] },
+  { src: "/images/new2/img19.jpg", alt: "Outdoor seating with garden elements", category: ["terrace"] },
+  { src: "/images/new2/img23.jpg", alt: "Open door to terrace with sea view", category: ["terrace"] },
+  { src: "/images/new2/img27.jpg", alt: "Terrace sea view through curtain", category: ["terrace"] },
+  { src: "/images/new2/img31.jpg", alt: "Terrace dining at sunset with sea view", category: ["terrace", "exterior"], featured: true },
+  { src: "/images/new2/img32.jpg", alt: "Terrace dining area with colorful lights at night", category: ["terrace"], featured: true },
+  { src: "/images/new2/img33.jpg", alt: "Terrace with barbecue area at night", category: ["terrace"] },
+  { src: "/images/new2/img34.jpg", alt: "Stone house at night with illuminated terrace", category: ["exterior"], featured: true },
+  { src: "/images/new2/img35.jpg", alt: "House entrance with garden lighting at night", category: ["exterior"] },
+  { src: "/images/new2/img36.jpg", alt: "Garden path with outdoor lighting", category: ["exterior"] },
+  { src: "/images/new2/img37.jpg", alt: "Terrace garden with decorative lighting", category: ["terrace"] },
+  { src: "/images/new2/img38.jpg", alt: "Illuminated outdoor area and garden", category: ["exterior"] },
+  // Interior
+  { src: "/images/new2/img12.jpg", alt: "Cabin interior with loft bed and seating", category: ["interior"], featured: true },
+  { src: "/images/new2/img14.jpg", alt: "Kitchen with rustic design", category: ["interior"], featured: true },
+  { src: "/images/new2/img15.jpg", alt: "Interior living area", category: ["interior"] },
+  { src: "/images/new2/img16.jpg", alt: "Cabin sitting area with loft view", category: ["interior"] },
+  { src: "/images/new2/img17.jpg", alt: "Dining area with garden view", category: ["interior"] },
+  { src: "/images/new2/img20.jpg", alt: "Loft sleeping area with window", category: ["interior"] },
+  { src: "/images/new2/img21.jpg", alt: "Bathroom with toilet and sink", category: ["interior"] },
+  { src: "/images/new2/img22.jpg", alt: "Cozy living area with daybed", category: ["interior"] },
+  { src: "/images/new2/img24.jpg", alt: "Garden with colorful flowers near the sea", category: ["exterior"] },
+  { src: "/images/new2/img29.jpg", alt: "Sunset dinner on the terrace", category: ["terrace"] },
 ];
 
 const categoryLabels: Record<Category, string> = {
   all: "All Photos",
   aerial: "Aerial Views",
   coast: "Sea & Coast",
+  exterior: "Exterior",
+  terrace: "Terrace",
+  interior: "Interior",
 };
 
 const categoryIcons: Record<Category, string> = {
   all: "🏡",
   aerial: "🚁",
   coast: "🌊",
+  exterior: "☀️",
+  terrace: "🌿",
+  interior: "🛋️",
 };
 
 export default function GalleryPage() {
@@ -71,13 +119,13 @@ export default function GalleryPage() {
         <p className="uppercase text-xs tracking-[0.3em] text-slate-500 mb-4">Dalmatian Coast</p>
         <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white mb-4">Gallery</h1>
         <p className="text-slate-400 text-lg max-w-xl mx-auto">
-          Azure waters, rocky shores, and stunning aerial views of our Dalmatian coast property.
+          Explore our Dalmatian coast hideaway — from azure waters and stone terraces to cozy interiors.
         </p>
       </div>
 
       <div className="container mb-10">
         <div className="flex flex-wrap justify-center gap-3">
-          {(["all", "aerial", "coast"] as Category[]).map((cat) => (
+          {(["all", "aerial", "coast", "exterior", "terrace", "interior"] as Category[]).map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -124,6 +172,10 @@ export default function GalleryPage() {
               </button>
             ))}
           </div>
+        )}
+
+        {filteredImages.length === 0 && (
+          <div className="text-center py-20 text-slate-500">No images in this category.</div>
         )}
       </div>
 
