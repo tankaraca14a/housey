@@ -1,5 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+const BOOKINGS_FILE = path.join(process.cwd(), 'data', 'bookings.json');
+
+interface Booking {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  checkIn: string;
+  checkOut: string;
+  guests: string;
+  message: string;
+  status: 'pending' | 'confirmed' | 'declined';
+  createdAt: string;
+}
+
+async function readBookings(): Promise<Booking[]> {
+  try {
+    const content = await fs.readFile(BOOKINGS_FILE, 'utf-8');
+    return JSON.parse(content);
+  } catch {
+    return [];
+  }
+}
+
+async function writeBookings(bookings: Booking[]): Promise<void> {
+  await fs.mkdir(path.dirname(BOOKINGS_FILE), { recursive: true });
+  await fs.writeFile(BOOKINGS_FILE, JSON.stringify(bookings, null, 2), 'utf-8');
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,6 +66,24 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Save booking to JSON file
+    const booking: Booking = {
+      id: crypto.randomUUID(),
+      name,
+      email,
+      phone,
+      checkIn,
+      checkOut,
+      guests,
+      message: message || '',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+
+    const bookings = await readBookings();
+    bookings.push(booking);
+    await writeBookings(bookings);
 
     return NextResponse.json({ success: true, data });
   } catch (error) {

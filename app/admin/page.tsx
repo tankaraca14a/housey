@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-const ADMIN_PASSWORD = "ivana2025";
+const ADMIN_PASSWORD = "ivana2026";
 
 function formatDate(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -21,20 +21,30 @@ interface CalendarMonthProps {
   onToggle: (date: string) => void;
 }
 
+interface Booking {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  checkIn: string;
+  checkOut: string;
+  guests: string;
+  message: string;
+  status: "pending" | "confirmed" | "declined";
+  createdAt: string;
+}
+
 function CalendarMonth({ year, month, blockedDates, onToggle }: CalendarMonthProps) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // First day of month (0=Sun, 1=Mon, ...)
   const firstDay = new Date(year, month, 1).getDay();
-  // Convert Sunday-based to Monday-based (Mon=0...Sun=6)
   const startOffset = (firstDay + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const cells: (number | null)[] = [];
   for (let i = 0; i < startOffset; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-  // Pad to complete last row
   while (cells.length % 7 !== 0) cells.push(null);
 
   return (
@@ -80,17 +90,37 @@ function CalendarMonth({ year, month, blockedDates, onToggle }: CalendarMonthPro
   );
 }
 
+function StatusBadge({ status }: { status: Booking["status"] }) {
+  const classes = {
+    pending: "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
+    confirmed: "bg-green-500/20 text-green-300 border border-green-500/40",
+    declined: "bg-red-500/20 text-red-300 border border-red-500/40",
+  };
+  return (
+    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${classes[status]}`}>
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </span>
+  );
+}
+
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+
+  // Calendar state
   const [blockedDates, setBlockedDates] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingDates, setLoadingDates] = useState(false);
+
+  // Bookings state
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
+  const [bookingAction, setBookingAction] = useState<Record<string, boolean>>({});
 
   const fetchBlockedDates = useCallback(async () => {
-    setLoading(true);
+    setLoadingDates(true);
     try {
       const res = await fetch("/api/admin/blocked-dates");
       const data = await res.json();
@@ -98,15 +128,31 @@ export default function AdminPage() {
     } catch (e) {
       console.error("Failed to load blocked dates", e);
     } finally {
-      setLoading(false);
+      setLoadingDates(false);
+    }
+  }, []);
+
+  const fetchBookings = useCallback(async () => {
+    setLoadingBookings(true);
+    try {
+      const res = await fetch("/api/admin/bookings", {
+        headers: { "x-admin-password": ADMIN_PASSWORD },
+      });
+      const data = await res.json();
+      setBookings(data.bookings || []);
+    } catch (e) {
+      console.error("Failed to load bookings", e);
+    } finally {
+      setLoadingBookings(false);
     }
   }, []);
 
   useEffect(() => {
     if (authenticated) {
       fetchBlockedDates();
+      fetchBookings();
     }
-  }, [authenticated, fetchBlockedDates]);
+  }, [authenticated, fetchBlockedDates, fetchBookings]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,6 +200,39 @@ export default function AdminPage() {
     }
   };
 
+  const handleConfirm = async (id: string) => {
+    setBookingAction((prev) => ({ ...prev, [id]: true }));
+    try {
+      const res = await fetch(`/api/admin/bookings/${id}/confirm`, {
+        method: "POST",
+        headers: { "x-admin-password": ADMIN_PASSWORD },
+      });
+      if (!res.ok) throw new Error("Failed to confirm");
+      await fetchBookings();
+      await fetchBlockedDates();
+    } catch (e) {
+      console.error("Failed to confirm booking", e);
+    } finally {
+      setBookingAction((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
+  const handleDecline = async (id: string) => {
+    setBookingAction((prev) => ({ ...prev, [id]: true }));
+    try {
+      const res = await fetch(`/api/admin/bookings/${id}/decline`, {
+        method: "POST",
+        headers: { "x-admin-password": ADMIN_PASSWORD },
+      });
+      if (!res.ok) throw new Error("Failed to decline");
+      await fetchBookings();
+    } catch (e) {
+      console.error("Failed to decline booking", e);
+    } finally {
+      setBookingAction((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
   // Generate 3 months starting from current month
   const now = new Date();
   const months = [0, 1, 2].map((offset) => {
@@ -194,9 +273,14 @@ export default function AdminPage() {
     );
   }
 
+  const pendingBookings = bookings.filter((b) => b.status === "pending");
+  const otherBookings = bookings.filter((b) => b.status !== "pending");
+
   return (
     <div className="container py-16">
       <div className="max-w-5xl mx-auto">
+
+        {/* ── Calendar Section ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
           <div>
             <h1 className="text-4xl font-bold text-white">Admin — Blocked Dates</h1>
@@ -222,7 +306,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {loading ? (
+        {loadingDates ? (
           <div className="text-center text-slate-400 py-16">Loading...</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -256,6 +340,111 @@ export default function AdminPage() {
         <p className="mt-4 text-xs text-slate-500">
           {blockedDates.size} date{blockedDates.size !== 1 ? "s" : ""} currently blocked.
         </p>
+
+        {/* ── Bookings Section ── */}
+        <div className="mt-16">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-3xl font-bold text-white">Bookings</h2>
+              <p className="text-slate-400 mt-1">
+                {bookings.length} total · {pendingBookings.length} pending
+              </p>
+            </div>
+            <button
+              onClick={fetchBookings}
+              className="px-4 py-2 text-sm bg-surface-700 hover:bg-surface-600 text-slate-300 rounded-xl transition border border-white/10"
+            >
+              Refresh
+            </button>
+          </div>
+
+          {loadingBookings ? (
+            <div className="text-center text-slate-400 py-16">Loading bookings...</div>
+          ) : bookings.length === 0 ? (
+            <div className="bg-surface-800 border border-white/10 rounded-2xl p-12 text-center">
+              <p className="text-slate-400 text-lg">No bookings yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Pending bookings first */}
+              {[...pendingBookings, ...otherBookings].map((booking) => (
+                <div
+                  key={booking.id}
+                  className="bg-surface-800 border border-white/10 rounded-2xl p-6"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-lg font-semibold text-white truncate">{booking.name}</h3>
+                        <StatusBadge status={booking.status} />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5 text-sm">
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-slate-500">✉</span>
+                          <a
+                            href={`mailto:${booking.email}`}
+                            className="text-brand-400 hover:text-brand-300 truncate"
+                          >
+                            {booking.email}
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-slate-500">📞</span>
+                          <span>{booking.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-slate-500">📅</span>
+                          <span>
+                            {booking.checkIn} → {booking.checkOut}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-300">
+                          <span className="text-slate-500">👥</span>
+                          <span>{booking.guests} guest{Number(booking.guests) !== 1 ? "s" : ""}</span>
+                        </div>
+                      </div>
+
+                      {booking.message && (
+                        <div className="mt-3 p-3 bg-surface-900 rounded-xl text-sm text-slate-400 border border-white/5">
+                          <span className="text-slate-500 text-xs uppercase tracking-wider">Message: </span>
+                          {booking.message}
+                        </div>
+                      )}
+
+                      <p className="mt-3 text-xs text-slate-600">
+                        Submitted {new Date(booking.createdAt).toLocaleString("en-GB", {
+                          day: "2-digit", month: "short", year: "numeric",
+                          hour: "2-digit", minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+
+                    {booking.status === "pending" && (
+                      <div className="flex flex-row sm:flex-col gap-2 shrink-0">
+                        <button
+                          onClick={() => handleConfirm(booking.id)}
+                          disabled={bookingAction[booking.id]}
+                          className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {bookingAction[booking.id] ? "..." : "✓ Confirm"}
+                        </button>
+                        <button
+                          onClick={() => handleDecline(booking.id)}
+                          disabled={bookingAction[booking.id]}
+                          className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {bookingAction[booking.id] ? "..." : "✗ Decline"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
