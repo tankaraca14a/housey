@@ -153,11 +153,12 @@ function CalendarMonth({
 
 function CalendarPicker({ blockedDates, checkIn, checkOut, onSelect }: CalendarPickerProps) {
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
+  const [monthOffset, setMonthOffset] = useState(0);
   const now = new Date();
   const todayStr = formatDate(now.getFullYear(), now.getMonth(), now.getDate());
 
   const months = [0, 1, 2].map((offset) => {
-    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    const d = new Date(now.getFullYear(), now.getMonth() + monthOffset + offset, 1);
     return { year: d.getFullYear(), month: d.getMonth() };
   });
 
@@ -171,6 +172,21 @@ function CalendarPicker({ blockedDates, checkIn, checkOut, onSelect }: CalendarP
             ✓ {checkIn} → {checkOut} ({diffDays(checkIn, checkOut)} nights)
           </p>
         )}
+      </div>
+      <div className="flex items-center justify-between mb-3">
+        <button
+          onClick={() => setMonthOffset((o) => Math.max(0, o - 1))}
+          disabled={monthOffset === 0}
+          className="px-3 py-1.5 rounded bg-surface-800 text-slate-300 hover:bg-surface-700 disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+        >
+          ← Previous
+        </button>
+        <button
+          onClick={() => setMonthOffset((o) => o + 1)}
+          className="px-3 py-1.5 rounded bg-surface-800 text-slate-300 hover:bg-surface-700 text-sm"
+        >
+          Next →
+        </button>
       </div>
       <div className="flex flex-col sm:flex-row gap-4">
         {months.map(({ year, month }) => (
