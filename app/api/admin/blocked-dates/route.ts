@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'blocked-dates.json');
-const ADMIN_PASSWORD = 'ivana2025';
+const ADMIN_PASSWORD = 'ivana2026';
 
 async function readBlockedDates(): Promise<string[]> {
   try {
