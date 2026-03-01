@@ -67,23 +67,23 @@ export default function BookingPage() {
             <div className="space-y-4 text-slate-300">
               <div className="flex justify-between pb-4 border-b border-white/10">
                 <span>Peak Season (Jun-Sep)</span>
-                <span className="text-brand-400 font-semibold">€150/night</span>
+                <span className="text-brand-400 font-semibold">€270/night</span>
               </div>
               <div className="flex justify-between pb-4 border-b border-white/10">
                 <span>Mid Season (Apr-May, Oct)</span>
-                <span className="text-brand-400 font-semibold">€100/night</span>
+                <span className="text-brand-400 font-semibold">€220/night</span>
               </div>
               <div className="flex justify-between pb-4 border-b border-white/10">
                 <span>Low Season (Nov-Mar)</span>
-                <span className="text-brand-400 font-semibold">€70/night</span>
+                <span className="text-brand-400 font-semibold">€180/night</span>
               </div>
             </div>
 
             <div className="mt-8 space-y-3 text-sm text-slate-400">
-              <p>✓ Minimum stay: 3 nights</p>
-              <p>✓ Maximum capacity: 6 guests</p>
-              <p>✓ Check-in: 3:00 PM</p>
-              <p>✓ Check-out: 11:00 AM</p>
+              <p>✓ Minimum stay: 5 nights</p>
+              <p>✓ Maximum capacity: 2 guests</p>
+              <p>✓ Check-in: 4:00 PM</p>
+              <p>✓ Check-out: 10:00 AM</p>
             </div>
           </div>
 
@@ -187,10 +187,6 @@ export default function BookingPage() {
                   <option value="">Select...</option>
                   <option value="1">1 guest</option>
                   <option value="2">2 guests</option>
-                  <option value="3">3 guests</option>
-                  <option value="4">4 guests</option>
-                  <option value="5">5 guests</option>
-                  <option value="6">6 guests</option>
                 </select>
                 {errors.guests && (
                   <p className="mt-1 text-sm text-red-400">{errors.guests.message}</p>
