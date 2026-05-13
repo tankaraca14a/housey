@@ -4,6 +4,18 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import SocialLinks from "@/app/components/SocialLinks";
+
+// Wrapper that renders the "Follow us" block only when at least one social
+// URL is configured. Keeps the contact page tidy in the URL-less default.
+function SocialOnContact() {
+  return (
+    <div data-testid="contact-social-block">
+      <h3 className="text-brand-400 font-semibold mb-2">Follow us</h3>
+      <SocialLinks variant="contact" />
+    </div>
+  );
+}
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -91,6 +103,7 @@ export default function ContactPage() {
                 <h3 className="text-brand-400 font-semibold mb-1">Response Time</h3>
                 <p>We typically respond within 24 hours</p>
               </div>
+              <SocialOnContact />
             </div>
           </div>
 
