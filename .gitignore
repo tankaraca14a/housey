@@ -63,3 +63,5 @@ test/screens-admin-selenium/
 test/screens-live/
 test/screens-live-deep/
 test/screens-local-book/
+.vercel
+.env*.local
