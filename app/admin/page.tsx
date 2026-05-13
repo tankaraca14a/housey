@@ -47,6 +47,20 @@ interface Translations {
   pendingCount: string;
   submitted: string;
   logout: string;
+  delete: string;
+  deleting: string;
+  deleteConfirm: string;
+  edit: string;
+  editing: string;
+  save: string;
+  cancel: string;
+  addBooking: string;
+  creating: string;
+  nameLabel: string;
+  emailLabel: string;
+  phoneLabel: string;
+  statusLabel: string;
+  saveFailedShort: string;
 }
 
 const translations: Record<"hr" | "en", Translations> = {
@@ -91,6 +105,20 @@ const translations: Record<"hr" | "en", Translations> = {
     pendingCount: "na čekanju",
     submitted: "Poslano",
     logout: "Odjava",
+    delete: "Obriši",
+    deleting: "Brisanje...",
+    deleteConfirm: "Obrisati ovu rezervaciju? Ova radnja se ne može poništiti.",
+    edit: "Uredi",
+    editing: "Uređivanje...",
+    save: "Spremi",
+    cancel: "Odustani",
+    addBooking: "Dodaj rezervaciju",
+    creating: "Stvaranje...",
+    nameLabel: "Ime",
+    emailLabel: "Email",
+    phoneLabel: "Telefon",
+    statusLabel: "Status",
+    saveFailedShort: "Spremanje neuspješno",
   },
   en: {
     adminLogin: "Admin Login",
@@ -133,6 +161,20 @@ const translations: Record<"hr" | "en", Translations> = {
     pendingCount: "pending",
     submitted: "Submitted",
     logout: "Logout",
+    delete: "Delete",
+    deleting: "Deleting...",
+    deleteConfirm: "Delete this booking? This cannot be undone.",
+    edit: "Edit",
+    editing: "Editing...",
+    save: "Save",
+    cancel: "Cancel",
+    addBooking: "Add booking",
+    creating: "Creating...",
+    nameLabel: "Name",
+    emailLabel: "Email",
+    phoneLabel: "Phone",
+    statusLabel: "Status",
+    saveFailedShort: "Save failed",
   },
 };
 
@@ -158,6 +200,8 @@ interface Booking {
   status: "pending" | "confirmed" | "declined";
   createdAt: string;
 }
+
+type EditForm = Omit<Booking, "id" | "createdAt">;
 
 function CalendarMonth({ year, month, blockedDates, onToggle, t }: CalendarMonthProps) {
   const today = new Date();
@@ -215,6 +259,79 @@ function CalendarMonth({ year, month, blockedDates, onToggle, t }: CalendarMonth
   );
 }
 
+interface BookingEditPanelProps {
+  t: Translations;
+  form: EditForm;
+  setForm: (f: EditForm) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  saving: boolean;
+  error: string | null;
+  mode: "create" | "edit";
+}
+
+function BookingEditPanel({ t, form, setForm, onSave, onCancel, saving, error, mode }: BookingEditPanelProps) {
+  const set = (patch: Partial<EditForm>) => setForm({ ...form, ...patch });
+  const field = "w-full px-3 py-2 bg-surface-900 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-brand-400 transition";
+  return (
+    <div data-testid={mode === "create" ? "booking-add-panel" : "booking-edit-panel"}
+         className="bg-surface-800 border border-brand-400/40 rounded-2xl p-6 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <label className="text-xs text-slate-400">{t.nameLabel}
+          <input className={field} value={form.name}
+                 onChange={(e) => set({ name: e.target.value })} />
+        </label>
+        <label className="text-xs text-slate-400">{t.emailLabel}
+          <input type="email" className={field} value={form.email}
+                 onChange={(e) => set({ email: e.target.value })} />
+        </label>
+        <label className="text-xs text-slate-400">{t.phoneLabel}
+          <input className={field} value={form.phone}
+                 onChange={(e) => set({ phone: e.target.value })} />
+        </label>
+        <label className="text-xs text-slate-400">{t.guests}
+          <select className={field} value={form.guests}
+                  onChange={(e) => set({ guests: e.target.value })}>
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select>
+        </label>
+        <label className="text-xs text-slate-400">{t.checkIn}
+          <input type="date" className={field} value={form.checkIn}
+                 onChange={(e) => set({ checkIn: e.target.value })} />
+        </label>
+        <label className="text-xs text-slate-400">{t.checkOut}
+          <input type="date" className={field} value={form.checkOut}
+                 onChange={(e) => set({ checkOut: e.target.value })} />
+        </label>
+        <label className="text-xs text-slate-400 sm:col-span-2">{t.statusLabel}
+          <select className={field} value={form.status}
+                  onChange={(e) => set({ status: e.target.value as Booking["status"] })}>
+            <option value="pending">{t.pending}</option>
+            <option value="confirmed">{t.confirmed}</option>
+            <option value="declined">{t.declined}</option>
+          </select>
+        </label>
+        <label className="text-xs text-slate-400 sm:col-span-2">{t.message}
+          <textarea rows={2} className={field} value={form.message}
+                    onChange={(e) => set({ message: e.target.value })} />
+        </label>
+      </div>
+      {error && <p className="text-sm text-red-400 mb-3" data-testid="edit-error">{error}</p>}
+      <div className="flex gap-2 justify-end">
+        <button onClick={onCancel} disabled={saving}
+                className="px-4 py-2 bg-surface-700 hover:bg-surface-600 text-slate-300 text-sm rounded-xl transition disabled:opacity-50 border border-white/10">
+          {t.cancel}
+        </button>
+        <button onClick={onSave} disabled={saving} data-testid="edit-save"
+                className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50">
+          {saving ? (mode === "create" ? t.creating : t.saving) : t.save}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function StatusBadge({ status, t }: { status: Booking["status"]; t: Translations }) {
   const classes = {
     pending: "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
@@ -248,7 +365,23 @@ export default function AdminPage() {
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
-  const [bookingAction, setBookingAction] = useState<Record<string, "confirming" | "declining" | false>>({});
+  const [bookingAction, setBookingAction] = useState<Record<string, "confirming" | "declining" | "deleting" | "saving" | false>>({});
+
+  // Inline edit + manual-create state. `editingId === "new"` means the
+  // "Add booking" panel is open (with default values).
+  const blankBooking = (): EditForm => ({
+    name: "",
+    email: "",
+    phone: "",
+    checkIn: "",
+    checkOut: "",
+    guests: "2",
+    message: "",
+    status: "pending",
+  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<EditForm>(blankBooking());
+  const [editError, setEditError] = useState<string | null>(null);
 
   const fetchBlockedDates = useCallback(async () => {
     setLoadingDates(true);
@@ -361,6 +494,103 @@ export default function AdminPage() {
       console.error("Failed to decline booking", e);
     } finally {
       setBookingAction((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(t.deleteConfirm)) return;
+    setBookingAction((prev) => ({ ...prev, [id]: "deleting" }));
+    try {
+      const res = await fetch(`/api/admin/bookings/${id}`, {
+        method: "DELETE",
+        headers: { "x-admin-password": ADMIN_PASSWORD },
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      await fetchBookings();
+    } catch (e) {
+      console.error("Failed to delete booking", e);
+    } finally {
+      setBookingAction((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
+  // Free status change (any → any) via PATCH. Used by the per-row <select>.
+  const handleStatusChange = async (id: string, next: Booking["status"]) => {
+    setBookingAction((prev) => ({ ...prev, [id]: "saving" }));
+    try {
+      const res = await fetch(`/api/admin/bookings/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": ADMIN_PASSWORD,
+        },
+        body: JSON.stringify({ status: next }),
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+      await fetchBookings();
+    } catch (e) {
+      console.error("Failed to change status", e);
+    } finally {
+      setBookingAction((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
+  const handleEditOpen = (booking: Booking) => {
+    setEditError(null);
+    setEditingId(booking.id);
+    setEditForm({
+      name: booking.name,
+      email: booking.email,
+      phone: booking.phone,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      guests: booking.guests,
+      message: booking.message,
+      status: booking.status,
+    });
+  };
+
+  const handleEditCancel = () => {
+    setEditError(null);
+    setEditingId(null);
+    setEditForm(blankBooking());
+  };
+
+  const handleAddOpen = () => {
+    setEditError(null);
+    setEditingId("new");
+    setEditForm(blankBooking());
+  };
+
+  const handleEditSave = async () => {
+    if (!editingId) return;
+    setEditError(null);
+    setBookingAction((prev) => ({ ...prev, [editingId]: "saving" }));
+    try {
+      const isNew = editingId === "new";
+      const url = isNew ? "/api/admin/bookings" : `/api/admin/bookings/${editingId}`;
+      const method = isNew ? "POST" : "PATCH";
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": ADMIN_PASSWORD,
+        },
+        body: JSON.stringify(editForm),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setEditError(data.error || t.saveFailedShort);
+        return;
+      }
+      await fetchBookings();
+      setEditingId(null);
+      setEditForm(blankBooking());
+    } catch (e) {
+      console.error("Failed to save booking", e);
+      setEditError(t.saveFailedShort);
+    } finally {
+      if (editingId) setBookingAction((prev) => ({ ...prev, [editingId]: false }));
     }
   };
 
@@ -522,13 +752,34 @@ export default function AdminPage() {
                   {bookings.length} {t.total} · {pendingBookings.length} {t.pendingCount}
                 </p>
               </div>
-              <button
-                onClick={fetchBookings}
-                className="px-4 py-2 text-sm bg-surface-700 hover:bg-surface-600 text-slate-300 rounded-xl transition border border-white/10"
-              >
-                {t.refresh}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAddOpen}
+                  className="px-4 py-2 text-sm bg-brand-500 hover:bg-brand-400 text-white font-semibold rounded-xl transition"
+                >
+                  + {t.addBooking}
+                </button>
+                <button
+                  onClick={fetchBookings}
+                  className="px-4 py-2 text-sm bg-surface-700 hover:bg-surface-600 text-slate-300 rounded-xl transition border border-white/10"
+                >
+                  {t.refresh}
+                </button>
+              </div>
             </div>
+
+            {editingId === "new" && (
+              <BookingEditPanel
+                t={t}
+                form={editForm}
+                setForm={setEditForm}
+                onSave={handleEditSave}
+                onCancel={handleEditCancel}
+                saving={bookingAction["new"] === "saving"}
+                error={editError}
+                mode="create"
+              />
+            )}
 
             {loadingBookings ? (
               <div className="text-center text-slate-400 py-16">{t.loadingBookings}</div>
@@ -545,6 +796,21 @@ export default function AdminPage() {
                     lang === "hr"
                       ? `${numGuests} gost${numGuests === 1 ? "" : "a"}`
                       : `${numGuests} guest${numGuests !== 1 ? "s" : ""}`;
+                  if (editingId === booking.id) {
+                    return (
+                      <BookingEditPanel
+                        key={booking.id}
+                        t={t}
+                        form={editForm}
+                        setForm={setEditForm}
+                        onSave={handleEditSave}
+                        onCancel={handleEditCancel}
+                        saving={bookingAction[booking.id] === "saving"}
+                        error={editError}
+                        mode="edit"
+                      />
+                    );
+                  }
                   return (
                     <div
                       key={booking.id}
@@ -613,24 +879,55 @@ export default function AdminPage() {
                           </p>
                         </div>
 
-                        {booking.status === "pending" && (
-                          <div className="flex flex-row sm:flex-col gap-2 shrink-0">
-                            <button
-                              onClick={() => handleConfirm(booking.id)}
-                              disabled={!!action}
-                              className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap"
-                            >
-                              {action === "confirming" ? t.confirming : `✓ ${t.confirm}`}
-                            </button>
-                            <button
-                              onClick={() => handleDecline(booking.id)}
-                              disabled={!!action}
-                              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap"
-                            >
-                              {action === "declining" ? t.declining : `✗ ${t.decline}`}
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex flex-row sm:flex-col gap-2 shrink-0" data-testid={`row-actions-${booking.id}`}>
+                          {booking.status === "pending" && (
+                            <>
+                              <button
+                                onClick={() => handleConfirm(booking.id)}
+                                disabled={!!action}
+                                className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap"
+                              >
+                                {action === "confirming" ? t.confirming : `✓ ${t.confirm}`}
+                              </button>
+                              <button
+                                onClick={() => handleDecline(booking.id)}
+                                disabled={!!action}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap"
+                              >
+                                {action === "declining" ? t.declining : `✗ ${t.decline}`}
+                              </button>
+                            </>
+                          )}
+                          <button
+                            onClick={() => handleEditOpen(booking)}
+                            disabled={!!action}
+                            data-testid={`edit-btn-${booking.id}`}
+                            className="px-4 py-2 bg-surface-700 hover:bg-surface-600 text-slate-200 hover:text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap border border-white/10"
+                          >
+                            ✎ {t.edit}
+                          </button>
+                          <select
+                            value={booking.status}
+                            disabled={!!action}
+                            onChange={(e) => handleStatusChange(booking.id, e.target.value as Booking["status"])}
+                            data-testid={`status-select-${booking.id}`}
+                            className="px-3 py-2 bg-surface-900 border border-white/10 text-slate-200 text-sm rounded-xl transition disabled:opacity-50"
+                          >
+                            <option value="pending">{t.pending}</option>
+                            <option value="confirmed">{t.confirmed}</option>
+                            <option value="declined">{t.declined}</option>
+                          </select>
+                          <button
+                            onClick={() => handleDelete(booking.id)}
+                            disabled={!!action}
+                            title={t.delete}
+                            aria-label={t.delete}
+                            data-testid={`delete-btn-${booking.id}`}
+                            className="px-4 py-2 bg-surface-700 hover:bg-red-700 text-slate-300 hover:text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap border border-white/10"
+                          >
+                            {action === "deleting" ? t.deleting : `🗑 ${t.delete}`}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
