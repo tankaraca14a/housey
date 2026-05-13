@@ -65,3 +65,5 @@ test/screens-live-deep/
 test/screens-local-book/
 .vercel
 .env*.local
+test/**/screens/
+test/**/screens-*/
