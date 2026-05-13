@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO = dirname(HERE);
+const REPO = dirname(dirname(HERE)); // test/<layer>/ → repo root
 const SCREENS = join(HERE, 'screens');
 mkdirSync(SCREENS, { recursive: true });
 

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO = dirname(HERE);
+const REPO = dirname(dirname(HERE)); // test/<layer>/ → repo root
 const BOOKINGS = join(REPO, 'data', 'bookings.json');
 const BLOCKED = join(REPO, 'data', 'blocked-dates.json');
 const BASE = 'http://localhost:3457';

@@ -12,6 +12,7 @@ const FILES = [
   'booking-guards.mjs',
   'book-and-delete.mjs',
   'booking-make.mjs',
+  'stress.mjs',
 ];
 
 let failed = 0;

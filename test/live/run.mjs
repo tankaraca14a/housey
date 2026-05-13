@@ -11,6 +11,7 @@ const FILES = [
   'scheduling-smoke.mjs',
   'scheduling-deep.mjs',
   'admin-live.mjs',
+  'lifecycle-live.mjs',
 ];
 
 let failed = 0;
