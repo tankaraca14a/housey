@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { blockedDatesStore } from '@/app/lib/blocked-dates';
+import { blockedDates as blockedRepo } from '@/app/lib/store-factory';
 
 const ADMIN_PASSWORD = 'ivana2026';
 
 export async function GET() {
   try {
-    const dates = await blockedDatesStore.read();
+    const dates = await blockedRepo.list();
     return NextResponse.json({ blockedDates: dates });
   } catch (error) {
     console.error('Error reading blocked dates:', error);
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await blockedDatesStore.write(blockedDates as string[]);
+    await blockedRepo.set(blockedDates as string[]);
     return NextResponse.json({ success: true, blockedDates });
   } catch (e) {
     console.error('blocked-dates persist failed:', e);

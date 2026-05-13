@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { bookingsStore } from '@/app/lib/bookings';
-import { blockedDatesStore } from '@/app/lib/blocked-dates';
+import { bookings as bookingsRepo, blockedDates as blockedRepo } from '@/app/lib/store-factory';
 
 const ADMIN_PASSWORD = 'ivana2026';
 
 // Block the nights the guest is actually sleeping there: [checkIn, checkOut).
-// Checkout day is exclusive so the next guest can arrive the same day
-// (matches the guest-side calendar, which treats checkout exclusively).
+// Checkout day is exclusive so the next guest can arrive the same day.
 function getDatesInRange(checkIn: string, checkOut: string): string[] {
   const dates: string[] = [];
   const end = new Date(checkOut);
@@ -28,39 +26,23 @@ export async function POST(
   }
   const { id } = await params;
 
-  // Mark confirmed atomically; also compute the dates we need to block.
-  let outcome: { ok: true; booking: { id: string; email: string; name: string; checkIn: string; checkOut: string; guests: string } } | { ok: false; error: string };
+  let booking;
   try {
-    outcome = (await bookingsStore.update<typeof outcome>((current) => {
-      const idx = current.findIndex((b) => b.id === id);
-      if (idx === -1) {
-        return { next: current, result: { ok: false, error: 'Booking not found' } };
-      }
-      const next = [...current];
-      next[idx] = { ...current[idx], status: 'confirmed' };
-      return { next, result: { ok: true, booking: next[idx] } };
-    }))!;
+    booking = await bookingsRepo.patch(id, { status: 'confirmed' });
   } catch (e) {
     console.error('confirm: persist failed', e);
     return NextResponse.json({ error: 'could not save booking' }, { status: 503 });
   }
-  if (!outcome.ok) {
-    return NextResponse.json({ error: outcome.error }, { status: 404 });
-  }
-  const { booking } = outcome;
+  if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
 
-  // Block dates under the blocked-dates mutex (separate file, separate mutex).
   try {
     const newDates = getDatesInRange(booking.checkIn, booking.checkOut);
-    await blockedDatesStore.update((current) => ({
-      next: Array.from(new Set([...current, ...newDates])).sort(),
-    }));
+    await blockedRepo.addMany(newDates);
   } catch (e) {
     console.error('confirm: blocked-dates persist failed (booking still confirmed)', e);
     // Don't fail the request — admin can re-block manually.
   }
 
-  // Best-effort confirmation email.
   if (process.env.RESEND_API_KEY) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);

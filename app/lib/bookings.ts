@@ -18,7 +18,7 @@ export interface Booking {
 
 const STATUSES = ['pending', 'confirmed', 'declined'] as const;
 
-function isBooking(x: unknown): x is Booking {
+export function isBooking(x: unknown): x is Booking {
   if (!x || typeof x !== 'object') return false;
   const b = x as Record<string, unknown>;
   return (

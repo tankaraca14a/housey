@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  bookingsStore,
-  validateBookingPatch,
-  type BookingPatch,
-} from '@/app/lib/bookings';
+import { bookings as bookingsRepo } from '@/app/lib/store-factory';
+import { validateBookingPatch, type BookingPatch } from '@/app/lib/bookings';
 
 const ADMIN_PASSWORD = 'ivana2026';
 const ALLOWED_FIELDS = ['name', 'email', 'phone', 'checkIn', 'checkOut', 'guests', 'message', 'status'] as const;
@@ -18,8 +15,7 @@ function requireAdmin(request: NextRequest): NextResponse | null {
 // Partial update of any booking field, including status. Lets the admin
 // edit contact info / shift dates / move status in any direction.
 // Does NOT email and does NOT touch blocked-dates — those flows live in
-// /confirm and /decline (still available as ergonomic shortcuts for the
-// pending → confirmed/declined transitions).
+// /confirm and /decline.
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -47,28 +43,25 @@ export async function PATCH(
   const err = validateBookingPatch(patch);
   if (err) return NextResponse.json({ error: err }, { status: 400 });
 
+  // Cross-field invariant has to be checked against the merged row, which
+  // means we need the current state first.
+  let current;
   try {
-    const outcome = await bookingsStore.update<{ ok: true; booking: ReturnType<typeof Object.assign> } | { ok: false; status: number; error: string }>((current) => {
-      const idx = current.findIndex((b) => b.id === id);
-      if (idx === -1) {
-        return { next: current, result: { ok: false, status: 404, error: 'Booking not found' } };
-      }
-      const merged = { ...current[idx], ...patch };
-      if (merged.checkOut <= merged.checkIn) {
-        return { next: current, result: { ok: false, status: 400, error: 'checkOut must be after checkIn' } };
-      }
-      const nextList = [...current];
-      nextList[idx] = merged;
-      return { next: nextList, result: { ok: true, booking: merged } };
-    });
+    current = await bookingsRepo.get(id);
+  } catch (e) {
+    console.error('patch read failed:', e);
+    return NextResponse.json({ error: 'could not read booking' }, { status: 503 });
+  }
+  if (!current) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+  const merged = { ...current, ...patch };
+  if (merged.checkOut <= merged.checkIn) {
+    return NextResponse.json({ error: 'checkOut must be after checkIn' }, { status: 400 });
+  }
 
-    if (!outcome) {
-      return NextResponse.json({ error: 'unknown error' }, { status: 500 });
-    }
-    if (!outcome.ok) {
-      return NextResponse.json({ error: outcome.error }, { status: outcome.status });
-    }
-    return NextResponse.json({ success: true, booking: outcome.booking });
+  try {
+    const result = await bookingsRepo.patch(id, patch);
+    if (!result) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    return NextResponse.json({ success: true, booking: result });
   } catch (e) {
     console.error('patch booking failed:', e);
     return NextResponse.json({ error: 'could not save booking' }, { status: 503 });
@@ -89,18 +82,9 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    const outcome = await bookingsStore.update<{ ok: true; deleted: string } | { ok: false }>((current) => {
-      const filtered = current.filter((b) => b.id !== id);
-      if (filtered.length === current.length) {
-        return { next: current, result: { ok: false } };
-      }
-      return { next: filtered, result: { ok: true, deleted: id } };
-    });
-
-    if (!outcome || !outcome.ok) {
-      return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
-    }
-    return NextResponse.json({ success: true, deleted: outcome.deleted });
+    const deleted = await bookingsRepo.delete(id);
+    if (!deleted) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    return NextResponse.json({ success: true, deleted: id });
   } catch (e) {
     console.error('delete booking failed:', e);
     return NextResponse.json({ error: 'could not delete booking' }, { status: 503 });

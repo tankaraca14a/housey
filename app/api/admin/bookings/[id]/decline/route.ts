@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { bookingsStore } from '@/app/lib/bookings';
+import { bookings as bookingsRepo } from '@/app/lib/store-factory';
 
 const ADMIN_PASSWORD = 'ivana2026';
 
@@ -13,25 +13,14 @@ export async function POST(
   }
   const { id } = await params;
 
-  let outcome: { ok: true; booking: { id: string; email: string; name: string; checkIn: string; checkOut: string } } | { ok: false; error: string };
+  let booking;
   try {
-    outcome = (await bookingsStore.update<typeof outcome>((current) => {
-      const idx = current.findIndex((b) => b.id === id);
-      if (idx === -1) {
-        return { next: current, result: { ok: false, error: 'Booking not found' } };
-      }
-      const next = [...current];
-      next[idx] = { ...current[idx], status: 'declined' };
-      return { next, result: { ok: true, booking: next[idx] } };
-    }))!;
+    booking = await bookingsRepo.patch(id, { status: 'declined' });
   } catch (e) {
     console.error('decline: persist failed', e);
     return NextResponse.json({ error: 'could not save booking' }, { status: 503 });
   }
-  if (!outcome.ok) {
-    return NextResponse.json({ error: outcome.error }, { status: 404 });
-  }
-  const { booking } = outcome;
+  if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
 
   if (process.env.RESEND_API_KEY) {
     try {

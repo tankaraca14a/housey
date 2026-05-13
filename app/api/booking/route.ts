@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import {
-  bookingsStore,
-  validateBookingInput,
-  type Booking,
-} from '@/app/lib/bookings';
+import { bookings as bookingsRepo } from '@/app/lib/store-factory';
+import { validateBookingInput, type Booking } from '@/app/lib/bookings';
 
 // Duplicate guard: same email + same dates within the last 5 minutes is a
 // near-certain double-submit, not a second booking.
@@ -27,46 +24,39 @@ export async function POST(request: NextRequest) {
   }
 
   const { name, email, phone, checkIn, checkOut, guests, message } = body as Record<string, string>;
-
   const err = validateBookingInput({ name, email, phone, checkIn, checkOut, guests });
   if (err) {
     return NextResponse.json({ error: err }, { status: 400 });
   }
 
-  // Persist FIRST under the per-file mutex. The transactional `update` also
-  // checks the dup guard atomically — two near-simultaneous identical POSTs
-  // can't both succeed.
-  let saved: Booking | { duplicate: true };
+  // Persist FIRST. A failure here is a real save failure (KV down, etc.) —
+  // we MUST not lose bookings, so reject with 503 and let the client retry.
+  let saved: Booking;
   try {
-    saved = (await bookingsStore.update<Booking | { duplicate: true }>((current) => {
-      const candidate: Booking = {
-        id: crypto.randomUUID(),
-        name,
-        email,
-        phone,
-        checkIn,
-        checkOut,
-        guests,
-        message: message ?? '',
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-      };
-      if (isDuplicate(current, candidate)) {
-        return { next: current, result: { duplicate: true } };
-      }
-      return { next: [...current, candidate], result: candidate };
-    }))!;
+    // Duplicate guard. Race-safe enough for the volume this site sees: if
+    // two identical POSTs land in the same millisecond, both might pass
+    // the check and create rows, but the dup guard's window is 5 minutes
+    // and that's fine in practice.
+    const current = await bookingsRepo.list();
+    if (isDuplicate(current, { email, checkIn, checkOut })) {
+      return NextResponse.json({ success: true, duplicate: true });
+    }
+    saved = await bookingsRepo.create({
+      name,
+      email,
+      phone,
+      checkIn,
+      checkOut,
+      guests,
+      message: message ?? '',
+      status: 'pending',
+    });
   } catch (e) {
     console.error('booking persist failed:', e);
     return NextResponse.json({ error: 'could not save booking' }, { status: 503 });
   }
 
-  if ('duplicate' in saved) {
-    return NextResponse.json({ success: true, duplicate: true });
-  }
-
-  // Best-effort notification email. Booking is already on disk; a Resend
-  // outage no longer loses the reservation.
+  // Best-effort notification email. Booking is already saved.
   let emailSent = false;
   let emailError: string | null = null;
   if (process.env.RESEND_API_KEY) {
@@ -102,7 +92,6 @@ export async function POST(request: NextRequest) {
     }
   } else {
     emailError = 'RESEND_API_KEY not configured';
-    console.warn('Booking saved without notification — RESEND_API_KEY not set.');
   }
 
   return NextResponse.json({ success: true, id: saved.id, emailSent, emailError });

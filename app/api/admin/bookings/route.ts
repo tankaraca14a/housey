@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  bookingsStore,
-  validateBookingInput,
-  type Booking,
-} from '@/app/lib/bookings';
+import { bookings as bookingsRepo } from '@/app/lib/store-factory';
+import { validateBookingInput, type Booking } from '@/app/lib/bookings';
 
 const ADMIN_PASSWORD = 'ivana2026';
 
@@ -17,8 +14,13 @@ function requireAdmin(request: NextRequest): NextResponse | null {
 export async function GET(request: NextRequest) {
   const denied = requireAdmin(request);
   if (denied) return denied;
-  const bookings = await bookingsStore.read();
-  return NextResponse.json({ bookings });
+  try {
+    const rows = await bookingsRepo.list();
+    return NextResponse.json({ bookings: rows });
+  } catch (e) {
+    console.error('list bookings failed:', e);
+    return NextResponse.json({ error: 'could not list bookings' }, { status: 503 });
+  }
 }
 
 // Admin-side manual booking creation (phone / walk-in). Skips Resend email
@@ -36,24 +38,22 @@ export async function POST(request: NextRequest) {
   }
 
   const { name, email, phone, checkIn, checkOut, guests, message, status } = body as Record<string, string>;
-  const err = validateBookingInput({ name, email, phone, checkIn, checkOut, guests, status: status as Booking['status'] | undefined });
+  const err = validateBookingInput({
+    name, email, phone, checkIn, checkOut, guests,
+    status: status as Booking['status'] | undefined,
+  });
   if (err) return NextResponse.json({ error: err }, { status: 400 });
 
   try {
-    const booking = await bookingsStore.update<Booking>((current) => {
-      const next: Booking = {
-        id: crypto.randomUUID(),
-        name,
-        email,
-        phone,
-        checkIn,
-        checkOut,
-        guests,
-        message: message ?? '',
-        status: (status as Booking['status']) ?? 'pending',
-        createdAt: new Date().toISOString(),
-      };
-      return { next: [...current, next], result: next };
+    const booking = await bookingsRepo.create({
+      name,
+      email,
+      phone,
+      checkIn,
+      checkOut,
+      guests,
+      message: message ?? '',
+      status: (status as Booking['status']) ?? 'pending',
     });
     return NextResponse.json({ success: true, booking });
   } catch (e) {
