@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { upload } from "@vercel/blob/client";
+import type { Image as ImageRow, Category } from "@/app/lib/images";
 // The admin password is no longer hardcoded. It's typed at login and held
 // in React state for the session (cleared on tab close). Verification is
 // done by an authenticated GET — if the server returns 200 the password
@@ -399,6 +401,12 @@ export default function AdminPage() {
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
+
+  // ── Image management state ────────────────────────────────────────────────
+  const [imagesList, setImagesList] = useState<ImageRow[]>([]);
+  const [loadingImages, setLoadingImages] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(0);  // count of in-flight uploads
+  const [imageError, setImageError] = useState<string | null>(null);
   const [bookingAction, setBookingAction] = useState<Record<string, "confirming" | "declining" | "deleting" | "saving" | false>>({});
 
   // Inline edit + manual-create state. `editingId === "new"` means the
@@ -473,12 +481,131 @@ export default function AdminPage() {
     }
   }, [authPassword]);
 
+  const fetchImages = useCallback(async () => {
+    if (!authPassword) return;
+    setLoadingImages(true);
+    try {
+      const res = await fetch("/api/admin/images", {
+        headers: { "x-admin-password": authPassword },
+      });
+      const data = await res.json();
+      setImagesList(data.images || []);
+    } catch (e) {
+      console.error("Failed to load images", e);
+    } finally {
+      setLoadingImages(false);
+    }
+  }, [authPassword]);
+
+  // Upload one or more files. Each upload goes through Vercel Blob's
+  // client-direct-upload flow (bypasses the 4.5 MB function body limit),
+  // then we POST the resulting URL + metadata to /api/admin/images.
+  const handleImageUpload = useCallback(async (fileList: FileList) => {
+    setImageError(null);
+    const files = Array.from(fileList).filter((f) => f.type.startsWith("image/"));
+    if (files.length === 0) {
+      setImageError("Pick JPEG, PNG, or WebP files.");
+      return;
+    }
+    setUploadingImages(files.length);
+    try {
+      for (const file of files) {
+        try {
+          // 1. Upload bytes directly to Blob.
+          const blob = await upload(`housey/${Date.now()}-${file.name}`, file, {
+            access: "public",
+            handleUploadUrl: "/api/admin/images/upload",
+            clientPayload: JSON.stringify({ password: authPassword }),
+            contentType: file.type,
+          });
+
+          // 2. Get image dimensions client-side. Browser-only utility —
+          // safe here because this is a client component.
+          const dims = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+            const img = document.createElement("img");
+            img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+            img.onerror = () => reject(new Error("Couldn't read image dimensions"));
+            img.src = URL.createObjectURL(file);
+          });
+
+          // 3. Insert metadata row.
+          const res = await fetch("/api/admin/images", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-password": authPassword,
+            },
+            body: JSON.stringify({
+              url: blob.url,
+              blobPathname: blob.pathname,
+              alt: file.name.replace(/\.[^.]+$/, ""), // strip extension as default alt
+              categories: [] as Category[],
+              featured: false,
+              sortOrder: Date.now(),
+              width: dims.width,
+              height: dims.height,
+            }),
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || "could not save image metadata");
+          }
+        } finally {
+          setUploadingImages((n) => Math.max(0, n - 1));
+        }
+      }
+      await fetchImages();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "upload failed";
+      console.error("image upload failed:", e);
+      setImageError(msg);
+    } finally {
+      setUploadingImages(0);
+    }
+  }, [authPassword, fetchImages]);
+
+  const handleImageDelete = useCallback(async (id: string) => {
+    const img = imagesList.find((i) => i.id === id);
+    if (!img) return;
+    if (!confirm(`Delete this image?\n${img.alt || img.url}`)) return;
+    if (!confirm(`This cannot be undone. Really delete?`)) return;
+    try {
+      const res = await fetch(`/api/admin/images/${id}`, {
+        method: "DELETE",
+        headers: { "x-admin-password": authPassword },
+      });
+      if (!res.ok) throw new Error("delete failed");
+      await fetchImages();
+    } catch (e) {
+      console.error("delete image failed:", e);
+      setImageError(e instanceof Error ? e.message : "delete failed");
+    }
+  }, [authPassword, fetchImages, imagesList]);
+
+  const handleImageToggleFeatured = useCallback(async (id: string, next: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/images/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": authPassword,
+        },
+        body: JSON.stringify({ featured: next }),
+      });
+      if (!res.ok) throw new Error("toggle featured failed");
+      await fetchImages();
+    } catch (e) {
+      console.error("toggle featured failed:", e);
+    }
+  }, [authPassword, fetchImages]);
+
   useEffect(() => {
     if (authenticated) {
       fetchBlockedDates();
       fetchBookings();
+      fetchImages();
     }
-  }, [authenticated, fetchBlockedDates, fetchBookings]);
+  }, [authenticated, fetchBlockedDates, fetchBookings, fetchImages]);
 
   // Verify the typed password by attempting an authenticated GET. The
   // server responds 200 on match, 401 on mismatch. We avoid storing the
@@ -1032,6 +1159,97 @@ export default function AdminPage() {
               ? `datum${blockedDates.size === 1 ? "" : "a"} trenutno blokirano`
               : `date${blockedDates.size !== 1 ? "s" : ""} currently blocked`}
           </p>
+
+          {/* ── Images Section ── */}
+          <div className="mt-16">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-3xl font-bold text-white">Images</h2>
+                <p className="text-slate-400 mt-1">
+                  {imagesList.length} uploaded
+                  {uploadingImages > 0 ? ` · uploading ${uploadingImages}…` : ""}
+                </p>
+              </div>
+              <label
+                data-testid="image-upload-trigger"
+                className="px-4 py-2 text-sm bg-brand-500 hover:bg-brand-400 text-white font-semibold rounded-xl transition cursor-pointer"
+              >
+                + Upload
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  data-testid="image-upload-input"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      handleImageUpload(e.target.files);
+                      e.target.value = ""; // allow re-picking same file
+                    }
+                  }}
+                />
+              </label>
+            </div>
+
+            {imageError && (
+              <p
+                data-testid="image-error"
+                className="mb-3 px-4 py-2 bg-red-500/20 border border-red-500/40 text-red-300 text-sm rounded-xl"
+              >
+                {imageError}
+              </p>
+            )}
+
+            {loadingImages ? (
+              <div className="text-center text-slate-400 py-8">{t.loading}</div>
+            ) : imagesList.length === 0 ? (
+              <div className="bg-surface-800 border border-white/10 border-dashed rounded-2xl p-10 text-center text-slate-400">
+                No uploaded images yet. Use the &ldquo;+ Upload&rdquo; button to add some.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {imagesList.map((img) => (
+                  <div
+                    key={img.id}
+                    data-testid={`image-tile-${img.id}`}
+                    className="relative bg-surface-800 border border-white/10 rounded-xl overflow-hidden group"
+                  >
+                    {/* Plain <img> to avoid next/image domain config for arbitrary blob hosts */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img.url}
+                      alt={img.alt}
+                      width={img.width}
+                      height={img.height}
+                      className="w-full aspect-square object-cover"
+                    />
+                    {img.featured && (
+                      <div className="absolute top-2 left-2 bg-yellow-400/95 text-black text-[10px] font-bold px-2 py-0.5 rounded">★ FEATURED</div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
+                      <p className="text-white text-xs truncate">{img.alt}</p>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleImageToggleFeatured(img.id, !img.featured)}
+                          data-testid={`image-featured-${img.id}`}
+                          className="flex-1 text-xs px-2 py-1 bg-surface-700 hover:bg-yellow-500/30 text-slate-200 rounded transition"
+                        >
+                          {img.featured ? "Unstar" : "★ Feature"}
+                        </button>
+                        <button
+                          onClick={() => handleImageDelete(img.id)}
+                          data-testid={`image-delete-${img.id}`}
+                          className="px-3 py-1 text-xs bg-red-600 hover:bg-red-500 text-white rounded transition"
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* ── Bookings Section ── */}
           <div className="mt-16">

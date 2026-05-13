@@ -14,6 +14,7 @@ const FILES = [
   'booking-make.mjs',
   'stress.mjs',
   'social-links.mjs',
+  'images-api.mjs',
 ];
 
 let failed = 0;

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Category = "all" | "aerial" | "coast" | "exterior" | "terrace" | "interior";
 
@@ -97,14 +97,48 @@ const categoryIcons: Record<Category, string> = {
   interior: "🛋️",
 };
 
+interface ApiImage {
+  id: string;
+  url: string;
+  alt: string;
+  categories: string[];
+  featured: boolean;
+  sortOrder: number;
+  width: number;
+  height: number;
+  caption?: string;
+}
+
 export default function GalleryPage() {
   const [activeCategory, setActiveCategory] = useState<Category>("all");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
+  // Admin-uploaded images come from /api/images and are merged into the
+  // gallery alongside the committed hardcoded set. Committed first
+  // (preserving their hand-curated order), then uploads sorted by
+  // sortOrder. Each fetched row is reshaped into GalleryImage so the
+  // existing render code doesn't care where the image came from.
+  const [uploadedImages, setUploadedImages] = useState<GalleryImage[]>([]);
+  useEffect(() => {
+    fetch("/api/images")
+      .then((r) => r.json())
+      .then((data: { images?: ApiImage[] }) => {
+        const mapped: GalleryImage[] = (data.images ?? []).map((i) => ({
+          src: i.url,
+          alt: i.alt || i.caption || "Housey",
+          category: (i.categories.length > 0 ? i.categories : ["aerial"]) as Category[],
+          featured: i.featured,
+        }));
+        setUploadedImages(mapped);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  const allImages = [...images, ...uploadedImages];
   const filteredImages =
     activeCategory === "all"
-      ? images
-      : images.filter((img) => img.category.includes(activeCategory));
+      ? allImages
+      : allImages.filter((img) => img.category.includes(activeCategory));
 
   const closeLightbox = () => setLightboxIndex(null);
   const lightboxPrev = () => { if (lightboxIndex === null) return; setLightboxIndex((lightboxIndex - 1 + filteredImages.length) % filteredImages.length); };
@@ -138,7 +172,7 @@ export default function GalleryPage() {
               <span className="mr-1.5">{categoryIcons[cat]}</span>
               {categoryLabels[cat]}
               <span className="ml-2 text-xs opacity-70">
-                ({cat === "all" ? images.length : images.filter((img) => img.category.includes(cat)).length})
+                ({cat === "all" ? allImages.length : allImages.filter((img) => img.category.includes(cat)).length})
               </span>
             </button>
           ))}
