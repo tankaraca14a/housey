@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { blockedDates as blockedRepo } from '@/app/lib/store-factory';
 
-const ADMIN_PASSWORD = 'ivana2026';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
 
 export async function GET() {
   try {

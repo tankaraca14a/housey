@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { bookings as bookingsRepo } from '@/app/lib/store-factory';
 import { validateBookingInput, type Booking } from '@/app/lib/bookings';
 
-const ADMIN_PASSWORD = 'ivana2026';
+// Source of truth for the admin password is the ADMIN_PASSWORD env var.
+// The literal fallback is only for local dev where the env var isn't set;
+// it matches the historical value so existing tests + Ivana's bookmarked
+// browser sessions keep working. Rotate by setting ADMIN_PASSWORD in
+// Vercel project settings → Environment Variables → Production.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
 
 function requireAdmin(request: NextRequest): NextResponse | null {
   if (request.headers.get('x-admin-password') !== ADMIN_PASSWORD) {

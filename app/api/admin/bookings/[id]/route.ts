@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { bookings as bookingsRepo } from '@/app/lib/store-factory';
 import { validateBookingPatch, type BookingPatch } from '@/app/lib/bookings';
 
-const ADMIN_PASSWORD = 'ivana2026';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
 const ALLOWED_FIELDS = ['name', 'email', 'phone', 'checkIn', 'checkOut', 'guests', 'message', 'status'] as const;
 
 function requireAdmin(request: NextRequest): NextResponse | null {

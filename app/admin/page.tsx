@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-
-const ADMIN_PASSWORD = "ivana2026";
+// The admin password is no longer hardcoded. It's typed at login and held
+// in React state for the session (cleared on tab close). Verification is
+// done by an authenticated GET — if the server returns 200 the password
+// is good; 401 means wrong password. Server reads ADMIN_PASSWORD env var
+// with 'ivana2026' as the local-dev fallback.
 
 function formatDate(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -384,6 +387,10 @@ export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  // authPassword holds the verified-good password for the session; all
+  // subsequent fetches use it. Set by handleLogin after the server says OK.
+  const [authPassword, setAuthPassword] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
 
   const [blockedDates, setBlockedDates] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
@@ -451,10 +458,11 @@ export default function AdminPage() {
   }, []);
 
   const fetchBookings = useCallback(async () => {
+    if (!authPassword) return;
     setLoadingBookings(true);
     try {
       const res = await fetch("/api/admin/bookings", {
-        headers: { "x-admin-password": ADMIN_PASSWORD },
+        headers: { "x-admin-password": authPassword },
       });
       const data = await res.json();
       setBookings(data.bookings || []);
@@ -463,7 +471,7 @@ export default function AdminPage() {
     } finally {
       setLoadingBookings(false);
     }
-  }, []);
+  }, [authPassword]);
 
   useEffect(() => {
     if (authenticated) {
@@ -472,14 +480,38 @@ export default function AdminPage() {
     }
   }, [authenticated, fetchBlockedDates, fetchBookings]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Verify the typed password by attempting an authenticated GET. The
+  // server responds 200 on match, 401 on mismatch. We avoid storing the
+  // password anywhere but in React state — it disappears on tab close.
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setAuthenticated(true);
-      setPasswordError("");
-    } else {
-      setPasswordError(t.wrongPassword);
+    setLoggingIn(true);
+    setPasswordError("");
+    try {
+      const res = await fetch("/api/admin/bookings", {
+        headers: { "x-admin-password": password },
+      });
+      if (res.ok) {
+        setAuthPassword(password);
+        setAuthenticated(true);
+      } else if (res.status === 401) {
+        setPasswordError(t.wrongPassword);
+      } else {
+        setPasswordError(t.saveFailedShort);
+      }
+    } catch {
+      setPasswordError(t.saveFailedShort);
+    } finally {
+      setLoggingIn(false);
     }
+  };
+
+  // Wipe the in-memory password on logout so a later /admin visit by
+  // someone else on the same browser doesn't inherit it.
+  const handleLogout = () => {
+    setAuthPassword("");
+    setPassword("");
+    setAuthenticated(false);
   };
 
   const toggleDate = (date: string) => {
@@ -502,7 +534,7 @@ export default function AdminPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": ADMIN_PASSWORD,
+          "x-admin-password": authPassword,
         },
         body: JSON.stringify({ blockedDates: Array.from(blockedDates).sort() }),
       });
@@ -531,7 +563,7 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/admin/bookings/${id}/confirm`, {
         method: "POST",
-        headers: { "x-admin-password": ADMIN_PASSWORD },
+        headers: { "x-admin-password": authPassword },
       });
       if (!res.ok) throw new Error("Failed to confirm");
       await fetchBookings();
@@ -554,7 +586,7 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/admin/bookings/${id}/decline`, {
         method: "POST",
-        headers: { "x-admin-password": ADMIN_PASSWORD },
+        headers: { "x-admin-password": authPassword },
       });
       if (!res.ok) throw new Error("Failed to decline");
       await fetchBookings();
@@ -583,7 +615,7 @@ export default function AdminPage() {
       try {
         const res = await fetch(`/api/admin/bookings/${id}`, {
           method: "DELETE",
-          headers: { "x-admin-password": ADMIN_PASSWORD },
+          headers: { "x-admin-password": authPassword },
         });
         if (!res.ok) throw new Error("Failed to delete");
       } catch (e) {
@@ -648,7 +680,7 @@ export default function AdminPage() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": ADMIN_PASSWORD,
+          "x-admin-password": authPassword,
         },
         body: JSON.stringify({ status: next }),
       });
@@ -704,7 +736,7 @@ export default function AdminPage() {
         method,
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": ADMIN_PASSWORD,
+          "x-admin-password": authPassword,
         },
         body: JSON.stringify(editForm),
       });
@@ -765,7 +797,7 @@ export default function AdminPage() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": ADMIN_PASSWORD,
+          "x-admin-password": authPassword,
         },
         body: JSON.stringify(patchable),
       });
@@ -826,9 +858,10 @@ export default function AdminPage() {
               </div>
               <button
                 type="submit"
-                className="w-full py-3 bg-brand-500 hover:bg-brand-400 text-white font-semibold rounded-xl transition"
+                disabled={loggingIn || password.length === 0}
+                className="w-full py-3 bg-brand-500 hover:bg-brand-400 text-white font-semibold rounded-xl transition disabled:opacity-50"
               >
-                {t.login}
+                {loggingIn ? "…" : t.login}
               </button>
             </form>
           </div>
@@ -936,7 +969,7 @@ export default function AdminPage() {
                 {saving ? t.saving : t.saveChanges}
               </button>
               <button
-                onClick={() => setAuthenticated(false)}
+                onClick={handleLogout}
                 className="px-4 py-3 bg-surface-700 hover:bg-surface-600 text-slate-300 font-semibold rounded-xl transition border border-white/10 whitespace-nowrap"
               >
                 {t.logout}

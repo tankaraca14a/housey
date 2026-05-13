@@ -154,9 +154,23 @@ function CalendarMonth({
 function CalendarPicker({ blockedDates, checkIn, checkOut, onSelect }: CalendarPickerProps) {
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
   const [monthOffset, setMonthOffset] = useState(0);
-  const now = new Date();
-  const todayStr = formatDate(now.getFullYear(), now.getMonth(), now.getDate());
 
+  // `todayStr` MUST be computed after hydration. Computing it inline at
+  // render time produces wrong markup when /booking is statically
+  // prerendered before midnight and served to a client after midnight —
+  // the SSR HTML has yesterday's `todayStr` and React's reconciliation
+  // skips re-rendering the `disabled` attribute on the boundary cell.
+  // The fix: start with empty `todayStr` (matches what the server would
+  // produce if no date were available), populate via useEffect after
+  // mount, and key the cells by `todayStr` so a change forces a full
+  // remount of the calendar grid. See housey#3.
+  const [todayStr, setTodayStr] = useState<string>("");
+  useEffect(() => {
+    const now = new Date();
+    setTodayStr(formatDate(now.getFullYear(), now.getMonth(), now.getDate()));
+  }, []);
+
+  const now = new Date();
   const months = [0, 1, 2].map((offset) => {
     const d = new Date(now.getFullYear(), now.getMonth() + monthOffset + offset, 1);
     return { year: d.getFullYear(), month: d.getMonth() };
@@ -191,7 +205,11 @@ function CalendarPicker({ blockedDates, checkIn, checkOut, onSelect }: CalendarP
       <div className="flex flex-col sm:flex-row gap-4">
         {months.map(({ year, month }) => (
           <CalendarMonth
-            key={`${year}-${month}`}
+            // Include todayStr in the key so when it changes (after
+            // hydration, or after midnight), React fully remounts the
+            // grid instead of attempting to patch the existing one. This
+            // is what closes housey#3.
+            key={`${year}-${month}-${todayStr}`}
             year={year}
             month={month}
             blockedDates={blockedDates}

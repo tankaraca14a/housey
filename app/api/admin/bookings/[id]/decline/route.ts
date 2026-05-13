@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { bookings as bookingsRepo } from '@/app/lib/store-factory';
 
-const ADMIN_PASSWORD = 'ivana2026';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
 
 export async function POST(
   request: NextRequest,
@@ -22,10 +22,13 @@ export async function POST(
   }
   if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
 
+  // Email is best-effort; status change is already persisted regardless.
+  let emailSent = false;
+  let emailError: string | null = null;
   if (process.env.RESEND_API_KEY) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
+      const { error } = await resend.emails.send({
         from: 'Housey <noreply@tankaraca.com>',
         to: [booking.email],
         subject: 'Booking Request — Housey, Vela Luka',
@@ -41,10 +44,19 @@ export async function POST(
           </div>
         `,
       });
+      if (error) {
+        emailError = typeof error === 'string' ? error : JSON.stringify(error);
+        console.error('decline: email returned error (booking still declined)', error);
+      } else {
+        emailSent = true;
+      }
     } catch (e) {
+      emailError = e instanceof Error ? e.message : String(e);
       console.error('decline: email failed (booking still declined)', e);
     }
+  } else {
+    emailError = 'RESEND_API_KEY not configured';
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, emailSent, emailError });
 }

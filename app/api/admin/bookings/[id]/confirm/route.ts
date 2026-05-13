@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { bookings as bookingsRepo, blockedDates as blockedRepo } from '@/app/lib/store-factory';
 
-const ADMIN_PASSWORD = 'ivana2026';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
 
 // Block the nights the guest is actually sleeping there: [checkIn, checkOut).
 // Checkout day is exclusive so the next guest can arrive the same day.
@@ -35,18 +35,27 @@ export async function POST(
   }
   if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
 
+  // Each side-effect (block dates, send email) is best-effort and returns
+  // its own status in the response. Booking is already confirmed in KV;
+  // failure here doesn't roll that back, the admin just sees a partial
+  // success indicator and can fix the gap manually.
+  let datesBlocked = false;
+  let blockedDatesError: string | null = null;
   try {
     const newDates = getDatesInRange(booking.checkIn, booking.checkOut);
     await blockedRepo.addMany(newDates);
+    datesBlocked = true;
   } catch (e) {
+    blockedDatesError = e instanceof Error ? e.message : String(e);
     console.error('confirm: blocked-dates persist failed (booking still confirmed)', e);
-    // Don't fail the request — admin can re-block manually.
   }
 
+  let emailSent = false;
+  let emailError: string | null = null;
   if (process.env.RESEND_API_KEY) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
+      const { error } = await resend.emails.send({
         from: 'Housey <noreply@tankaraca.com>',
         to: [booking.email],
         subject: 'Booking Confirmed — Housey, Vela Luka',
@@ -74,10 +83,25 @@ export async function POST(
           </div>
         `,
       });
+      if (error) {
+        emailError = typeof error === 'string' ? error : JSON.stringify(error);
+        console.error('confirm: email send returned error (booking still confirmed)', error);
+      } else {
+        emailSent = true;
+      }
     } catch (e) {
+      emailError = e instanceof Error ? e.message : String(e);
       console.error('confirm: email failed (booking still confirmed)', e);
     }
+  } else {
+    emailError = 'RESEND_API_KEY not configured';
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({
+    success: true,
+    datesBlocked,
+    blockedDatesError,
+    emailSent,
+    emailError,
+  });
 }
