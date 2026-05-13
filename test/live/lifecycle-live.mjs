@@ -189,14 +189,25 @@ try {
   const afterEdit = (await api('GET', '/api/admin/bookings')).body.bookings.find((b) => b.id === bookingId);
   ok(afterEdit?.message === 'Edited via lifecycle test', `7a: message persisted (${afterEdit?.message})`);
 
-  // ── Step 8: Delete with confirm dialog ────────────────────────────────────
-  log('\n=== 8. Admin Delete (auto-accept confirm) ===');
+  // ── Step 8: Delete with 2 confirms + 10s undo grace + final hard-delete ───
+  log('\n=== 8. Admin Delete (2 confirms, undo toast appears, grace elapses) ===');
   await page.evaluate(() => { window.confirm = () => true; });
   await page.locator(`[data-testid='delete-btn-${bookingId}']`).click();
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(800);
+
+  // During grace window: UI hides row, toast visible, KV still has row
+  const toastVisible = await page.locator(`[data-testid='undo-toast-${bookingId}']`).count();
+  ok(toastVisible === 1, `8a: undo toast visible after delete click`);
+  const uiHidden = await page.locator(`h3:has-text("Lifecycle-${TAG}")`).count();
+  ok(uiHidden === 0, `8b: row hidden from UI during grace window`);
+  const stillInKv = (await api('GET', '/api/admin/bookings')).body.bookings.find((b) => b.id === bookingId);
+  ok(stillInKv !== undefined, `8c: row still in KV during grace window (optimistic UI)`);
+
+  // Wait out the 10s grace + buffer → hard delete fires
+  log('  waiting 11s for grace window…');
+  await page.waitForTimeout(11_000);
   const after8 = (await api('GET', '/api/admin/bookings')).body.bookings.find((b) => b.id === bookingId);
-  ok(after8 === undefined, `8a: row removed from KV (find returned ${after8 ? 'still there' : 'undefined'})`);
-  ok(await page.locator(`h3:has-text("Lifecycle-${TAG}")`).count() === 0, '8b: row removed from admin UI');
+  ok(after8 === undefined, `8d: row really gone from KV after grace expired`);
   bookingId = null; // mark cleaned
 
   // ── Step 9: Unblock the auto-blocked dates ─────────────────────────────────

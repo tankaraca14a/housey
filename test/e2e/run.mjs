@@ -11,6 +11,7 @@ const FILES = [
   'booking-flow-playwright.mjs',
   'admin-crud-selenium.mjs',
   'scheduling-selenium.mjs',
+  'delete-undo-selenium.mjs',
 ];
 
 let failed = 0;

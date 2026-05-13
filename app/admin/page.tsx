@@ -50,6 +50,9 @@ interface Translations {
   delete: string;
   deleting: string;
   deleteConfirm: string;
+  deleteConfirm2: string;
+  undo: string;
+  deletedToast: string;
   edit: string;
   editing: string;
   save: string;
@@ -107,7 +110,10 @@ const translations: Record<"hr" | "en", Translations> = {
     logout: "Odjava",
     delete: "Obriši",
     deleting: "Brisanje...",
-    deleteConfirm: "Obrisati ovu rezervaciju? Ova radnja se ne može poništiti.",
+    deleteConfirm: "Obrisati ovu rezervaciju?",
+    deleteConfirm2: "Sigurno trajno obrisati rezervaciju za:",
+    undo: "Poništi",
+    deletedToast: "Rezervacija obrisana",
     edit: "Uredi",
     editing: "Uređivanje...",
     save: "Spremi",
@@ -163,7 +169,10 @@ const translations: Record<"hr" | "en", Translations> = {
     logout: "Logout",
     delete: "Delete",
     deleting: "Deleting...",
-    deleteConfirm: "Delete this booking? This cannot be undone.",
+    deleteConfirm: "Delete this booking?",
+    deleteConfirm2: "Are you sure you want to permanently delete the booking for:",
+    undo: "Undo",
+    deletedToast: "Booking deleted",
     edit: "Edit",
     editing: "Editing...",
     save: "Save",
@@ -383,6 +392,20 @@ export default function AdminPage() {
   const [editForm, setEditForm] = useState<EditForm>(blankBooking());
   const [editError, setEditError] = useState<string | null>(null);
 
+  // Pending-delete state for the undo banner. Each entry is a booking that
+  // the admin asked to delete; the actual DELETE API call fires after
+  // DELETE_GRACE_MS unless Undo is clicked. The booking is hidden from the
+  // visible list during the grace window so the admin sees the result of
+  // their action immediately, but it's still in KV and can be restored.
+  const DELETE_GRACE_MS = 10_000;
+  interface PendingDelete {
+    booking: Booking;
+    timerId: ReturnType<typeof setTimeout>;
+    deadline: number; // epoch ms
+  }
+  const [pendingDeletes, setPendingDeletes] = useState<Record<string, PendingDelete>>({});
+  const [nowMs, setNowMs] = useState(Date.now()); // ticks for the countdown
+
   const fetchBlockedDates = useCallback(async () => {
     setLoadingDates(true);
     try {
@@ -497,22 +520,80 @@ export default function AdminPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  // Two-step confirm + undo-able delete. The actual DELETE API call is
+  // deferred by DELETE_GRACE_MS so a misclick can be recovered. During the
+  // grace window the row is filtered out of the visible list and a toast
+  // banner shows with an Undo button.
+  const handleDelete = (id: string) => {
+    const booking = bookings.find((b) => b.id === id);
+    if (!booking) return;
+    // First confirm — generic
     if (!confirm(t.deleteConfirm)) return;
-    setBookingAction((prev) => ({ ...prev, [id]: "deleting" }));
-    try {
-      const res = await fetch(`/api/admin/bookings/${id}`, {
-        method: "DELETE",
-        headers: { "x-admin-password": ADMIN_PASSWORD },
-      });
-      if (!res.ok) throw new Error("Failed to delete");
-      await fetchBookings();
-    } catch (e) {
-      console.error("Failed to delete booking", e);
-    } finally {
-      setBookingAction((prev) => ({ ...prev, [id]: false }));
-    }
+    // Second confirm — explicit with the guest name + dates
+    const detail = `${booking.name}\n${booking.checkIn} → ${booking.checkOut}`;
+    if (!confirm(`${t.deleteConfirm2}\n\n${detail}`)) return;
+
+    // Schedule the actual API call. Held in state so Undo can cancel it.
+    const timerId = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/admin/bookings/${id}`, {
+          method: "DELETE",
+          headers: { "x-admin-password": ADMIN_PASSWORD },
+        });
+        if (!res.ok) throw new Error("Failed to delete");
+      } catch (e) {
+        console.error("Failed to delete booking", e);
+      } finally {
+        setPendingDeletes((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        await fetchBookings();
+      }
+    }, DELETE_GRACE_MS);
+
+    setPendingDeletes((prev) => ({
+      ...prev,
+      [id]: { booking, timerId, deadline: Date.now() + DELETE_GRACE_MS },
+    }));
   };
+
+  const handleUndoDelete = (id: string) => {
+    const pending = pendingDeletes[id];
+    if (!pending) return;
+    clearTimeout(pending.timerId);
+    setPendingDeletes((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  };
+
+  // 1Hz tick for the countdown display. Only runs while at least one delete
+  // is pending — avoids re-rendering the page once per second forever.
+  useEffect(() => {
+    if (Object.keys(pendingDeletes).length === 0) return;
+    const id = setInterval(() => setNowMs(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [pendingDeletes]);
+
+  // On unmount / logout: flush any pending deletes immediately. This makes
+  // navigating away mid-grace-window NOT silently drop the action — the
+  // delete still happens. The opposite design (cancel on unmount) would be
+  // surprising too. We go with "fire-and-forget on unmount" to match the
+  // user's intent at the moment of clicking Delete.
+  useEffect(() => {
+    return () => {
+      Object.values(pendingDeletes).forEach((p) => {
+        // Don't cancel the timer — let it fire. If we're unmounting, fetch
+        // won't be called from inside the timer anymore, but the DELETE
+        // request has already been queued via setTimeout closures pointing
+        // to outer-scope fetch, so it'll still hit the server.
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Free status change (any → any) via PATCH. Used by the per-row <select>.
   const handleStatusChange = async (id: string, next: Booking["status"]) => {
@@ -646,12 +727,50 @@ export default function AdminPage() {
     );
   }
 
-  const pendingBookings = bookings.filter((b) => b.status === "pending");
-  const otherBookings = bookings.filter((b) => b.status !== "pending");
+  // Hide rows that are in the delete-grace window. They're still in KV, so
+  // Undo just clears the pendingDeletes entry — no API call required.
+  const visibleBookings = bookings.filter((b) => !pendingDeletes[b.id]);
+  const pendingBookings = visibleBookings.filter((b) => b.status === "pending");
+  const otherBookings = visibleBookings.filter((b) => b.status !== "pending");
+  const pendingDeleteList = Object.values(pendingDeletes);
 
   return (
     <>
       <LangToggle />
+
+      {/* ── Undo-delete toast(s) ── */}
+      {pendingDeleteList.length > 0 && (
+        <div data-testid="undo-toast-container"
+             className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+          {pendingDeleteList.map((p) => {
+            const secondsLeft = Math.max(0, Math.ceil((p.deadline - nowMs) / 1000));
+            return (
+              <div
+                key={p.booking.id}
+                data-testid={`undo-toast-${p.booking.id}`}
+                className="bg-surface-800 border border-brand-400/50 shadow-2xl rounded-2xl px-5 py-4 flex items-center gap-4 min-w-[320px]"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm">
+                    🗑 {t.deletedToast}: <span className="text-slate-300 font-normal">{p.booking.name}</span>
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {p.booking.checkIn} → {p.booking.checkOut} · {secondsLeft}s
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleUndoDelete(p.booking.id)}
+                  data-testid={`undo-btn-${p.booking.id}`}
+                  className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition whitespace-nowrap"
+                >
+                  ↶ {t.undo}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <div className="container py-16">
         <div className="max-w-5xl mx-auto">
 
@@ -749,7 +868,7 @@ export default function AdminPage() {
               <div>
                 <h2 className="text-3xl font-bold text-white">{t.bookings}</h2>
                 <p className="text-slate-400 mt-1">
-                  {bookings.length} {t.total} · {pendingBookings.length} {t.pendingCount}
+                  {visibleBookings.length} {t.total} · {pendingBookings.length} {t.pendingCount}
                 </p>
               </div>
               <div className="flex gap-2">

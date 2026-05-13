@@ -131,11 +131,15 @@ ok(deleteBtnCount >= 1, `2c: 🗑 Delete button(s) rendered (count=${deleteBtnCo
 const row = page.locator('div.bg-surface-800', { has: page.locator('h3:has-text("Delete-Test #1")') }).first();
 const rowDelete = row.locator('button:has-text("Delete")').first();
 await rowDelete.click();
-await page.waitForTimeout(1200);
+await page.waitForTimeout(800);
 
-// After delete + fetchBookings refresh, the row should be gone
+// Two-confirm + 10s grace window: row hidden from UI immediately, but data
+// row survives until the timer fires. Then the hard delete lands.
+const uiHiddenImmediately = await page.locator(`h3:has-text("Delete-Test #1")`).count();
+ok(uiHiddenImmediately === 0, `2d: row hidden from admin UI during grace window`);
+await page.waitForTimeout(11_000);  // wait out the 10s grace + 1s buffer
 const guestHeaderAfter = await page.locator(`h3:has-text("Delete-Test #1")`).count();
-ok(guestHeaderAfter === 0, `2d: row removed from admin UI after Delete (count=${guestHeaderAfter})`);
+ok(guestHeaderAfter === 0, `2e: row still gone from admin UI after grace expired`);
 
 await browser.close();
 

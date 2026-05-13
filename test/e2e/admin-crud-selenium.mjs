@@ -225,21 +225,29 @@ try {
   ok(manualRow?.checkIn === '2099-09-01' && manualRow?.checkOut === '2099-09-10', 'F3: dates persisted');
   await shot('F-after-add');
 
-  // ── G. DELETE with confirm dialog ─────────────────────────────────────────
-  log('\n=== G. Delete via 🗑 (auto-accept confirm) ===');
-  // accept the JS confirm() dialog
-  await driver.executeScript(`window.confirm = () => true;`);
-  // Re-stub confirm in case anything reset it
+  // ── G. DELETE with two confirms + grace window + undo ────────────────────
+  log('\n=== G. Delete via 🗑 (2 confirms, 10s undo window) ===');
+  // Auto-accept BOTH confirm() dialogs (delete-undo flow requires two)
   await driver.executeScript(`window.confirm = () => true;`);
 
   const deleteRowId = manualRow.id;
   await driver.findElement(By.css(`[data-testid='delete-btn-${deleteRowId}']`)).click();
-  await driver.sleep(1500);
+  await driver.sleep(800);
+
+  // Toast appears, row hidden from UI but STILL in data until grace expires
+  const toast = await driver.findElements(By.css(`[data-testid='undo-toast-${deleteRowId}']`));
+  ok(toast.length === 1, `G1: undo toast visible after delete click`);
+  const hiddenFromUi = await driver.findElements(By.xpath(`//h3[text()='Manual Phone Reservation']`));
+  ok(hiddenFromUi.length === 0, `G2: row hidden from admin UI during grace window`);
+  const duringGrace = await listBookings();
+  ok(duringGrace.some((x) => x.id === deleteRowId), `G3: row still in KV/file during grace window (UI is optimistic)`);
+
+  // Wait for the 10s grace window + buffer, then verify hard delete fired
+  await driver.sleep(11_000);
   const afterDelete = await listBookings();
-  ok(!afterDelete.some((x) => x.id === deleteRowId), `G1: manual booking row removed from data`);
-  // Also confirm row gone from UI
-  const stillVisible = await driver.findElements(By.xpath(`//h3[text()='Manual Phone Reservation']`));
-  ok(stillVisible.length === 0, `G2: row removed from admin UI`);
+  ok(!afterDelete.some((x) => x.id === deleteRowId), `G4: row gone from data after grace window expired`);
+  const toastGone = await driver.findElements(By.css(`[data-testid='undo-toast-${deleteRowId}']`));
+  ok(toastGone.length === 0, `G5: toast dismissed after grace window`);
 
   // ── H. Server-error surfacing ─────────────────────────────────────────────
   log('\n=== H. Edit-panel surfaces server errors ===');
