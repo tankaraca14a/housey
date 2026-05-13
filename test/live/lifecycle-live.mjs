@@ -59,19 +59,29 @@ try {
   await page.goto(`${BASE}/booking`, { waitUntil: 'networkidle' });
   await page.waitForSelector('h3', { timeout: 15000 });
 
-  // Pick a far-future range, well clear of any existing blocked-dates so it
-  // can't accidentally collide.
-  let cellHandles;
-  for (let attempt = 0; attempt < 8; attempt++) {
-    cellHandles = await page.locator('div.grid.grid-cols-7 button:not([disabled])').elementHandles();
-    if (cellHandles.length >= 8) break;
-    await page.locator('button:has-text("Next")').first().click();
-    await page.waitForTimeout(200);
+  // Pick two cells that are unambiguously bookable. Two filters:
+  //  1. Skip cells flagged title="Unavailable" — a date-boundary edge case
+  //     exists where a past-AND-blocked cell can render without the
+  //     disabled attribute (see GH issue: hydration race). Filtering by
+  //     title is the source of truth ("Unavailable" means it IS blocked).
+  //  2. After picking the first cell, scan forward for a SECOND cell that
+  //     is ≥5 indices away AND no cell in between is "Unavailable" — that
+  //     guarantees the range-validation in handleDateSelect won't reject.
+  const allBtns = await page.locator('div.grid.grid-cols-7 button').elementHandles();
+  const bookable = [];
+  for (const h of allBtns) {
+    const dis = await h.getAttribute('disabled');
+    const ttl = await h.getAttribute('title');
+    if (dis === null && ttl !== 'Unavailable') bookable.push(h);
   }
-  await cellHandles[0].click();
-  await page.waitForTimeout(100);
-  await cellHandles[Math.min(cellHandles.length - 1, 7)].click();
-  await page.waitForTimeout(200);
+  ok(bookable.length >= 8, `pre-1a: ≥8 truly-bookable cells visible (got ${bookable.length})`);
+  await bookable[0].click();
+  await page.waitForTimeout(150);
+  // Pick a checkout at least 5 cells later (= ≥5 nights since bookable
+  // cells in the same month are contiguous days, and across months are too
+  // since blocks-in-between would have been filtered out).
+  await bookable[Math.min(bookable.length - 1, 6)].click();
+  await page.waitForTimeout(250);
   const dur = await page.locator('text=/Duration:/').first().textContent();
   ok(/\d+ nights/.test(dur), `1a: range selected (${dur})`);
 

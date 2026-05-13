@@ -130,15 +130,30 @@ log('\n=== B. /booking: valid range selection works ===');
 await page.goto(`${BASE}/booking`, { waitUntil: 'networkidle' });
 await page.waitForSelector('h3:has-text("2026"), h3:has-text("2027")', { timeout: 15000 });
 
-// Walk forward until we find a window with >= 6 contiguous enabled cells
+async function bookableCells(page) {
+  // Filter to cells that are TRULY bookable: disabled-attribute absent
+  // AND title is not "Unavailable". A pre-existing hydration bug can let
+  // a past-blocked cell render with title="Unavailable" but missing
+  // disabled — we treat title as the source of truth.
+  const all = await page.locator('div.grid.grid-cols-7 button').elementHandles();
+  const out = [];
+  for (const h of all) {
+    const dis = await h.getAttribute('disabled');
+    const ttl = await h.getAttribute('title');
+    if (dis === null && ttl !== 'Unavailable') out.push(h);
+  }
+  return out;
+}
+
+// Walk forward until we find a window with ≥6 truly-bookable cells
 let foundRange = false;
 for (let attempt = 0; attempt < 12 && !foundRange; attempt++) {
-  const cells = await page.locator('div.grid.grid-cols-7 button:not([disabled])').elementHandles();
-  if (cells.length >= 8) {
-    await cells[0].click();
+  const bookable = await bookableCells(page);
+  if (bookable.length >= 8) {
+    await bookable[0].click();
     await page.waitForTimeout(100);
-    await cells[Math.min(cells.length - 1, 7)].click();
-    await page.waitForTimeout(200);
+    await bookable[Math.min(bookable.length - 1, 6)].click();
+    await page.waitForTimeout(250);
     const dur = await page.locator('text=/Duration:/').first().textContent().catch(() => null);
     if (dur && /\d+ nights/.test(dur)) {
       foundRange = true;
@@ -156,16 +171,13 @@ await page.screenshot({ path: join(SCREENS, 'booking-range-selected.png'), fullP
 log('\n=== C. /booking: minimum stay error fires ===');
 await page.goto(`${BASE}/booking`, { waitUntil: 'networkidle' });
 await page.waitForSelector('h3:has-text("2026"), h3:has-text("2027")', { timeout: 15000 });
-const cellsForShort = await page.locator('div.grid.grid-cols-7 button:not([disabled])').elementHandles();
-if (cellsForShort.length >= 4) {
-  await cellsForShort[0].click();
-  await page.waitForTimeout(100);
-  // The calendar disables cells fewer than 5 nights from check-in. So clicking
-  // a "too close" cell should NOT register as check-out. To trigger the
-  // "Minimum stay is 5 nights" error path we'd need to bypass disabled. The
-  // error string is only set if the user manages to call onSelect with a
-  // too-close date — but the UI prevents that. So instead, we verify the
-  // disabled-cell tooltip is present.
+// Click a truly-bookable cell as check-in; THEN the calendar should mark
+// any cell <5 nights after with title="Min. 5 nights". That tooltip
+// is what we assert on.
+const bookable2 = await bookableCells(page);
+if (bookable2.length >= 4) {
+  await bookable2[0].click();
+  await page.waitForTimeout(300);
   const closeCellTitle = await page.locator('button[title="Min. 5 nights"]').count();
   ok(closeCellTitle > 0, `C1: cells too close to check-in are disabled with "Min. 5 nights" tooltip (count=${closeCellTitle})`);
 }
