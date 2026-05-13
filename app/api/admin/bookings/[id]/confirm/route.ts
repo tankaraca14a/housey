@@ -48,11 +48,13 @@ async function writeBlockedDates(dates: string[]): Promise<void> {
 }
 
 function getDatesInRange(checkIn: string, checkOut: string): string[] {
+  // Block the nights the guest is actually sleeping there: [checkIn, checkOut).
+  // Checkout day is exclusive so the next guest can arrive the same day
+  // (matches the guest-side calendar, which also treats checkout exclusively).
   const dates: string[] = [];
-  const start = new Date(checkIn);
   const end = new Date(checkOut);
-  const current = new Date(start);
-  while (current <= end) {
+  const current = new Date(checkIn);
+  while (current < end) {
     dates.push(current.toISOString().split('T')[0]);
     current.setDate(current.getDate() + 1);
   }

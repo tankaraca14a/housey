@@ -374,9 +374,10 @@ export default function AdminPage() {
     </button>
   );
 
+  const [monthOffset, setMonthOffset] = useState(0);
   const now = new Date();
   const months = [0, 1, 2].map((offset) => {
-    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    const d = new Date(now.getFullYear(), now.getMonth() + monthOffset + offset, 1);
     return { year: d.getFullYear(), month: d.getMonth() };
   });
 
@@ -459,18 +460,35 @@ export default function AdminPage() {
           {loadingDates ? (
             <div className="text-center text-slate-400 py-16">{t.loading}</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {months.map(({ year, month }) => (
-                <CalendarMonth
-                  key={`${year}-${month}`}
-                  year={year}
-                  month={month}
-                  blockedDates={blockedDates}
-                  onToggle={toggleDate}
-                  t={t}
-                />
-              ))}
-            </div>
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={() => setMonthOffset((o) => Math.max(0, o - 1))}
+                  disabled={monthOffset === 0}
+                  className="px-4 py-2 rounded-xl bg-surface-700 text-slate-300 hover:bg-surface-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm border border-white/10"
+                >
+                  ← {t.previous}
+                </button>
+                <button
+                  onClick={() => setMonthOffset((o) => o + 1)}
+                  className="px-4 py-2 rounded-xl bg-surface-700 text-slate-300 hover:bg-surface-600 text-sm border border-white/10"
+                >
+                  {t.next} →
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {months.map(({ year, month }) => (
+                  <CalendarMonth
+                    key={`${year}-${month}`}
+                    year={year}
+                    month={month}
+                    blockedDates={blockedDates}
+                    onToggle={toggleDate}
+                    t={t}
+                  />
+                ))}
+              </div>
+            </>
           )}
 
           <div className="mt-8 flex items-center gap-6 text-sm text-slate-400">

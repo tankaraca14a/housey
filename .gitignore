@@ -51,3 +51,7 @@ public/static/cache/
 
 # === Vercel / deployment ===
 .vercel/
+
+# === Test artifacts ===
+test/screens/
+test/screens-selenium/
