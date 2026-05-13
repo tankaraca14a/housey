@@ -122,8 +122,10 @@ try {
   ok(await guestHeader.count() === 1, `3a: new booking visible in admin UI (count=${await guestHeader.count()})`);
   await page.screenshot({ path: join(SCREENS, '03-admin-sees-row.png'), fullPage: true });
 
-  // ── Step 4: Admin clicks Confirm ──────────────────────────────────────────
-  log('\n=== 4. Admin Confirm → dates auto-block ===');
+  // ── Step 4: Admin clicks Confirm (now requires 2 confirm() dialogs) ────────
+  log('\n=== 4. Admin Confirm (2 confirms accepted) → dates auto-block ===');
+  // Auto-accept all confirm() dialogs from here on
+  await page.evaluate(() => { window.confirm = () => true; });
   const blockedBefore4 = (await fetch(`${BASE}/api/admin/blocked-dates`).then((r) => r.json())).blockedDates;
   const confirmBtn = page.locator(`[data-testid='row-actions-${bookingId}'] button:has-text("Confirm")`).first();
   await confirmBtn.click();
@@ -188,6 +190,15 @@ try {
   await page.waitForTimeout(2000);
   const afterEdit = (await api('GET', '/api/admin/bookings')).body.bookings.find((b) => b.id === bookingId);
   ok(afterEdit?.message === 'Edited via lifecycle test', `7a: message persisted (${afterEdit?.message})`);
+
+  // New: edit-undo toast should appear briefly. Let it expire naturally so
+  // the edit stays. Add 11s wait to clear the toast before continuing.
+  const editToast = await page.locator(`[data-testid='undo-edit-toast-${bookingId}']`).count();
+  ok(editToast === 1, `7b: edit-undo toast appeared`);
+  log('  waiting 11s for edit-undo toast to expire…');
+  await page.waitForTimeout(11_000);
+  const editToastGone = await page.locator(`[data-testid='undo-edit-toast-${bookingId}']`).count();
+  ok(editToastGone === 0, `7c: edit-undo toast cleared after grace`);
 
   // ── Step 8: Delete with 2 confirms + 10s undo grace + final hard-delete ───
   log('\n=== 8. Admin Delete (2 confirms, undo toast appears, grace elapses) ===');

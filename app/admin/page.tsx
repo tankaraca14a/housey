@@ -58,6 +58,12 @@ interface Translations {
   save: string;
   cancel: string;
   addBooking: string;
+  confirmConfirm: string;
+  confirmConfirm2: string;
+  declineConfirm: string;
+  declineConfirm2: string;
+  editedToast: string;
+  editUndoFailed: string;
   creating: string;
   nameLabel: string;
   emailLabel: string;
@@ -119,6 +125,12 @@ const translations: Record<"hr" | "en", Translations> = {
     save: "Spremi",
     cancel: "Odustani",
     addBooking: "Dodaj rezervaciju",
+    confirmConfirm: "Potvrditi ovu rezervaciju?",
+    confirmConfirm2: "Ovo će poslati email gostu da je rezervacija POTVRĐENA i blokirat će datume:",
+    declineConfirm: "Odbiti ovu rezervaciju?",
+    declineConfirm2: "Ovo će poslati email gostu da rezervacija NIJE PRIHVAĆENA:",
+    editedToast: "Rezervacija uređena",
+    editUndoFailed: "Poništavanje nije uspjelo",
     creating: "Stvaranje...",
     nameLabel: "Ime",
     emailLabel: "Email",
@@ -178,6 +190,12 @@ const translations: Record<"hr" | "en", Translations> = {
     save: "Save",
     cancel: "Cancel",
     addBooking: "Add booking",
+    confirmConfirm: "Confirm this booking?",
+    confirmConfirm2: "This will EMAIL the guest that their booking is CONFIRMED and block these dates:",
+    declineConfirm: "Decline this booking?",
+    declineConfirm2: "This will EMAIL the guest that their booking is declined:",
+    editedToast: "Booking edited",
+    editUndoFailed: "Undo failed",
     creating: "Creating...",
     nameLabel: "Name",
     emailLabel: "Email",
@@ -404,6 +422,19 @@ export default function AdminPage() {
     deadline: number; // epoch ms
   }
   const [pendingDeletes, setPendingDeletes] = useState<Record<string, PendingDelete>>({});
+
+  // Same pattern for "I just edited a booking — undo within 10s". The
+  // snapshot is the row BEFORE the edit; clicking Undo PATCHes back to it.
+  interface PendingEdit {
+    bookingId: string;
+    snapshot: Booking;             // pre-edit values
+    timerId: ReturnType<typeof setTimeout>;
+    deadline: number;
+    inFlight: boolean;             // true while the undo PATCH is mid-fetch
+    error: string | null;
+  }
+  const [pendingEdits, setPendingEdits] = useState<Record<string, PendingEdit>>({});
+
   const [nowMs, setNowMs] = useState(Date.now()); // ticks for the countdown
 
   const fetchBlockedDates = useCallback(async () => {
@@ -487,7 +518,15 @@ export default function AdminPage() {
     }
   };
 
+  // Quick Confirm — two confirms because this BOTH emails the guest AND
+  // auto-blocks their dates. Both side-effects are irreversible (the email
+  // is gone the moment Resend accepts it).
   const handleConfirm = async (id: string) => {
+    const booking = bookings.find((b) => b.id === id);
+    if (!booking) return;
+    if (!confirm(t.confirmConfirm)) return;
+    const detail = `${booking.name} <${booking.email}>\n${booking.checkIn} → ${booking.checkOut}`;
+    if (!confirm(`${t.confirmConfirm2}\n\n${detail}`)) return;
     setBookingAction((prev) => ({ ...prev, [id]: "confirming" }));
     try {
       const res = await fetch(`/api/admin/bookings/${id}/confirm`, {
@@ -504,7 +543,13 @@ export default function AdminPage() {
     }
   };
 
+  // Quick Decline — two confirms because this emails the guest a rejection.
   const handleDecline = async (id: string) => {
+    const booking = bookings.find((b) => b.id === id);
+    if (!booking) return;
+    if (!confirm(t.declineConfirm)) return;
+    const detail = `${booking.name} <${booking.email}>\n${booking.checkIn} → ${booking.checkOut}`;
+    if (!confirm(`${t.declineConfirm2}\n\n${detail}`)) return;
     setBookingAction((prev) => ({ ...prev, [id]: "declining" }));
     try {
       const res = await fetch(`/api/admin/bookings/${id}/decline`, {
@@ -570,13 +615,13 @@ export default function AdminPage() {
     });
   };
 
-  // 1Hz tick for the countdown display. Only runs while at least one delete
-  // is pending — avoids re-rendering the page once per second forever.
+  // 4Hz tick for the countdown displays (delete + edit toasts). Only runs
+  // while at least one toast is active — avoids re-rendering forever.
   useEffect(() => {
-    if (Object.keys(pendingDeletes).length === 0) return;
+    if (Object.keys(pendingDeletes).length === 0 && Object.keys(pendingEdits).length === 0) return;
     const id = setInterval(() => setNowMs(Date.now()), 250);
     return () => clearInterval(id);
-  }, [pendingDeletes]);
+  }, [pendingDeletes, pendingEdits]);
 
   // On unmount / logout: flush any pending deletes immediately. This makes
   // navigating away mid-grace-window NOT silently drop the action — the
@@ -647,8 +692,12 @@ export default function AdminPage() {
     if (!editingId) return;
     setEditError(null);
     setBookingAction((prev) => ({ ...prev, [editingId]: "saving" }));
+    const isNew = editingId === "new";
+    // Snapshot the pre-edit row BEFORE the API call so the undo path has
+    // something to revert to. New bookings (POST) can't be "undone to a
+    // previous state" — they just get deleted on undo instead.
+    const snapshot = isNew ? null : bookings.find((b) => b.id === editingId);
     try {
-      const isNew = editingId === "new";
       const url = isNew ? "/api/admin/bookings" : `/api/admin/bookings/${editingId}`;
       const method = isNew ? "POST" : "PATCH";
       const res = await fetch(url, {
@@ -664,6 +713,30 @@ export default function AdminPage() {
         setEditError(data.error || t.saveFailedShort);
         return;
       }
+      // Only show undo for *edits* (PATCH), not for creates — undo of a
+      // create would have to delete the row, which we already handle with a
+      // separate flow (the Delete button + 10s grace).
+      if (snapshot) {
+        const bookingId = editingId;
+        const timerId = setTimeout(() => {
+          setPendingEdits((prev) => {
+            const next = { ...prev };
+            delete next[bookingId];
+            return next;
+          });
+        }, DELETE_GRACE_MS);
+        setPendingEdits((prev) => ({
+          ...prev,
+          [bookingId]: {
+            bookingId,
+            snapshot,
+            timerId,
+            deadline: Date.now() + DELETE_GRACE_MS,
+            inFlight: false,
+            error: null,
+          },
+        }));
+      }
       await fetchBookings();
       setEditingId(null);
       setEditForm(blankBooking());
@@ -672,6 +745,43 @@ export default function AdminPage() {
       setEditError(t.saveFailedShort);
     } finally {
       if (editingId) setBookingAction((prev) => ({ ...prev, [editingId]: false }));
+    }
+  };
+
+  // Revert a recent edit by PATCHing the row back to its pre-edit snapshot.
+  // Cancels the grace timer first so we don't double-clear.
+  const handleUndoEdit = async (bookingId: string) => {
+    const pending = pendingEdits[bookingId];
+    if (!pending) return;
+    clearTimeout(pending.timerId);
+    setPendingEdits((prev) => ({
+      ...prev,
+      [bookingId]: { ...pending, inFlight: true, error: null },
+    }));
+    try {
+      // Patch only the editable fields — id and createdAt are immutable.
+      const { id: _id, createdAt: _ca, ...patchable } = pending.snapshot;
+      const res = await fetch(`/api/admin/bookings/${bookingId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": ADMIN_PASSWORD,
+        },
+        body: JSON.stringify(patchable),
+      });
+      if (!res.ok) throw new Error("undo PATCH failed");
+      await fetchBookings();
+      setPendingEdits((prev) => {
+        const next = { ...prev };
+        delete next[bookingId];
+        return next;
+      });
+    } catch (e) {
+      console.error("Failed to undo edit", e);
+      setPendingEdits((prev) => ({
+        ...prev,
+        [bookingId]: { ...pending, inFlight: false, error: t.editUndoFailed },
+      }));
     }
   };
 
@@ -733,20 +843,21 @@ export default function AdminPage() {
   const pendingBookings = visibleBookings.filter((b) => b.status === "pending");
   const otherBookings = visibleBookings.filter((b) => b.status !== "pending");
   const pendingDeleteList = Object.values(pendingDeletes);
+  const pendingEditList = Object.values(pendingEdits);
 
   return (
     <>
       <LangToggle />
 
-      {/* ── Undo-delete toast(s) ── */}
-      {pendingDeleteList.length > 0 && (
+      {/* ── Undo toasts (delete + edit) ── */}
+      {(pendingDeleteList.length > 0 || pendingEditList.length > 0) && (
         <div data-testid="undo-toast-container"
              className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
           {pendingDeleteList.map((p) => {
             const secondsLeft = Math.max(0, Math.ceil((p.deadline - nowMs) / 1000));
             return (
               <div
-                key={p.booking.id}
+                key={`del-${p.booking.id}`}
                 data-testid={`undo-toast-${p.booking.id}`}
                 className="bg-surface-800 border border-brand-400/50 shadow-2xl rounded-2xl px-5 py-4 flex items-center gap-4 min-w-[320px]"
               >
@@ -762,6 +873,33 @@ export default function AdminPage() {
                   onClick={() => handleUndoDelete(p.booking.id)}
                   data-testid={`undo-btn-${p.booking.id}`}
                   className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition whitespace-nowrap"
+                >
+                  ↶ {t.undo}
+                </button>
+              </div>
+            );
+          })}
+          {pendingEditList.map((p) => {
+            const secondsLeft = Math.max(0, Math.ceil((p.deadline - nowMs) / 1000));
+            return (
+              <div
+                key={`edit-${p.bookingId}`}
+                data-testid={`undo-edit-toast-${p.bookingId}`}
+                className="bg-surface-800 border border-brand-400/50 shadow-2xl rounded-2xl px-5 py-4 flex items-center gap-4 min-w-[320px]"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm">
+                    ✎ {t.editedToast}: <span className="text-slate-300 font-normal">{p.snapshot.name}</span>
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {p.inFlight ? "…" : p.error ? <span className="text-red-400">{p.error}</span> : `${secondsLeft}s`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleUndoEdit(p.bookingId)}
+                  disabled={p.inFlight}
+                  data-testid={`undo-edit-btn-${p.bookingId}`}
+                  className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap"
                 >
                   ↶ {t.undo}
                 </button>
