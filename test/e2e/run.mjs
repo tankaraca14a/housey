@@ -13,6 +13,7 @@ const FILES = [
   'scheduling-selenium.mjs',
   'delete-undo-selenium.mjs',
   'image-undo-selenium.mjs',
+  'confirm-decline-undo-selenium.mjs',
   'calendar-dirty-playwright.mjs',
   'gallery-lightbox-playwright.mjs',
 ];

@@ -79,17 +79,24 @@ Svaka rezervacija na čekanju ima ove gumbe s desne strane:
 
 Kliknite zeleni **✓ Potvrdi** gumb da prihvatite rezervaciju.
 
-Vidjet ćete **dva dijaloga za potvrdu jedan za drugim** prije nego što se išta zapravo dogodi — to je namjerno, da ne možete slučajno potvrditi:
+Vidjet ćete **dva dijaloga za potvrdu jedan za drugim**, da ne možete slučajno potvrditi:
 
 1. *"Potvrditi ovu rezervaciju?"* → kliknite **OK** za nastavak
 2. *"Ovo će poslati email gostu da je rezervacija POTVRĐENA i blokirat će datume: [ime gosta + datumi]"* → kliknite **OK** ako ste sigurni
 
-Nakon oba OK-a, tri stvari se događaju automatski:
-- Status rezervacije prelazi u **Potvrđeno** (zelena oznaka)
-- Datumi boravka se dodaju u vaš blokirani kalendar (tako da drugi gost ne može rezervirati iste noći)
-- Email se šalje gostu s potvrdom rezervacije, uključujući vrijeme dolaska/odlaska i adresu
+Nakon oba OK-a, redak rezervacije odmah prikazuje **Potvrđeno** (zelena oznaka), gumbi ✓ Potvrdi i ✗ Odbij nestanu, A toast s gumbom **Poništi** se pojavi u donjem desnom kutu s odbrojavanjem od 10 sekundi:
 
-> **Važno:** Jednom kad kliknete kroz oba dijaloga, email odlazi odmah i ne može se poništiti. Dva dijaloga su vaša zaštitna mreža.
+![Potvrdi undo toast](./admin-screenshots-hr/14b-potvrdi-toast.png)
+
+Tijekom tih 10 sekundi, ništa još nije poslano gostu i nijedan datum u kalendaru nije blokiran. Možete:
+
+- **Kliknuti Poništi** unutar 10 sekundi → rezervacija se vraća na Na čekanju, email se ne šalje, datumi se ne blokiraju. Kao da klik nikad nije ni bio.
+- **Pričekati 10 sekundi** (ili samo otići) → tada se automatski događaju tri stvari:
+  - Status rezervacije se sprema kao **Potvrđeno** na serveru
+  - Datumi boravka se dodaju u vaš blokirani kalendar (tako da drugi gost ne može rezervirati iste noći)
+  - Email se šalje gostu s potvrdom rezervacije, uključujući vrijeme dolaska/odlaska i adresu
+
+> **Važno:** Jednom kad prođe 10-sekundni prozor, email je poslan i ne može se poništiti. Ako niste sigurni, kliknite Poništi i ponovo pogledajte rezervaciju.
 
 ### 4.2 Odbijanje rezervacije
 
@@ -98,9 +105,14 @@ Isti princip, ali kliknite crveni **✗ Odbij** gumb:
 1. *"Odbiti ovu rezervaciju?"* → **OK**
 2. *"Ovo će poslati email gostu da rezervacija NIJE PRIHVAĆENA: [ime gosta + datumi]"* → **OK**
 
-Status prelazi u **Odbijeno** i gost prima pristojan email "ne možemo vas primiti, probajte druge datume".
+Redak prikazuje **Odbijeno** (crvena oznaka), gumbi akcije nestanu, A toast s **Poništi** gumbom se pojavi u donjem desnom kutu s odbrojavanjem od 10 sekundi:
 
-> Odbijene rezervacije ostaju u listi (da imate evidenciju), ali ne rezerviraju kalendar — netko drugi može rezervirati iste datume.
+![Odbij undo toast](./admin-screenshots-hr/14c-odbij-toast.png)
+
+- **Kliknite Poništi unutar 10 sekundi** → vraća se na Na čekanju, email se ne šalje.
+- **Pričekajte 10 sekundi** → status se sprema i gost prima pristojan email "ne možemo vas primiti, probajte druge datume".
+
+> Odbijene rezervacije ostaju u listi (da imate evidenciju), ali ne rezerviraju kalendar. Netko drugi može rezervirati iste datume.
 
 ### 4.3 Uređivanje detalja rezervacije
 
@@ -226,17 +238,19 @@ Ovo briše vašu lozinku iz memorije preglednika. Korisno ako ste na zajedničko
 
 ## 8. Što učiniti ako nešto pođe po zlu
 
-### "Potvrdila sam pogrešnu rezervaciju i email je već otišao"
+### "Kliknula sam Potvrdi na pogrešnu rezervaciju"
 
-- Gost je već dobio email s potvrdom — ne možete ga povući.
-- Pošaljite mu email izravno iz vašeg inboxa (mailto link je na retku rezervacije) i objasnite.
-- Koristite **status dropdown** da prebacite rezervaciju natrag na Na čekanju ili Odbijeno.
-- Datumi koji su se automatski blokirali kad ste potvrdili će i dalje biti blokirani — kliknite ih u kalendaru na vrhu i Spremi promjene.
+- **Unutar 10 sekundi:** kliknite **Poništi** gumb u toastu u donjem desnom kutu. Email se ne šalje. Datumi se ne blokiraju. Rezervacija se vraća na Na čekanju.
+- **Nakon 10 sekundi (email je već otišao):**
+  - Gost već ima email s potvrdom. Ne možete ga povući.
+  - Pošaljite mu email izravno iz vašeg inboxa (mailto link je na retku rezervacije) i objasnite.
+  - Koristite **status dropdown** da prebacite rezervaciju natrag na Na čekanju ili Odbijeno.
+  - Datumi koji su se automatski blokirali kad ste potvrdili će i dalje biti blokirani. Kliknite ih u kalendaru na vrhu i Spremi promjene.
 
-### "Odbila sam pogrešnu"
+### "Kliknula sam Odbij na pogrešnu"
 
-- Pošaljite gostu email izravno da se ispričate.
-- Koristite status dropdown da ih vratite na Na čekanju.
+- **Unutar 10 sekundi:** kliknite **Poništi** gumb u toastu u donjem desnom kutu. Email se ne šalje.
+- **Nakon 10 sekundi:** pošaljite gostu email izravno da se ispričate, pa koristite status dropdown da ih vratite na Na čekanju.
 
 ### "Slučajno sam obrisala rezervaciju"
 
@@ -280,7 +294,8 @@ Ne morate ovo pamtiti — admin stranica ovo automatski provodi:
 
 - **Dvostruke rezervacije:** Ako dva gosta pošalju preklapajuće datume, drugi se odbije s jasnom porukom. Nikad ne završe oba kao na čekanju.
 - **Pogrešni klikovi na destruktivne radnje:** Potvrdi, Odbij i Obriši svaki zahtijevaju dva klika kroz dijaloge za potvrdu.
-- **Trajni gubitak zbog pogreške:** Brisanje rezervacije, Uređivanje rezervacije I Brisanje fotografije svako imaju 10-sekundno poništavanje. Toast se pojavi u donjem desnom kutu zaslona.
+- **Trajni gubitak zbog pogreške:** Potvrda rezervacije, Odbijanje, Brisanje, Uređivanje I Brisanje fotografije svako imaju 10-sekundno poništavanje. Toast se pojavi u donjem desnom kutu zaslona.
+- **Email poslan slučajno:** Emailovi za Potvrdi i Odbij se NE šalju dok ne prođe 10-sekundni prozor poništavanja. Kliknite Poništi i email nikad neće biti poslan, gost nikad neće znati.
 - **Gubljenje nespremljenih izmjena kalendara:** Ako ste označili neke datume i zaboravili kliknuti Spremi promjene, stranica pita "imate nespremljene promjene, stvarno odustati?" prije nego što vam dopusti da se odjavite, osvježite ili zatvorite karticu.
 - **Izgubljene rezervacije zbog problema s emailom:** Rezervacije se spremaju u bazu PRIJE nego što email ode. Ako email ne uspije iz bilo kojeg razloga, rezervacija je još uvijek tamo i vidite je u listi.
 

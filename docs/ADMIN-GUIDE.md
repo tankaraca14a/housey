@@ -79,17 +79,24 @@ Every pending booking has these buttons on the right:
 
 Click the green **✓ Confirm** button to accept the reservation.
 
-You will see **two confirmation dialogs in a row** before anything actually happens — this is on purpose so you can't accidentally confirm:
+You will see **two confirmation dialogs in a row** before anything actually happens, so you can't accidentally confirm:
 
 1. *"Confirm this booking?"* → click **OK** to proceed
 2. *"This will EMAIL the guest that their booking is CONFIRMED and block these dates: [guest name + dates]"* → click **OK** if you're sure
 
-After both OKs, three things happen automatically:
-- The booking status flips to **Confirmed** (green badge)
-- The dates of the stay are added to your blocked calendar (so no other guest can book the same nights)
-- An email is sent to the guest with their booking confirmation, including the check-in/check-out times and the property address
+After both OKs, the booking row immediately shows **Confirmed** (green badge), the ✓ Confirm and ✗ Decline buttons disappear, and an **Undo** toast slides in at the bottom-right with a 10-second countdown:
 
-> **Important:** Once you click through both dialogs, the email goes out immediately and cannot be unsent. The two-dialog flow is your safety net.
+![Confirm undo toast](./admin-screenshots/14b-confirm-toast.png)
+
+During those 10 seconds, nothing has actually been sent to the guest yet, and no calendar dates have been blocked. You can:
+
+- **Click Undo** within 10 seconds → the booking goes back to Pending, no email is sent, no dates are blocked. Like the click never happened.
+- **Wait 10 seconds** (or just walk away) → three things then happen automatically:
+  - The booking status is saved as **Confirmed** on the server
+  - The dates of the stay are added to your blocked calendar (so no other guest can book the same nights)
+  - An email is sent to the guest with their booking confirmation, including the check-in/check-out times and the property address
+
+> **Important:** Once the 10-second window passes, the email is sent and cannot be unsent. If you're not sure, click Undo and take another look at the booking first.
 
 ### 4.2 Declining a booking
 
@@ -98,9 +105,14 @@ Same pattern, but click the red **✗ Decline** button:
 1. *"Decline this booking?"* → **OK**
 2. *"This will EMAIL the guest that their booking is declined: [guest name + dates]"* → **OK**
 
-The status changes to **Declined** and the guest receives a polite "we can't accommodate you, please try different dates" email.
+The row shows **Declined** (red badge), the action buttons disappear, and an **Undo** toast appears at the bottom-right with a 10-second countdown:
 
-> Declined bookings stay in the list (so you have a record), but they don't reserve the calendar — someone else can book the same dates.
+![Decline undo toast](./admin-screenshots/14c-decline-toast.png)
+
+- **Click Undo within 10 seconds** → back to Pending, no email sent.
+- **Wait 10 seconds** → the status is saved and the guest receives a polite "we can't accommodate you, please try different dates" email.
+
+> Declined bookings stay in the list (so you have a record), but they don't reserve the calendar. Someone else can book the same dates.
 
 ### 4.3 Editing booking details
 
@@ -228,17 +240,19 @@ This wipes your password from the browser's memory. Useful if you're on a shared
 
 ## 8. What to do if something goes wrong
 
-### "I confirmed the wrong booking and the email already went out"
+### "I clicked Confirm on the wrong booking"
 
-- The guest will already have received the confirmation email — you can't unsend it.
-- Email them directly from your own inbox (mailto link is on the booking row) and explain.
-- Use the **status dropdown** to switch the booking back to Pending or Declined.
-- The dates that auto-blocked when you confirmed will still be blocked — click them off the calendar at the top and Save Changes.
+- **Within 10 seconds:** click the **Undo** button in the toast at the bottom-right of the screen. No email is sent. No dates are blocked. The booking goes back to Pending.
+- **After 10 seconds (email already went out):**
+  - The guest has the confirmation email already. You can't unsend it.
+  - Email them directly from your own inbox (mailto link is on the booking row) and explain.
+  - Use the **status dropdown** to switch the booking back to Pending or Declined.
+  - The dates that auto-blocked when you confirmed will still be blocked. Click them off the calendar at the top and Save Changes.
 
-### "I declined the wrong one"
+### "I clicked Decline on the wrong one"
 
-- Email the guest directly to apologize.
-- Use the status dropdown to switch them back to Pending.
+- **Within 10 seconds:** click the **Undo** button in the toast at the bottom-right. No email sent.
+- **After 10 seconds:** email the guest directly to apologize, then use the status dropdown to switch them back to Pending.
 
 ### "I deleted a booking by mistake"
 
@@ -282,7 +296,8 @@ You don't need to remember these — the admin page enforces them automatically:
 
 - **Double-bookings:** If two guests submit overlapping dates, the second one is rejected with a clear error. They never both land as pending.
 - **Misclicks on destructive actions:** Confirm, Decline, and Delete each require two clicks through confirmation dialogs.
-- **Permanent loss from a fumble:** Booking Delete, booking Edit, AND photo Delete each have a 10-second undo. The toast appears in the bottom-right corner of the screen.
+- **Permanent loss from a fumble:** Booking Confirm, Decline, Delete, Edit, AND photo Delete each have a 10-second undo. The toast appears in the bottom-right corner of the screen.
+- **Email sent by mistake:** Confirm and Decline emails are NOT sent until the 10-second undo window passes. Click Undo and the email is never dispatched, the guest never knows.
 - **Losing unsaved calendar work:** If you marked some dates and forget to click Save Changes, the page asks "you have unsaved changes, really discard?" before letting you log out, refresh, or close the tab.
 - **Lost reservations from a Resend hiccup:** Bookings save to the database BEFORE the email goes out. If email fails for any reason, the booking is still there and you see it in the list.
 

@@ -156,6 +156,33 @@ if (await toast.count() > 0) {
   await page.waitForTimeout(800);
 }
 
+// ─── 7b. Potvrdi — undo toast ──────────────────────────────────────────────
+console.log('─── Potvrdi undo toast ───');
+const pendingRow = page.locator('[data-testid="booking-row-guide-pending-1"]');
+await pendingRow.scrollIntoViewIfNeeded();
+await page.waitForTimeout(200);
+await page.locator('[data-testid="confirm-btn-guide-pending-1"]').click();
+await page.waitForTimeout(900);
+const confirmToast = page.locator('[data-testid="undo-confirm-toast-guide-pending-1"]');
+if (await confirmToast.count() > 0) {
+  await shot('14b-potvrdi-toast', false);
+  await page.locator('[data-testid="undo-confirm-btn-guide-pending-1"]').click();
+  await page.waitForTimeout(800);
+}
+
+// ─── 7c. Odbij — undo toast ────────────────────────────────────────────────
+console.log('─── Odbij undo toast ───');
+await pendingRow.scrollIntoViewIfNeeded();
+await page.waitForTimeout(200);
+await page.locator('[data-testid="decline-btn-guide-pending-1"]').click();
+await page.waitForTimeout(900);
+const declineToast = page.locator('[data-testid="undo-decline-toast-guide-pending-1"]');
+if (await declineToast.count() > 0) {
+  await shot('14c-odbij-toast', false);
+  await page.locator('[data-testid="undo-decline-btn-guide-pending-1"]').click();
+  await page.waitForTimeout(800);
+}
+
 console.log('─── Slike ───');
 const imagesHeader = page.locator('h2:has-text("Images")'); // section header not translated yet
 await imagesHeader.scrollIntoViewIfNeeded();

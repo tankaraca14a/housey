@@ -191,6 +191,35 @@ if (await toast.count() > 0) {
   await page.waitForTimeout(800);
 }
 
+// ─── 7b. Confirm undo toast ─────────────────────────────────────────────────
+// Click ✓ Confirm on the pending row, capture the toast, then Undo so the
+// row stays pending for the rest of the run (no email sent, no dates blocked).
+console.log('─── Confirm undo toast ───');
+const pendingRow = page.locator('[data-testid="booking-row-guide-pending-1"]');
+await pendingRow.scrollIntoViewIfNeeded();
+await page.waitForTimeout(200);
+await page.locator('[data-testid="confirm-btn-guide-pending-1"]').click();
+await page.waitForTimeout(900);
+const confirmToast = page.locator('[data-testid="undo-confirm-toast-guide-pending-1"]');
+if (await confirmToast.count() > 0) {
+  await shot('14b-confirm-toast', false);
+  await page.locator('[data-testid="undo-confirm-btn-guide-pending-1"]').click();
+  await page.waitForTimeout(800);
+}
+
+// ─── 7c. Decline undo toast ─────────────────────────────────────────────────
+console.log('─── Decline undo toast ───');
+await pendingRow.scrollIntoViewIfNeeded();
+await page.waitForTimeout(200);
+await page.locator('[data-testid="decline-btn-guide-pending-1"]').click();
+await page.waitForTimeout(900);
+const declineToast = page.locator('[data-testid="undo-decline-toast-guide-pending-1"]');
+if (await declineToast.count() > 0) {
+  await shot('14c-decline-toast', false);
+  await page.locator('[data-testid="undo-decline-btn-guide-pending-1"]').click();
+  await page.waitForTimeout(800);
+}
+
 // ─── 8. Images section ───────────────────────────────────────────────────────
 console.log('─── Images ───');
 // Scroll to images section

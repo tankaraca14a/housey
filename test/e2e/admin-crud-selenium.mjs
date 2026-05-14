@@ -116,10 +116,12 @@ try {
   await driver.executeScript('window.confirm = () => true;'); // re-stub after refresh
   const confirmBtn = await driver.findElement(By.xpath(`//div[@data-testid='row-actions-${b.id}']//button[contains(., 'Confirm')]`));
   await confirmBtn.click();
-  await driver.sleep(1500);
+  // Confirm now has a 10s undo window — the /confirm POST only fires after
+  // the grace expires. Wait the window + safety margin before asserting KV.
+  await driver.sleep(11_500);
   const afterB = await listBookings();
   const rowB = afterB.find((x) => x.id === b.id);
-  ok(rowB?.status === 'confirmed', `B1: status=confirmed after both confirms accepted (${rowB?.status})`);
+  ok(rowB?.status === 'confirmed', `B1: status=confirmed after grace window (${rowB?.status})`);
   await shot('B-after-confirm');
 
   // ── C. QUICK DECLINE (two confirms now) ─────────────────────────────────────
@@ -130,10 +132,11 @@ try {
   await driver.executeScript('window.confirm = () => true;');
   const declineBtn = await driver.findElement(By.xpath(`//div[@data-testid='row-actions-${c.id}']//button[contains(., 'Decline')]`));
   await declineBtn.click();
-  await driver.sleep(1500);
+  // Decline has the same 10s undo window.
+  await driver.sleep(11_500);
   const afterC = await listBookings();
   const rowC = afterC.find((x) => x.id === c.id);
-  ok(rowC?.status === 'declined', `C1: status=declined after both confirms accepted (${rowC?.status})`);
+  ok(rowC?.status === 'declined', `C1: status=declined after grace window (${rowC?.status})`);
 
   // ── B'. CANCELLING either confirm aborts the action ────────────────────────
   log('\n=== B\'/C\'. Cancelling a Confirm/Decline dialog aborts (no state change, no email) ===');

@@ -79,6 +79,8 @@ interface Translations {
   imageDeleteConfirm: string;
   imageDeleteConfirm2: string;
   unsavedCalendarWarning: string;
+  confirmedToast: string;
+  declinedToast: string;
 }
 
 const translations: Record<"hr" | "en", Translations> = {
@@ -150,6 +152,8 @@ const translations: Record<"hr" | "en", Translations> = {
     imageDeleteConfirm: "Obrisati ovu fotografiju?",
     imageDeleteConfirm2: "Sigurno obrisati ovu fotografiju?",
     unsavedCalendarWarning: "Imate nespremljene promjene u kalendaru. Stvarno odustati?",
+    confirmedToast: "Potvrđeno",
+    declinedToast: "Odbijeno",
   },
   en: {
     adminLogin: "Admin Login",
@@ -219,6 +223,8 @@ const translations: Record<"hr" | "en", Translations> = {
     imageDeleteConfirm: "Delete this photo?",
     imageDeleteConfirm2: "Really delete this photo?",
     unsavedCalendarWarning: "You have unsaved calendar changes. Really discard them?",
+    confirmedToast: "Confirmed",
+    declinedToast: "Declined",
   },
 };
 
@@ -467,6 +473,24 @@ export default function AdminPage() {
     deadline: number;
   }
   const [pendingImageDeletes, setPendingImageDeletes] = useState<Record<string, PendingImageDelete>>({});
+
+  // Same pattern for Confirm and Decline. The /confirm endpoint has two
+  // irreversible side effects: it emails the guest and it auto-blocks the
+  // requested dates. /decline only emails. Both are now deferred by the
+  // same 10s grace window so a misclick is recoverable from the UI without
+  // the email ever being dispatched.
+  interface PendingConfirm {
+    booking: Booking;
+    timerId: ReturnType<typeof setTimeout>;
+    deadline: number;
+  }
+  interface PendingDecline {
+    booking: Booking;
+    timerId: ReturnType<typeof setTimeout>;
+    deadline: number;
+  }
+  const [pendingConfirms, setPendingConfirms] = useState<Record<string, PendingConfirm>>({});
+  const [pendingDeclines, setPendingDeclines] = useState<Record<string, PendingDecline>>({});
 
   // Same pattern for "I just edited a booking — undo within 10s". The
   // snapshot is the row BEFORE the edit; clicking Undo PATCHes back to it.
@@ -793,51 +817,101 @@ export default function AdminPage() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [calendarDirty]);
 
-  // Quick Confirm — two confirms because this BOTH emails the guest AND
-  // auto-blocks their dates. Both side-effects are irreversible (the email
-  // is gone the moment Resend accepts it).
-  const handleConfirm = async (id: string) => {
+  // Confirm — two confirms still fire, then the actual /confirm POST is
+  // deferred by DELETE_GRACE_MS. During the grace window the row shows the
+  // confirmed status optimistically (status override is done in the render
+  // layer below) and the Confirm/Decline buttons hide so she can't fire it
+  // again. The /confirm endpoint emails the guest AND auto-blocks the
+  // dates, both server-side, so as long as we delay the POST nothing
+  // irreversible happens.
+  const handleConfirm = (id: string) => {
     const booking = bookings.find((b) => b.id === id);
     if (!booking) return;
+    if (pendingConfirms[id] || pendingDeclines[id]) return; // already in flight
     if (!confirm(t.confirmConfirm)) return;
     const detail = `${booking.name} <${booking.email}>\n${booking.checkIn} → ${booking.checkOut}`;
     if (!confirm(`${t.confirmConfirm2}\n\n${detail}`)) return;
-    setBookingAction((prev) => ({ ...prev, [id]: "confirming" }));
-    try {
-      const res = await fetch(`/api/admin/bookings/${id}/confirm`, {
-        method: "POST",
-        headers: { "x-admin-password": authPassword },
-      });
-      if (!res.ok) throw new Error("Failed to confirm");
-      await fetchBookings();
-      await fetchBlockedDates();
-    } catch (e) {
-      console.error("Failed to confirm booking", e);
-    } finally {
-      setBookingAction((prev) => ({ ...prev, [id]: false }));
-    }
+
+    const timerId = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/admin/bookings/${id}/confirm`, {
+          method: "POST",
+          headers: { "x-admin-password": authPassword },
+        });
+        if (!res.ok) throw new Error("Failed to confirm");
+      } catch (e) {
+        console.error("Failed to confirm booking", e);
+      } finally {
+        setPendingConfirms((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        await fetchBookings();
+        await fetchBlockedDates(); // /confirm also blocks the requested dates
+      }
+    }, DELETE_GRACE_MS);
+
+    setPendingConfirms((prev) => ({
+      ...prev,
+      [id]: { booking, timerId, deadline: Date.now() + DELETE_GRACE_MS },
+    }));
   };
 
-  // Quick Decline — two confirms because this emails the guest a rejection.
-  const handleDecline = async (id: string) => {
+  const handleUndoConfirm = (id: string) => {
+    setPendingConfirms((prev) => {
+      const p = prev[id];
+      if (!p) return prev;
+      clearTimeout(p.timerId);
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  };
+
+  // Same shape for Decline. Only side effect is the rejection email.
+  const handleDecline = (id: string) => {
     const booking = bookings.find((b) => b.id === id);
     if (!booking) return;
+    if (pendingConfirms[id] || pendingDeclines[id]) return;
     if (!confirm(t.declineConfirm)) return;
     const detail = `${booking.name} <${booking.email}>\n${booking.checkIn} → ${booking.checkOut}`;
     if (!confirm(`${t.declineConfirm2}\n\n${detail}`)) return;
-    setBookingAction((prev) => ({ ...prev, [id]: "declining" }));
-    try {
-      const res = await fetch(`/api/admin/bookings/${id}/decline`, {
-        method: "POST",
-        headers: { "x-admin-password": authPassword },
-      });
-      if (!res.ok) throw new Error("Failed to decline");
-      await fetchBookings();
-    } catch (e) {
-      console.error("Failed to decline booking", e);
-    } finally {
-      setBookingAction((prev) => ({ ...prev, [id]: false }));
-    }
+
+    const timerId = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/admin/bookings/${id}/decline`, {
+          method: "POST",
+          headers: { "x-admin-password": authPassword },
+        });
+        if (!res.ok) throw new Error("Failed to decline");
+      } catch (e) {
+        console.error("Failed to decline booking", e);
+      } finally {
+        setPendingDeclines((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        await fetchBookings();
+      }
+    }, DELETE_GRACE_MS);
+
+    setPendingDeclines((prev) => ({
+      ...prev,
+      [id]: { booking, timerId, deadline: Date.now() + DELETE_GRACE_MS },
+    }));
+  };
+
+  const handleUndoDecline = (id: string) => {
+    setPendingDeclines((prev) => {
+      const p = prev[id];
+      if (!p) return prev;
+      clearTimeout(p.timerId);
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
   };
 
   // Two-step confirm + undo-able delete. The actual DELETE API call is
@@ -897,11 +971,13 @@ export default function AdminPage() {
     if (
       Object.keys(pendingDeletes).length === 0 &&
       Object.keys(pendingEdits).length === 0 &&
-      Object.keys(pendingImageDeletes).length === 0
+      Object.keys(pendingImageDeletes).length === 0 &&
+      Object.keys(pendingConfirms).length === 0 &&
+      Object.keys(pendingDeclines).length === 0
     ) return;
     const id = setInterval(() => setNowMs(Date.now()), 250);
     return () => clearInterval(id);
-  }, [pendingDeletes, pendingEdits, pendingImageDeletes]);
+  }, [pendingDeletes, pendingEdits, pendingImageDeletes, pendingConfirms, pendingDeclines]);
 
   // On unmount / logout: flush any pending deletes immediately. This makes
   // navigating away mid-grace-window NOT silently drop the action — the
@@ -1120,19 +1196,30 @@ export default function AdminPage() {
 
   // Hide rows that are in the delete-grace window. They're still in KV, so
   // Undo just clears the pendingDeletes entry — no API call required.
-  const visibleBookings = bookings.filter((b) => !pendingDeletes[b.id]);
+  // For Confirm and Decline, the row stays visible but its `status` is
+  // overridden so the badge + button-visibility instantly reflect the
+  // intended outcome. Clicking Undo restores the original `b.status`.
+  const visibleBookings = bookings
+    .filter((b) => !pendingDeletes[b.id])
+    .map<Booking>((b) => {
+      if (pendingConfirms[b.id]) return { ...b, status: "confirmed" };
+      if (pendingDeclines[b.id]) return { ...b, status: "declined" };
+      return b;
+    });
   const pendingBookings = visibleBookings.filter((b) => b.status === "pending");
   const otherBookings = visibleBookings.filter((b) => b.status !== "pending");
   const pendingDeleteList = Object.values(pendingDeletes);
   const pendingEditList = Object.values(pendingEdits);
   const pendingImageDeleteList = Object.values(pendingImageDeletes);
+  const pendingConfirmList = Object.values(pendingConfirms);
+  const pendingDeclineList = Object.values(pendingDeclines);
 
   return (
     <>
       <LangToggle />
 
-      {/* ── Undo toasts (delete + edit + image-delete) ── */}
-      {(pendingDeleteList.length > 0 || pendingEditList.length > 0 || pendingImageDeleteList.length > 0) && (
+      {/* ── Undo toasts (delete + edit + image-delete + confirm + decline) ── */}
+      {(pendingDeleteList.length > 0 || pendingEditList.length > 0 || pendingImageDeleteList.length > 0 || pendingConfirmList.length > 0 || pendingDeclineList.length > 0) && (
         <div data-testid="undo-toast-container"
              className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
           {pendingDeleteList.map((p) => {
@@ -1154,6 +1241,58 @@ export default function AdminPage() {
                 <button
                   onClick={() => handleUndoDelete(p.booking.id)}
                   data-testid={`undo-btn-${p.booking.id}`}
+                  className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition whitespace-nowrap"
+                >
+                  ↶ {t.undo}
+                </button>
+              </div>
+            );
+          })}
+          {pendingConfirmList.map((p) => {
+            const secondsLeft = Math.max(0, Math.ceil((p.deadline - nowMs) / 1000));
+            return (
+              <div
+                key={`confirm-${p.booking.id}`}
+                data-testid={`undo-confirm-toast-${p.booking.id}`}
+                className="bg-surface-800 border border-green-400/50 shadow-2xl rounded-2xl px-5 py-4 flex items-center gap-4 min-w-[320px]"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm">
+                    ✓ {t.confirmedToast}: <span className="text-slate-300 font-normal truncate">{p.booking.name}</span>
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {p.booking.checkIn} → {p.booking.checkOut} · {secondsLeft}s
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleUndoConfirm(p.booking.id)}
+                  data-testid={`undo-confirm-btn-${p.booking.id}`}
+                  className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition whitespace-nowrap"
+                >
+                  ↶ {t.undo}
+                </button>
+              </div>
+            );
+          })}
+          {pendingDeclineList.map((p) => {
+            const secondsLeft = Math.max(0, Math.ceil((p.deadline - nowMs) / 1000));
+            return (
+              <div
+                key={`decline-${p.booking.id}`}
+                data-testid={`undo-decline-toast-${p.booking.id}`}
+                className="bg-surface-800 border border-red-400/50 shadow-2xl rounded-2xl px-5 py-4 flex items-center gap-4 min-w-[320px]"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm">
+                    ✗ {t.declinedToast}: <span className="text-slate-300 font-normal truncate">{p.booking.name}</span>
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {p.booking.checkIn} → {p.booking.checkOut} · {secondsLeft}s
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleUndoDecline(p.booking.id)}
+                  data-testid={`undo-decline-btn-${p.booking.id}`}
                   className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition whitespace-nowrap"
                 >
                   ↶ {t.undo}
@@ -1468,6 +1607,7 @@ export default function AdminPage() {
                   return (
                     <div
                       key={booking.id}
+                      data-testid={`booking-row-${booking.id}`}
                       className="bg-surface-800 border border-white/10 rounded-2xl p-6"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -1539,6 +1679,7 @@ export default function AdminPage() {
                               <button
                                 onClick={() => handleConfirm(booking.id)}
                                 disabled={!!action}
+                                data-testid={`confirm-btn-${booking.id}`}
                                 className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap"
                               >
                                 {action === "confirming" ? t.confirming : `✓ ${t.confirm}`}
@@ -1546,6 +1687,7 @@ export default function AdminPage() {
                               <button
                                 onClick={() => handleDecline(booking.id)}
                                 disabled={!!action}
+                                data-testid={`decline-btn-${booking.id}`}
                                 className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 whitespace-nowrap"
                               >
                                 {action === "declining" ? t.declining : `✗ ${t.decline}`}
