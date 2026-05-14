@@ -139,9 +139,12 @@ try {
   const blockedBefore4 = (await fetch(`${BASE}/api/admin/blocked-dates`).then((r) => r.json())).blockedDates;
   const confirmBtn = page.locator(`[data-testid='row-actions-${bookingId}'] button:has-text("Confirm")`).first();
   await confirmBtn.click();
-  await page.waitForTimeout(2500);
+  // Confirm now has a 10s undo window before the POST /confirm fires.
+  // Wait the grace + safety margin before asserting the persisted state.
+  log('  waiting 11s for confirm grace window…');
+  await page.waitForTimeout(11_500);
   const afterConfirm = (await api('GET', '/api/admin/bookings')).body.bookings.find((b) => b.id === bookingId);
-  ok(afterConfirm?.status === 'confirmed', `4a: status=confirmed (${afterConfirm?.status})`);
+  ok(afterConfirm?.status === 'confirmed', `4a: status=confirmed after grace (${afterConfirm?.status})`);
 
   const blockedAfter4 = (await fetch(`${BASE}/api/admin/blocked-dates`).then((r) => r.json())).blockedDates;
   const newlyBlocked = blockedAfter4.filter((d) => !blockedBefore4.includes(d));
