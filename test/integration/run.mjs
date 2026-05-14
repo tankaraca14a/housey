@@ -15,6 +15,14 @@ const FILES = [
   'stress.mjs',
   'social-links.mjs',
   'images-api.mjs',
+  'contact-api.mjs',
+  'blocked-dates-edge.mjs',
+  'meta-tags.mjs',
+  'admin-login.mjs',
+  'booking-injection.mjs',
+  'images-edge.mjs',
+  'security-headers.mjs',
+  'nav-404.mjs',
 ];
 
 let failed = 0;

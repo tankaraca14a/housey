@@ -3,8 +3,6 @@
 // repository pattern: one Redis key per image + a SET index of all IDs.
 
 import { Redis } from '@upstash/redis';
-import { promises as fs } from 'fs';
-import path from 'path';
 import type { Image } from './images';
 import { isImage } from './images';
 
@@ -90,66 +88,59 @@ export const kvImageRepository: ImageRepository = {
 };
 
 // ── File implementation (local dev fallback) ─────────────────────────────────
-// Stores all images in data/images.json. Atomic writes via tmp+rename.
-const IMAGES_FILE = path.join(process.cwd(), 'data', 'images.json');
+// Stores all images in data/images.json. Uses JsonStore — atomic writes
+// via tmp+rename AND a per-file mutex so concurrent create/patch/delete
+// don't race (the stress test would otherwise lose updates).
+import { JsonStore } from './data-store';
 
-async function readFileImages(): Promise<Image[]> {
-  try {
-    const content = await fs.readFile(IMAGES_FILE, 'utf-8');
-    const parsed = JSON.parse(content);
-    return Array.isArray(parsed) ? parsed.filter(isImage) : [];
-  } catch {
-    return [];
-  }
-}
-
-async function writeFileImages(images: Image[]): Promise<void> {
-  await fs.mkdir(path.dirname(IMAGES_FILE), { recursive: true });
-  const tmp = `${IMAGES_FILE}.tmp.${process.pid}.${Date.now()}`;
-  try {
-    await fs.writeFile(tmp, JSON.stringify(images, null, 2), 'utf-8');
-    await fs.rename(tmp, IMAGES_FILE);
-  } catch (err) {
-    fs.unlink(tmp).catch(() => undefined);
-    throw err;
-  }
-}
+const imagesFileStore = new JsonStore<Image[]>({
+  filename: 'images.json',
+  defaultValue: [],
+  validate: (raw): Image[] => {
+    if (!Array.isArray(raw)) return [];
+    return (raw as unknown[]).filter(isImage);
+  },
+});
 
 export const fileImageRepository: ImageRepository = {
   async list() {
-    const all = await readFileImages();
+    const all = await imagesFileStore.read();
     return [...all].sort((a, b) => a.sortOrder - b.sortOrder || a.uploadedAt.localeCompare(b.uploadedAt));
   },
   async get(id) {
-    const all = await readFileImages();
+    const all = await imagesFileStore.read();
     return all.find((i) => i.id === id) ?? null;
   },
   async create(input) {
-    const all = await readFileImages();
     const image: Image = {
       ...input,
       id: crypto.randomUUID(),
       uploadedAt: new Date().toISOString(),
     };
-    await writeFileImages([...all, image]);
+    await imagesFileStore.update((current) => ({ next: [...current, image] }));
     return image;
   },
   async patch(id, patch) {
-    const all = await readFileImages();
-    const idx = all.findIndex((i) => i.id === id);
-    if (idx === -1) return null;
-    const merged: Image = { ...all[idx], ...patch };
-    const next = [...all];
-    next[idx] = merged;
-    await writeFileImages(next);
-    return merged;
+    let result: Image | null = null;
+    await imagesFileStore.update((current) => {
+      const idx = current.findIndex((i) => i.id === id);
+      if (idx === -1) return { next: current };
+      const merged: Image = { ...current[idx], ...patch };
+      result = merged;
+      const next = [...current];
+      next[idx] = merged;
+      return { next };
+    });
+    return result;
   },
   async delete(id) {
-    const all = await readFileImages();
-    const idx = all.findIndex((i) => i.id === id);
-    if (idx === -1) return null;
-    const removed = all[idx];
-    await writeFileImages(all.filter((_, i) => i !== idx));
+    let removed: Image | null = null;
+    await imagesFileStore.update((current) => {
+      const idx = current.findIndex((i) => i.id === id);
+      if (idx === -1) return { next: current };
+      removed = current[idx];
+      return { next: current.filter((_, i) => i !== idx) };
+    });
     return removed;
   },
 };

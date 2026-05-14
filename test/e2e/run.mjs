@@ -12,6 +12,7 @@ const FILES = [
   'admin-crud-selenium.mjs',
   'scheduling-selenium.mjs',
   'delete-undo-selenium.mjs',
+  'gallery-lightbox-playwright.mjs',
 ];
 
 let failed = 0;
