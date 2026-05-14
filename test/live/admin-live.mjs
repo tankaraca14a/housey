@@ -90,8 +90,10 @@ try {
   ok(r2.status === 200 && r2.body.booking?.id, `2b: valid POST → 200 (${r2.body.booking?.id})`);
   const id1 = r2.body.booking.id;
 
-  const r2c = await api('POST', '/api/admin/bookings', { body: { ...valid, status: 'confirmed', email: emailFor('live-probe-2') } });
-  ok(r2c.status === 200 && r2c.body.booking.status === 'confirmed', '2c: initial status=confirmed persists');
+  // Different dates so the new overlap-detection on /api/admin/bookings
+  // doesn't reject this as conflicting with r2.
+  const r2c = await api('POST', '/api/admin/bookings', { body: { ...valid, status: 'confirmed', email: emailFor('live-probe-2'), checkIn: '2099-05-10', checkOut: '2099-05-15' } });
+  ok(r2c.status === 200 && r2c.body.booking?.status === 'confirmed', `2c: initial status=confirmed persists (got ${r2c.status})`);
   const id2 = r2c.body.booking.id;
 
   // ── 3. PATCH ────────────────────────────────────────────────────────────────
@@ -117,9 +119,16 @@ try {
   // ── 4. RACE (5 concurrent on live — keep small to be polite) ───────────────
   log('\n=== 4. Concurrent create race (mutex on live) ===');
   const beforeRace = (await listBookings()).filter((b) => SENTINEL_EMAIL_RE.test(b.email)).length;
+  // Unique year per iteration so overlap detector doesn't reject them.
   const racers = Array.from({ length: 5 }, (_, i) =>
     api('POST', '/api/admin/bookings', {
-      body: { ...valid, name: `Race-${i}`, email: emailFor(`race-${i}`) },
+      body: {
+        ...valid,
+        name: `Race-${i}`,
+        email: emailFor(`race-${i}`),
+        checkIn: `${2200 + i}-04-10`,
+        checkOut: `${2200 + i}-04-15`,
+      },
     })
   );
   const raceResults = await Promise.all(racers);
