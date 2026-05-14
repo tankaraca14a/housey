@@ -75,6 +75,10 @@ interface Translations {
   phoneLabel: string;
   statusLabel: string;
   saveFailedShort: string;
+  imageDeletedToast: string;
+  imageDeleteConfirm: string;
+  imageDeleteConfirm2: string;
+  unsavedCalendarWarning: string;
 }
 
 const translations: Record<"hr" | "en", Translations> = {
@@ -142,6 +146,10 @@ const translations: Record<"hr" | "en", Translations> = {
     phoneLabel: "Telefon",
     statusLabel: "Status",
     saveFailedShort: "Spremanje neuspješno",
+    imageDeletedToast: "Fotografija obrisana",
+    imageDeleteConfirm: "Obrisati ovu fotografiju?",
+    imageDeleteConfirm2: "Sigurno obrisati ovu fotografiju?",
+    unsavedCalendarWarning: "Imate nespremljene promjene u kalendaru. Stvarno odustati?",
   },
   en: {
     adminLogin: "Admin Login",
@@ -207,6 +215,10 @@ const translations: Record<"hr" | "en", Translations> = {
     phoneLabel: "Phone",
     statusLabel: "Status",
     saveFailedShort: "Save failed",
+    imageDeletedToast: "Photo deleted",
+    imageDeleteConfirm: "Delete this photo?",
+    imageDeleteConfirm2: "Really delete this photo?",
+    unsavedCalendarWarning: "You have unsaved calendar changes. Really discard them?",
   },
 };
 
@@ -395,6 +407,12 @@ export default function AdminPage() {
   const [loggingIn, setLoggingIn] = useState(false);
 
   const [blockedDates, setBlockedDates] = useState<Set<string>>(new Set());
+  // Snapshot of the last server-synced calendar, for dirty-check. Updated on
+  // initial fetch and after every successful Save. Compared against the
+  // current `blockedDates` set to decide if there are unsaved changes — used
+  // by the beforeunload guard and the logout button so we don't silently
+  // lose her work.
+  const [blockedDatesSaved, setBlockedDatesSaved] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [loadingDates, setLoadingDates] = useState(false);
@@ -438,6 +456,18 @@ export default function AdminPage() {
   }
   const [pendingDeletes, setPendingDeletes] = useState<Record<string, PendingDelete>>({});
 
+  // Same pattern for images. Image deletes used to be immediate (the bytes
+  // left Blob the moment the second confirm() returned), which made an
+  // accidental click on the 🗑 icon unrecoverable from the UI. Now the
+  // delete is deferred by the same 10s window so the admin can Undo without
+  // ever touching the server.
+  interface PendingImageDelete {
+    image: ImageRow;
+    timerId: ReturnType<typeof setTimeout>;
+    deadline: number;
+  }
+  const [pendingImageDeletes, setPendingImageDeletes] = useState<Record<string, PendingImageDelete>>({});
+
   // Same pattern for "I just edited a booking — undo within 10s". The
   // snapshot is the row BEFORE the edit; clicking Undo PATCHes back to it.
   interface PendingEdit {
@@ -457,7 +487,9 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/blocked-dates");
       const data = await res.json();
-      setBlockedDates(new Set(data.blockedDates || []));
+      const fresh = new Set<string>(data.blockedDates || []);
+      setBlockedDates(fresh);
+      setBlockedDatesSaved(new Set(fresh)); // baseline for dirty-check
     } catch (e) {
       console.error("Failed to load blocked dates", e);
     } finally {
@@ -589,23 +621,50 @@ export default function AdminPage() {
     }
   }, [authPassword, fetchImages]);
 
-  const handleImageDelete = useCallback(async (id: string) => {
+  const handleImageDelete = useCallback((id: string) => {
     const img = imagesList.find((i) => i.id === id);
     if (!img) return;
-    if (!confirm(`Delete this image?\n${img.alt || img.url}`)) return;
-    if (!confirm(`This cannot be undone. Really delete?`)) return;
-    try {
-      const res = await fetch(`/api/admin/images/${id}`, {
-        method: "DELETE",
-        headers: { "x-admin-password": authPassword },
-      });
-      if (!res.ok) throw new Error("delete failed");
-      await fetchImages();
-    } catch (e) {
-      console.error("delete image failed:", e);
-      setImageError(e instanceof Error ? e.message : "delete failed");
-    }
-  }, [authPassword, fetchImages, imagesList]);
+    if (!confirm(`${t.imageDeleteConfirm}\n${img.alt || img.url}`)) return;
+    if (!confirm(t.imageDeleteConfirm2)) return;
+
+    // Defer the actual DELETE so the admin has 10s to Undo from the toast.
+    // Same shape as handleDelete for bookings.
+    const timerId = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/admin/images/${id}`, {
+          method: "DELETE",
+          headers: { "x-admin-password": authPassword },
+        });
+        if (!res.ok) throw new Error("delete failed");
+      } catch (e) {
+        console.error("delete image failed:", e);
+        setImageError(e instanceof Error ? e.message : "delete failed");
+      } finally {
+        setPendingImageDeletes((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        await fetchImages();
+      }
+    }, DELETE_GRACE_MS);
+
+    setPendingImageDeletes((prev) => ({
+      ...prev,
+      [id]: { image: img, timerId, deadline: Date.now() + DELETE_GRACE_MS },
+    }));
+  }, [authPassword, fetchImages, imagesList, t]);
+
+  const handleUndoImageDelete = useCallback((id: string) => {
+    setPendingImageDeletes((prev) => {
+      const p = prev[id];
+      if (!p) return prev;
+      clearTimeout(p.timerId);
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }, []);
 
   const handleImageToggleFeatured = useCallback(async (id: string, next: boolean) => {
     try {
@@ -659,8 +718,15 @@ export default function AdminPage() {
   };
 
   // Wipe the in-memory password on logout so a later /admin visit by
-  // someone else on the same browser doesn't inherit it.
+  // someone else on the same browser doesn't inherit it. If she has
+  // unsaved calendar changes, ask first — same one-line guard the
+  // browser uses for refresh, so the behaviour matches.
   const handleLogout = () => {
+    // Inline dirty-check (calendarDirty is declared below in the render);
+    // duplicating one if-line is simpler than reshuffling declaration order.
+    let dirty = blockedDates.size !== blockedDatesSaved.size;
+    if (!dirty) for (const d of blockedDates) if (!blockedDatesSaved.has(d)) { dirty = true; break; }
+    if (dirty && !confirm(t.unsavedCalendarWarning)) return;
     setAuthPassword("");
     setPassword("");
     setAuthenticated(false);
@@ -693,6 +759,9 @@ export default function AdminPage() {
       if (!res.ok) {
         throw new Error("Failed to save");
       }
+      // Mark the just-saved set as the new baseline so the dirty-flag
+      // resets and the beforeunload prompt stops firing.
+      setBlockedDatesSaved(new Set(blockedDates));
       setSaveMessage({ type: "success", text: t.changesSaved });
       setTimeout(() => setSaveMessage(null), 3000);
     } catch {
@@ -701,6 +770,28 @@ export default function AdminPage() {
       setSaving(false);
     }
   };
+
+  // Calendar is "dirty" when the current set differs from the last-saved
+  // baseline. Used by the beforeunload guard and the logout button.
+  const calendarDirty = (() => {
+    if (blockedDates.size !== blockedDatesSaved.size) return true;
+    for (const d of blockedDates) if (!blockedDatesSaved.has(d)) return true;
+    return false;
+  })();
+
+  // Browser-native beforeunload guard for refresh / close-tab / back-button.
+  // Browsers IGNORE the custom string in modern versions and show their own
+  // generic "Leave site?" prompt — but it still fires, which is what we want.
+  useEffect(() => {
+    if (!calendarDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ""; // Chrome requires returnValue assignment
+      return "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [calendarDirty]);
 
   // Quick Confirm — two confirms because this BOTH emails the guest AND
   // auto-blocks their dates. Both side-effects are irreversible (the email
@@ -799,13 +890,18 @@ export default function AdminPage() {
     });
   };
 
-  // 4Hz tick for the countdown displays (delete + edit toasts). Only runs
-  // while at least one toast is active — avoids re-rendering forever.
+  // 4Hz tick for the countdown displays (delete + edit + image-delete
+  // toasts). Only runs while at least one toast is active — avoids
+  // re-rendering forever.
   useEffect(() => {
-    if (Object.keys(pendingDeletes).length === 0 && Object.keys(pendingEdits).length === 0) return;
+    if (
+      Object.keys(pendingDeletes).length === 0 &&
+      Object.keys(pendingEdits).length === 0 &&
+      Object.keys(pendingImageDeletes).length === 0
+    ) return;
     const id = setInterval(() => setNowMs(Date.now()), 250);
     return () => clearInterval(id);
-  }, [pendingDeletes, pendingEdits]);
+  }, [pendingDeletes, pendingEdits, pendingImageDeletes]);
 
   // On unmount / logout: flush any pending deletes immediately. This makes
   // navigating away mid-grace-window NOT silently drop the action — the
@@ -1029,13 +1125,14 @@ export default function AdminPage() {
   const otherBookings = visibleBookings.filter((b) => b.status !== "pending");
   const pendingDeleteList = Object.values(pendingDeletes);
   const pendingEditList = Object.values(pendingEdits);
+  const pendingImageDeleteList = Object.values(pendingImageDeletes);
 
   return (
     <>
       <LangToggle />
 
-      {/* ── Undo toasts (delete + edit) ── */}
-      {(pendingDeleteList.length > 0 || pendingEditList.length > 0) && (
+      {/* ── Undo toasts (delete + edit + image-delete) ── */}
+      {(pendingDeleteList.length > 0 || pendingEditList.length > 0 || pendingImageDeleteList.length > 0) && (
         <div data-testid="undo-toast-container"
              className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
           {pendingDeleteList.map((p) => {
@@ -1057,6 +1154,30 @@ export default function AdminPage() {
                 <button
                   onClick={() => handleUndoDelete(p.booking.id)}
                   data-testid={`undo-btn-${p.booking.id}`}
+                  className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition whitespace-nowrap"
+                >
+                  ↶ {t.undo}
+                </button>
+              </div>
+            );
+          })}
+          {pendingImageDeleteList.map((p) => {
+            const secondsLeft = Math.max(0, Math.ceil((p.deadline - nowMs) / 1000));
+            return (
+              <div
+                key={`img-del-${p.image.id}`}
+                data-testid={`undo-image-toast-${p.image.id}`}
+                className="bg-surface-800 border border-brand-400/50 shadow-2xl rounded-2xl px-5 py-4 flex items-center gap-4 min-w-[320px]"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm">
+                    🗑 {t.imageDeletedToast}: <span className="text-slate-300 font-normal truncate">{p.image.alt || p.image.url.split("/").pop()}</span>
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">{secondsLeft}s</p>
+                </div>
+                <button
+                  onClick={() => handleUndoImageDelete(p.image.id)}
+                  data-testid={`undo-image-btn-${p.image.id}`}
                   className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition whitespace-nowrap"
                 >
                   ↶ {t.undo}
@@ -1233,7 +1354,7 @@ export default function AdminPage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {imagesList.map((img) => (
+                {imagesList.filter((img) => !pendingImageDeletes[img.id]).map((img) => (
                   <div
                     key={img.id}
                     data-testid={`image-tile-${img.id}`}

@@ -187,10 +187,15 @@ Kliknite **Unstar** za uklanjanje oznake.
 
 Kliknite 🗑 ikonu kante na bilo kojoj fotografiji. Vidjet ćete dvije potvrde:
 
-1. *"Delete this image?"* → **OK**
-2. *"This cannot be undone. Really delete?"* → **OK**
+1. *"Obrisati ovu fotografiju?"* → **OK**
+2. *"Sigurno obrisati ovu fotografiju?"* → **OK**
 
-Fotografija je trajno uklonjena iz galerije i iz spremišta. **Za razliku od brisanja rezervacija, brisanje fotografija nema 10-sekundno poništavanje** — jednom kad kliknete kroz oba dijaloga, fotografija je nepovratno obrisana. Budite sigurni prije klika.
+Fotografija odmah nestane iz mreže, A toast s gumbom **Poništi** se pojavi u donjem desnom kutu s odbrojavanjem od 10 sekundi, jednako kao kod brisanja rezervacije:
+
+- **Kliknite Poništi unutar 10 sekundi** → fotografija se vraća, ništa se nije promijenilo.
+- **Pričekajte 10 sekundi** → fotografija je trajno uklonjena (bytes su uklonjeni iz spremišta).
+
+> Ako slučajno kliknete 🗑 i ne vidite toast odmah, skrolajte do donjeg desnog kuta stranice, tu se nalazi gumb Poništi.
 
 ---
 
@@ -246,7 +251,14 @@ Ovo briše vašu lozinku iz memorije preglednika. Korisno ako ste na zajedničko
 ### "Prenijela sam krivu fotografiju"
 
 - Pređite mišem preko fotografije, kliknite 🗑, prođite kroz obje potvrde.
-- Fotografija je odmah obrisana.
+- Fotografija nestane, toast s **Poništi** gumbom se pojavi u donjem desnom kutu s odbrojavanjem od 10 sekundi.
+- Pričekajte 10 sekundi → trajno je obrisana.
+- Kliknite Poništi unutar 10 sekundi → vraća se.
+
+### "Slučajno sam obrisala krivu fotografiju"
+
+- **Unutar 10 sekundi:** kliknite **Poništi** gumb u toastu u donjem desnom kutu.
+- **Nakon 10 sekundi:** bytes fotografije su otišli iz spremišta. Morate ponovno prenijeti s telefona.
 
 ### "Stranica se ne učitava / nešto izgleda neispravno"
 
@@ -268,7 +280,8 @@ Ne morate ovo pamtiti — admin stranica ovo automatski provodi:
 
 - **Dvostruke rezervacije:** Ako dva gosta pošalju preklapajuće datume, drugi se odbije s jasnom porukom. Nikad ne završe oba kao na čekanju.
 - **Pogrešni klikovi na destruktivne radnje:** Potvrdi, Odbij i Obriši svaki zahtijevaju dva klika kroz dijaloge za potvrdu.
-- **Trajni gubitak zbog pogreške:** Brisanje ima 10-sekundno poništavanje. Uređivanje ima 10-sekundno poništavanje (nakon Spremi).
+- **Trajni gubitak zbog pogreške:** Brisanje rezervacije, Uređivanje rezervacije I Brisanje fotografije svako imaju 10-sekundno poništavanje. Toast se pojavi u donjem desnom kutu zaslona.
+- **Gubljenje nespremljenih izmjena kalendara:** Ako ste označili neke datume i zaboravili kliknuti Spremi promjene, stranica pita "imate nespremljene promjene, stvarno odustati?" prije nego što vam dopusti da se odjavite, osvježite ili zatvorite karticu.
 - **Izgubljene rezervacije zbog problema s emailom:** Rezervacije se spremaju u bazu PRIJE nego što email ode. Ako email ne uspije iz bilo kojeg razloga, rezervacija je još uvijek tamo i vidite je u listi.
 
 ---

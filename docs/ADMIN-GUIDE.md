@@ -187,10 +187,15 @@ Click **Unstar** to unfeature.
 
 Click the 🗑 trash button on any photo. You'll see two confirmations:
 
-1. *"Delete this image?"* → **OK**
-2. *"This cannot be undone. Really delete?"* → **OK**
+1. *"Delete this photo?"* → **OK**
+2. *"Really delete this photo?"* → **OK**
 
-The photo is permanently removed from both your gallery and the storage. **Unlike booking deletes, photo deletes do not have an undo window** — once you click through both dialogs, the photo's bytes are gone. Be sure before clicking.
+The photo disappears from the grid immediately, AND an **Undo** toast appears at the bottom-right with a 10-second countdown — exactly like deleting a booking:
+
+- **Click Undo within 10 seconds** → the photo comes back, nothing ever changed.
+- **Wait 10 seconds** → the photo is gone for good (bytes removed from storage).
+
+> If you accidentally click 🗑 and don't see the toast straight away, scroll to the bottom-right corner of the page — that's where the undo lives.
 
 ---
 
@@ -248,7 +253,14 @@ This wipes your password from the browser's memory. Useful if you're on a shared
 ### "I uploaded the wrong photo"
 
 - Hover the photo, click 🗑, click through both confirmations.
-- Photo is gone immediately.
+- The photo disappears, an **Undo** toast appears in the bottom-right with a 10-second countdown.
+- Wait 10 seconds → it's permanently gone.
+- Click Undo within 10 seconds → it comes back.
+
+### "I deleted the wrong photo"
+
+- **Within 10 seconds:** click the **Undo** button in the toast at the bottom-right corner.
+- **After 10 seconds:** the photo's bytes are gone from storage. You'll need to re-upload from your phone.
 
 ### "The page won't load / something looks broken"
 
@@ -270,7 +282,8 @@ You don't need to remember these — the admin page enforces them automatically:
 
 - **Double-bookings:** If two guests submit overlapping dates, the second one is rejected with a clear error. They never both land as pending.
 - **Misclicks on destructive actions:** Confirm, Decline, and Delete each require two clicks through confirmation dialogs.
-- **Permanent loss from a fumble:** Delete has a 10-second undo. Edit has a 10-second undo (after Save).
+- **Permanent loss from a fumble:** Booking Delete, booking Edit, AND photo Delete each have a 10-second undo. The toast appears in the bottom-right corner of the screen.
+- **Losing unsaved calendar work:** If you marked some dates and forget to click Save Changes, the page asks "you have unsaved changes, really discard?" before letting you log out, refresh, or close the tab.
 - **Lost reservations from a Resend hiccup:** Bookings save to the database BEFORE the email goes out. If email fails for any reason, the booking is still there and you see it in the list.
 
 ---

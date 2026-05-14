@@ -12,6 +12,8 @@ const FILES = [
   'admin-crud-selenium.mjs',
   'scheduling-selenium.mjs',
   'delete-undo-selenium.mjs',
+  'image-undo-selenium.mjs',
+  'calendar-dirty-playwright.mjs',
   'gallery-lightbox-playwright.mjs',
 ];
 
