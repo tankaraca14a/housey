@@ -41,13 +41,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="border-b border-white/10 bg-surface-900/80 backdrop-blur">
           <nav className="container flex items-center justify-between h-16 text-sm">
             <Link href="/" className="font-semibold text-brand-400 tracking-wide">Housey</Link>
-            <ul className="flex gap-6 text-sm text-slate-200">
+            {/* Mobile: hide the 5-link nav so the page doesn't overflow horizontally
+                at narrow widths. The footer carries the same destinations. Tablet
+                and up (sm:flex, ≥640px): show inline. */}
+            <ul className="hidden sm:flex gap-6 text-sm text-slate-200">
               <li><Link href="/about" className="hover:text-brand-300 transition-colors">About</Link></li>
               <li><Link href="/gallery" className="hover:text-brand-300 transition-colors">Gallery</Link></li>
               <li><Link href="/location" className="hover:text-brand-300 transition-colors">Location</Link></li>
               <li><Link href="/booking" className="hover:text-brand-300 transition-colors">Booking</Link></li>
               <li><Link href="/contact" className="hover:text-brand-300 transition-colors">Contact</Link></li>
             </ul>
+            {/* Mobile fallback: a single compact button linking to the gallery (the
+                most likely destination for a guest landing on the home page). The
+                full site map is in the footer. */}
+            <Link
+              href="/gallery"
+              className="sm:hidden text-xs px-3 py-1.5 rounded-lg bg-surface-700 text-slate-200 hover:bg-surface-600 transition border border-white/10"
+            >
+              Menu
+            </Link>
           </nav>
         </header>
         <main className="flex-1">{children}</main>

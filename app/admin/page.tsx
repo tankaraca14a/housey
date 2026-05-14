@@ -1144,7 +1144,9 @@ export default function AdminPage() {
   const LangToggle = () => (
     <button
       onClick={() => setLang((l) => (l === "hr" ? "en" : "hr"))}
-      className="fixed top-4 right-4 z-50 px-3 py-1.5 text-xs font-bold bg-surface-700 hover:bg-surface-600 text-slate-300 border border-white/10 rounded-lg transition"
+      // Mobile: sit below the site nav header (h-16) so the nav links
+      // don't overlap and intercept clicks. Desktop: top-right corner.
+      className="fixed top-20 right-3 sm:top-4 sm:right-4 z-50 px-3 py-1.5 text-xs font-bold bg-surface-700 hover:bg-surface-600 text-slate-300 border border-white/10 rounded-lg transition"
       title={lang === "hr" ? "Switch to English" : "Prebaci na Hrvatski"}
     >
       {lang === "hr" ? "EN" : "HR"}

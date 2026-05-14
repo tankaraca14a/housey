@@ -25,6 +25,9 @@ function readBookings() {
 const before = readBookings();
 log(`Pre-test bookings.json has ${before.length} entries`);
 
+let browser = null;
+try {
+
 // ─── 1. Direct API test ───────────────────────────────────────────────────────
 log('\n=== 1. Direct POST /api/booking ===');
 
@@ -66,7 +69,7 @@ if (apiRes.status === 200) {
 // ─── 2. UI test: drive the guest form with Playwright ─────────────────────────
 log('\n=== 2. UI test: /booking form submission ===');
 
-const browser = await chromium.launch({ headless: true });
+browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext({ viewport: { width: 1400, height: 1100 } });
 const page = await ctx.newPage();
 
@@ -126,15 +129,19 @@ if (apiCalls[0]?.status === 200) {
   ok(successPath, '2d: success banner visible after 200 response');
   const afterUI = readBookings();
   ok(afterUI.length > before.length, `2e: bookings.json grew (${before.length} → ${afterUI.length})`);
-  // Clean up
-  writeFileSync(join(REPO, 'data', 'bookings.json'), JSON.stringify(before, null, 2));
-  log('  (rolled back bookings.json)');
 } else {
   log(`  ⚠ UI submit returned ${apiCalls[0]?.status} — error path expected when no Resend key.`);
   ok(alertText !== null, '2d-err: client showed an alert on error (acceptable failure handling)');
 }
 
-await browser.close();
+} finally {
+  // Always restore the bookings.json snapshot, regardless of pass/fail/throw.
+  // Without this, any uncaught error mid-test leaks rows that break the next
+  // chained e2e suite via the overlap-conflict guard.
+  if (browser) await browser.close().catch(() => {});
+  writeFileSync(join(REPO, 'data', 'bookings.json'), JSON.stringify(before, null, 2));
+  log('  (rolled back bookings.json)');
+}
 
 log('');
 log(failures === 0 ? 'PASS — reservations can be made end-to-end' : `PARTIAL — ${failures} assertion(s) failed`);

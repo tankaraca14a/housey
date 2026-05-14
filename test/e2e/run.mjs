@@ -15,6 +15,7 @@ const FILES = [
   'image-undo-selenium.mjs',
   'confirm-decline-undo-selenium.mjs',
   'calendar-dirty-playwright.mjs',
+  'mobile-admin-playwright.mjs',
   'gallery-lightbox-playwright.mjs',
 ];
 
