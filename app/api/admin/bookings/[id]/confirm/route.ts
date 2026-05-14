@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { bookings as bookingsRepo, blockedDates as blockedRepo } from '@/app/lib/store-factory';
+import { recordAudit } from '@/app/lib/blocked-dates-audit';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
 
@@ -43,8 +44,26 @@ export async function POST(
   let blockedDatesError: string | null = null;
   try {
     const newDates = getDatesInRange(booking.checkIn, booking.checkOut);
+    const beforeSet = new Set(await blockedRepo.list());
     await blockedRepo.addMany(newDates);
     datesBlocked = true;
+
+    // Audit the auto-block so a later report can prove these dates came
+    // from a Confirm action (not a manual click and not test residue).
+    const added = newDates.filter((d) => !beforeSet.has(d));
+    if (added.length > 0) {
+      const ts = new Date().toISOString();
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+        || request.headers.get('x-real-ip')
+        || 'unknown';
+      const ua = request.headers.get('user-agent') || 'unknown';
+      await recordAudit(
+        added.map((date) => ({
+          ts, action: 'block' as const, date, source: 'confirm' as const,
+          bookingId: booking.id, ip, ua,
+        })),
+      );
+    }
   } catch (e) {
     blockedDatesError = e instanceof Error ? e.message : String(e);
     console.error('confirm: blocked-dates persist failed (booking still confirmed)', e);

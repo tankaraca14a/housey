@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { blockedDates as blockedRepo } from '@/app/lib/store-factory';
+import { recordAudit, type AuditEntry } from '@/app/lib/blocked-dates-audit';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
 
@@ -35,7 +36,33 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Diff against the current set so the audit records only the changes.
+    const previous = new Set(await blockedRepo.list());
+    const next = new Set(blockedDates as string[]);
+    const added: string[] = [];
+    const removed: string[] = [];
+    for (const d of next) if (!previous.has(d)) added.push(d);
+    for (const d of previous) if (!next.has(d)) removed.push(d);
+
     await blockedRepo.set(blockedDates as string[]);
+
+    // Best-effort audit log. Captures IP (x-forwarded-for / x-real-ip),
+    // user-agent, and a source tag so a later report can tell whether
+    // each block was set manually by the owner, by a test script, or by
+    // the auto-block path from /confirm. Failures never block the write.
+    if (added.length + removed.length > 0) {
+      const ts = new Date().toISOString();
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+        || request.headers.get('x-real-ip')
+        || 'unknown';
+      const ua = request.headers.get('user-agent') || 'unknown';
+      const entries: AuditEntry[] = [
+        ...added.map((date) => ({ ts, action: 'block' as const, date, source: 'manual' as const, ip, ua })),
+        ...removed.map((date) => ({ ts, action: 'unblock' as const, date, source: 'manual' as const, ip, ua })),
+      ];
+      await recordAudit(entries);
+    }
+
     return NextResponse.json({ success: true, blockedDates });
   } catch (e) {
     console.error('blocked-dates persist failed:', e);
