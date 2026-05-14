@@ -23,6 +23,7 @@ const FILES = [
   'images-edge.mjs',
   'security-headers.mjs',
   'nav-404.mjs',
+  'booking-conflict.mjs',
 ];
 
 let failed = 0;

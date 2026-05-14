@@ -53,8 +53,19 @@ try {
   ];
   log('=== Submit each weird-input case, verify persistence + roundtrip ===');
   const createdIds = [];
+  let dateIdx = 0;
   for (const [label, override] of cases) {
-    const body = { ...baseBody, ...override, email: `${label.replace(/\W+/g, '-')}@x.com` };
+    // Give each iteration its own non-overlapping date range so the new
+    // overlap detector doesn't reject them.
+    const start = 1 + dateIdx * 7;
+    const end = start + 5;
+    dateIdx++;
+    const body = {
+      ...baseBody, ...override,
+      email: `${label.replace(/\W+/g, '-')}@x.com`,
+      checkIn: `2099-06-${String(start).padStart(2, '0')}`,
+      checkOut: `2099-06-${String(end).padStart(2, '0')}`,
+    };
     const r = await post(body);
     ok(r.status === 200, `${label} → 200 (got ${r.status})`);
     if (r.body.id) {

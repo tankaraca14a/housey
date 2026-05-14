@@ -30,12 +30,15 @@ const initialBookings = JSON.parse(readFileSync(BOOKINGS, 'utf-8'));
 const initialBlocked  = JSON.parse(readFileSync(BLOCKED,  'utf-8'));
 
 function valid(i = 0) {
+  // Each iteration uses a unique YEAR so its date range can't possibly
+  // overlap another iteration's. Up to 200 unique iterations supported.
+  const year = 2100 + i;
   return {
     name: `Stress Guest #${i}`,
     email: `stress-${Date.now()}-${i}@x.invalid`,
     phone: '+12345',
-    checkIn: '2099-04-10',
-    checkOut: '2099-04-15',
+    checkIn: `${year}-04-10`,
+    checkOut: `${year}-04-15`,
     guests: '2',
     message: `concurrency probe ${i}`,
   };

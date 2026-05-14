@@ -500,23 +500,48 @@ export default function AdminPage() {
   // Upload one or more files. Each upload goes through Vercel Blob's
   // client-direct-upload flow (bypasses the 4.5 MB function body limit),
   // then we POST the resulting URL + metadata to /api/admin/images.
+  // HEIC files from iPhones are converted to JPEG client-side via
+  // heic2any before upload — the server only accepts jpeg/png/webp.
   const handleImageUpload = useCallback(async (fileList: FileList) => {
     setImageError(null);
-    const files = Array.from(fileList).filter((f) => f.type.startsWith("image/"));
+    const files = Array.from(fileList).filter(
+      (f) => f.type.startsWith("image/") ||
+             /\.heic$|\.heif$/i.test(f.name),
+    );
     if (files.length === 0) {
-      setImageError("Pick JPEG, PNG, or WebP files.");
+      setImageError("Pick JPEG, PNG, WebP, or HEIC files.");
       return;
     }
     setUploadingImages(files.length);
     try {
-      for (const file of files) {
+      for (const raw of files) {
         try {
+          // HEIC detection: file.type can be 'image/heic', 'image/heif',
+          // or sometimes EMPTY for unknown types — fall back to extension.
+          const isHeic =
+            raw.type === "image/heic" ||
+            raw.type === "image/heif" ||
+            /\.heic$|\.heif$/i.test(raw.name);
+          let file: File | Blob = raw;
+          let outName = raw.name;
+          if (isHeic) {
+            const heic2any = (await import("heic2any")).default;
+            const converted = await heic2any({
+              blob: raw,
+              toType: "image/jpeg",
+              quality: 0.9,
+            });
+            const jpegBlob = Array.isArray(converted) ? converted[0] : converted;
+            outName = raw.name.replace(/\.(heic|heif)$/i, ".jpg");
+            file = new File([jpegBlob as BlobPart], outName, { type: "image/jpeg" });
+          }
           // 1. Upload bytes directly to Blob.
-          const blob = await upload(`housey/${Date.now()}-${file.name}`, file, {
+          const contentType = (file as File).type || "image/jpeg";
+          const blob = await upload(`housey/${Date.now()}-${outName}`, file, {
             access: "public",
             handleUploadUrl: "/api/admin/images/upload",
             clientPayload: JSON.stringify({ password: authPassword }),
-            contentType: file.type,
+            contentType,
           });
 
           // 2. Get image dimensions client-side. Browser-only utility —
@@ -538,7 +563,7 @@ export default function AdminPage() {
             body: JSON.stringify({
               url: blob.url,
               blobPathname: blob.pathname,
-              alt: file.name.replace(/\.[^.]+$/, ""), // strip extension as default alt
+              alt: outName.replace(/\.[^.]+$/, ""), // strip extension as default alt
               categories: [] as Category[],
               featured: false,
               sortOrder: Date.now(),
@@ -1177,7 +1202,7 @@ export default function AdminPage() {
                 + Upload
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                   multiple
                   data-testid="image-upload-input"
                   className="hidden"

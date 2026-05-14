@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { bookings as bookingsRepo } from '@/app/lib/store-factory';
-import { validateBookingInput, type Booking } from '@/app/lib/bookings';
+import { validateBookingInput, findConflict, type Booking } from '@/app/lib/bookings';
 
 // Duplicate guard: same email + same dates within the last 5 minutes is a
 // near-certain double-submit, not a second booking.
@@ -40,6 +40,17 @@ export async function POST(request: NextRequest) {
     const current = await bookingsRepo.list();
     if (isDuplicate(current, { email, checkIn, checkOut })) {
       return NextResponse.json({ success: true, duplicate: true });
+    }
+    // Reject overlap with any existing non-declined booking. Two guests
+    // for the same nights would otherwise both land as 'pending' and
+    // Ivana would have to manually decline one. The error message names
+    // the conflicting range so the guest can pick different dates.
+    const conflict = findConflict(current, checkIn, checkOut);
+    if (conflict) {
+      return NextResponse.json({
+        error: `Those dates overlap an existing reservation (${conflict.checkIn} → ${conflict.checkOut}). Please pick different dates.`,
+        conflict: { checkIn: conflict.checkIn, checkOut: conflict.checkOut },
+      }, { status: 409 });
     }
     saved = await bookingsRepo.create({
       name,

@@ -79,13 +79,16 @@ ok(r2.body.duplicate === true, 'duplicate POST flagged duplicate:true');
 const afterDup = JSON.parse(readFileSync(BOOKINGS, 'utf-8'));
 ok(afterDup.length === mid.length, `duplicate did NOT write a second row (still ${afterDup.length})`);
 
-// Different email → not duplicate, should write
+// Different email + SAME dates → no longer "not duplicate"; the new overlap
+// detection (covered fully in test/integration/booking-conflict.mjs) returns 409.
 const r3 = await post({ ...valid, email: 'different@example.invalid' });
-ok(r3.status === 200 && r3.body.duplicate !== true, 'different email is NOT duplicate');
+ok(r3.status === 409, `different-email-same-dates → 409 conflict (got ${r3.status})`);
+ok(typeof r3.body.error === 'string' && r3.body.error.includes('overlap'),
+  `409 carries an overlap message`);
 const afterDiff = JSON.parse(readFileSync(BOOKINGS, 'utf-8'));
-ok(afterDiff.length === mid.length + 1, 'different email DID write a row');
+ok(afterDiff.length === mid.length, `conflict did NOT write a row (count ${afterDiff.length})`);
 
-// Different dates → not duplicate
+// Different dates → not duplicate, no overlap, should write
 const r4 = await post({ ...valid, checkIn: '2026-11-01', checkOut: '2026-11-06' });
 ok(r4.status === 200 && r4.body.duplicate !== true, 'different dates are NOT duplicate');
 const afterDates = JSON.parse(readFileSync(BOOKINGS, 'utf-8'));

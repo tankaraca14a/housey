@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { bookings as bookingsRepo } from '@/app/lib/store-factory';
-import { validateBookingPatch, type BookingPatch } from '@/app/lib/bookings';
+import { validateBookingPatch, findConflict, type BookingPatch } from '@/app/lib/bookings';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
 const ALLOWED_FIELDS = ['name', 'email', 'phone', 'checkIn', 'checkOut', 'guests', 'message', 'status'] as const;
@@ -56,6 +56,24 @@ export async function PATCH(
   const merged = { ...current, ...patch };
   if (merged.checkOut <= merged.checkIn) {
     return NextResponse.json({ error: 'checkOut must be after checkIn' }, { status: 400 });
+  }
+
+  // If the PATCH changes the dates AND the resulting row is still
+  // active (not declined), check for overlap against OTHER rows. Skip
+  // self via excludeId. ?force=1 overrides.
+  const datesChanged = patch.checkIn !== undefined || patch.checkOut !== undefined;
+  if (datesChanged && merged.status !== 'declined') {
+    const url = new URL(request.url);
+    if (url.searchParams.get('force') !== '1') {
+      const all = await bookingsRepo.list();
+      const conflict = findConflict(all, merged.checkIn, merged.checkOut, id);
+      if (conflict) {
+        return NextResponse.json({
+          error: `New dates conflict with booking ${conflict.id} (${conflict.checkIn} → ${conflict.checkOut}, ${conflict.status}). Use ?force=1 to override.`,
+          conflict: { id: conflict.id, checkIn: conflict.checkIn, checkOut: conflict.checkOut, status: conflict.status },
+        }, { status: 409 });
+      }
+    }
   }
 
   try {

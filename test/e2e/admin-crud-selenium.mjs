@@ -64,10 +64,14 @@ async function api(method, path, body) {
 async function listBookings() {
   return (await api('GET', '/api/admin/bookings')).body.bookings;
 }
+let _seedCounter = 0;
 async function seedBooking(extra = {}) {
+  // Give each seeded row a unique year so the new overlap detector
+  // doesn't flag them as conflicts with each other.
+  const year = 2099 + (_seedCounter++);
   const r = await api('POST', '/api/admin/bookings', {
-    name: 'Selenium Seed', email: 'seed@x.com', phone: '5550000',
-    checkIn: '2099-04-10', checkOut: '2099-04-15', guests: '2', message: '',
+    name: 'Selenium Seed', email: `seed-${_seedCounter}@x.com`, phone: '5550000',
+    checkIn: `${year}-04-10`, checkOut: `${year}-04-15`, guests: '2', message: '',
     ...extra,
   });
   return r.body.booking;

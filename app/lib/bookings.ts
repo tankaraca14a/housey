@@ -100,3 +100,31 @@ export function validateBookingPatch(p: BookingPatch): string | null {
   }
   return null;
 }
+
+// Two date ranges overlap iff one starts before the other ends AND vice
+// versa. Checkout is exclusive — bookings that share only a single day
+// (one guest's checkOut === another's checkIn) do NOT overlap.
+export function rangesOverlap(
+  aIn: string, aOut: string,
+  bIn: string, bOut: string,
+): boolean {
+  return aIn < bOut && bIn < aOut;
+}
+
+// Returns the first existing booking that conflicts with the proposed
+// dates, or null if the slot is free. Declined bookings are ignored —
+// only pending + confirmed reserve the calendar. `excludeId` lets PATCH
+// skip the row being edited.
+export function findConflict(
+  existing: Booking[],
+  checkIn: string,
+  checkOut: string,
+  excludeId?: string,
+): Booking | null {
+  for (const b of existing) {
+    if (b.status === 'declined') continue;
+    if (excludeId && b.id === excludeId) continue;
+    if (rangesOverlap(checkIn, checkOut, b.checkIn, b.checkOut)) return b;
+  }
+  return null;
+}

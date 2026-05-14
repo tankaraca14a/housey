@@ -72,9 +72,11 @@ try {
     `2b: valid POST → 200 with booking.id (${r2.body.booking?.id})`);
   const id1 = r2.body.booking.id;
 
-  const r2c = await api('POST', '/api/admin/bookings', { body: { ...valid, status: 'confirmed', email: 'a@b.com' } });
+  // Use different (non-overlapping) dates so the new conflict detection
+  // doesn't reject this as colliding with r2's range.
+  const r2c = await api('POST', '/api/admin/bookings', { body: { ...valid, status: 'confirmed', email: 'a@b.com', checkIn: '2099-05-10', checkOut: '2099-05-15' } });
   ok(r2c.status === 200 && r2c.body.booking.status === 'confirmed',
-    '2c: status=confirmed on create persists');
+    `2c: status=confirmed on create persists (got ${r2c.status})`);
   const id2 = r2c.body.booking.id;
 
   const r2d = await api('POST', '/api/admin/bookings', { body: { ...valid, status: 'bogus' } });
@@ -155,9 +157,16 @@ try {
   // ── 8. RACE CONDITION: 10 concurrent creates must all land ─────────────────
   log('\n=== 8. Concurrent create race (mutex test) ===');
   const beforeRace = (await api('GET', '/api/admin/bookings')).body.bookings.length;
+  // Each iteration gets a UNIQUE date range so overlap detection can't
+  // reject — this test is about concurrency, not conflict.
   const racers = Array.from({ length: 10 }, (_, i) =>
     api('POST', '/api/admin/bookings', {
-      body: { ...valid, name: `Race #${i}`, email: `race-${i}@x.com`, message: `${i}` },
+      body: {
+        ...valid,
+        name: `Race #${i}`, email: `race-${i}@x.com`, message: `${i}`,
+        checkIn: `2199-${String(1 + Math.floor(i / 3)).padStart(2, '0')}-${String(1 + (i % 3) * 10).padStart(2, '0')}`,
+        checkOut: `2199-${String(1 + Math.floor(i / 3)).padStart(2, '0')}-${String(6 + (i % 3) * 10).padStart(2, '0')}`,
+      },
     })
   );
   const raceResults = await Promise.all(racers);

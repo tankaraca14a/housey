@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { bookings as bookingsRepo } from '@/app/lib/store-factory';
-import { validateBookingInput, type Booking } from '@/app/lib/bookings';
+import { validateBookingInput, findConflict, type Booking } from '@/app/lib/bookings';
 
 // Source of truth for the admin password is the ADMIN_PASSWORD env var.
 // The literal fallback is only for local dev where the env var isn't set;
@@ -48,6 +48,21 @@ export async function POST(request: NextRequest) {
     status: status as Booking['status'] | undefined,
   });
   if (err) return NextResponse.json({ error: err }, { status: 400 });
+
+  // Overlap check, unless ?force=1 (escape hatch for manual / phone bookings
+  // Ivana intentionally wants to record alongside an existing one).
+  const url = new URL(request.url);
+  const force = url.searchParams.get('force') === '1';
+  if (!force && status !== 'declined') {
+    const current = await bookingsRepo.list();
+    const conflict = findConflict(current, checkIn, checkOut);
+    if (conflict) {
+      return NextResponse.json({
+        error: `Conflicts with booking ${conflict.id} (${conflict.checkIn} → ${conflict.checkOut}, ${conflict.status}). Use ?force=1 to override.`,
+        conflict: { id: conflict.id, checkIn: conflict.checkIn, checkOut: conflict.checkOut, status: conflict.status },
+      }, { status: 409 });
+    }
+  }
 
   try {
     const booking = await bookingsRepo.create({
