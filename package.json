@@ -13,6 +13,7 @@
     "test:unit:watch": "vitest",
     "test:integration": "node test/integration/run.mjs",
     "test:e2e": "node test/e2e/run.mjs",
+    "test:e2e:cross-browser": "node test/e2e/cross-browser-runner.mjs",
     "test:live": "node test/live/run.mjs"
   },
   "dependencies": {

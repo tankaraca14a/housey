@@ -24,6 +24,7 @@ const FILES = [
   'security-headers.mjs',
   'nav-404.mjs',
   'booking-conflict.mjs',
+  'email-resilience.mjs',
 ];
 
 let failed = 0;

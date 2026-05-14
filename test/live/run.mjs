@@ -13,6 +13,8 @@ const FILES = [
   'admin-live.mjs',
   'lifecycle-live.mjs',
   'confirm-undo-live.mjs',
+  'calendar-dirty-live.mjs',
+  'email-delivery-live.mjs',
   'images-lifecycle-live.mjs',
 ];
 
