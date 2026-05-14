@@ -69,6 +69,10 @@ function offset(o) {
   });
 }
 
+// Snapshot of bookings.json before section C; restored in `finally` regardless
+// of whether the test passes, fails, or throws an unexpected alert.
+let bookingsBefore = null;
+
 try {
   // ── A. /admin month nav ─────────────────────────────────────────────────────
   log('=== A. /admin month navigation (Selenium) ===');
@@ -135,7 +139,9 @@ try {
 
   // ── C. Booking submission ───────────────────────────────────────────────────
   log('\n=== C. Booking submission (Selenium) ===');
-  const before = JSON.parse(readFileSync(join(REPO, 'data', 'bookings.json'), 'utf-8'));
+  // Snapshot taken HERE so the `finally` block can always restore it,
+  // even if any assertion below throws (e.g. unexpected alert dialog).
+  bookingsBefore = JSON.parse(readFileSync(join(REPO, 'data', 'bookings.json'), 'utf-8'));
 
   // Click two enabled day cells
   const dayCells = await driver.findElements(By.css('div.grid.grid-cols-7 button:not([disabled])'));
@@ -167,15 +173,18 @@ try {
   ok(successCount.length > 0, 'C3: success banner visible');
 
   const after = JSON.parse(readFileSync(join(REPO, 'data', 'bookings.json'), 'utf-8'));
-  ok(after.length === before.length + 1, `C4: bookings.json grew (${before.length} → ${after.length})`);
+  ok(after.length === bookingsBefore.length + 1, `C4: bookings.json grew (${bookingsBefore.length} → ${after.length})`);
   const last = after[after.length - 1];
   ok(last && last.name === 'Selenium Test Guest', 'C5: stored row has correct name');
   ok(last && last.status === 'pending', 'C6: stored row has status=pending');
-
-  // Rollback
-  writeFileSync(join(REPO, 'data', 'bookings.json'), JSON.stringify(before, null, 2));
-  log('  (rolled back bookings.json)');
 } finally {
+  // Always restore the snapshot — even if any assertion above threw —
+  // so a failed run doesn't poison the bookings file and break later e2e
+  // suites with stale overlap-conflict data.
+  if (bookingsBefore !== null) {
+    writeFileSync(join(REPO, 'data', 'bookings.json'), JSON.stringify(bookingsBefore, null, 2));
+    log('  (rolled back bookings.json)');
+  }
   await driver.quit();
 }
 
