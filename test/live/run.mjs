@@ -12,6 +12,7 @@ const FILES = [
   'scheduling-deep.mjs',
   'admin-live.mjs',
   'lifecycle-live.mjs',
+  'images-lifecycle-live.mjs',
 ];
 
 let failed = 0;
