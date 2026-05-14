@@ -121,13 +121,24 @@ try {
   ok(afterFeature?.featured === true, `5a: featured=true after toggle`);
 
   // ── 6. Delete via 🗑 (auto-accept both confirms) ─────────────────────────
-  log('\n=== 6. Delete the uploaded image ===');
+  // The image delete now has a 10s undo window — the tile vanishes
+  // optimistically but the actual DELETE only hits KV after the grace
+  // window. The test verifies BOTH halves: optimistic UI + eventual delete.
+  log('\n=== 6. Delete the uploaded image (10s grace window) ===');
   await page.evaluate(() => { window.confirm = () => true; });
   await page.locator(`[data-testid='image-delete-${createdId}']`).click({ force: true });
-  await page.waitForTimeout(2500);
+  await page.waitForTimeout(800);
+  // Optimistic UI: tile already gone, KV row still there
+  ok(await page.locator(`[data-testid='image-tile-${createdId}']`).count() === 0, `6a: tile hidden optimistically`);
+  const duringGrace = await fetchImages();
+  ok(duringGrace.some((i) => i.id === createdId), `6b: KV row still present during grace window`);
+  ok(await page.locator(`[data-testid='undo-image-toast-${createdId}']`).count() === 1, `6c: undo toast visible`);
+  // Wait the grace window + safety margin
+  log('  waiting 11s for grace window…');
+  await page.waitForTimeout(11_500);
   const afterDelete = await fetchImages();
-  ok(!afterDelete.some((i) => i.id === createdId), `6a: row removed from API`);
-  ok(await page.locator(`[data-testid='image-tile-${createdId}']`).count() === 0, `6b: tile gone from admin grid`);
+  ok(!afterDelete.some((i) => i.id === createdId), `6d: row removed from API after grace`);
+  ok(await page.locator(`[data-testid='undo-image-toast-${createdId}']`).count() === 0, `6e: toast cleared`);
   createdId = null;
 
   // ── 7. Final state matches baseline ───────────────────────────────────────
