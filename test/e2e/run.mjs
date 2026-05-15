@@ -34,6 +34,8 @@ const FILES = [
   'reviews-cross-browser-playwright.mjs',
   'admin-reviews-undo-playwright.mjs',
   'admin-reviews-cancel-validation-playwright.mjs',
+  'lang-picker-playwright.mjs',
+  'lang-picker-selenium.mjs',
   'calendar-dirty-playwright.mjs',
   'mobile-admin-playwright.mjs',
   'heic-conversion-playwright.mjs',
