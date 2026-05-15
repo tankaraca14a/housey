@@ -2,7 +2,14 @@
 
 This is your complete guide to the Housey admin page. Every action you can take is here, with a screenshot of exactly what you'll see.
 
-The admin page lives at **<https://www.tankaraca.com/admin>**. Bookmark it.
+## URLs to bookmark
+
+Two pages, same password, both private to you:
+
+| URL | What it's for |
+|---|---|
+| **<https://www.tankaraca.com/admin>** | The full admin: calendar, bookings, photos, reviews, translation inbox. Most of this guide is about this page. |
+| **<https://www.tankaraca.com/submit-review>** | A tiny form for sending a raw review to Mihaela so she can translate it on her Mac and publish it on the site in all five languages. See §6.9. Not linked from the public site — open it via this bookmark. |
 
 ---
 

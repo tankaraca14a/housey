@@ -2,7 +2,14 @@
 
 Ovo je potpuni vodič za admin stranicu Housey. Svaka radnja koju možete obaviti je ovdje, sa snimkom zaslona točno onoga što ćete vidjeti.
 
-Admin stranica se nalazi na **<https://www.tankaraca.com/admin>**. Spremite link u oznake.
+## Adrese za spremiti u oznake
+
+Dvije stranice, ista lozinka, obje privatne za vas:
+
+| Adresa | Čemu služi |
+|---|---|
+| **<https://www.tankaraca.com/admin>** | Cijeli admin: kalendar, rezervacije, fotografije, recenzije, inbox za prijevode. Većina ovog vodiča je o ovoj stranici. |
+| **<https://www.tankaraca.com/submit-review>** | Mali obrazac za slanje sirove recenzije Mihaeli da je prevede na svom Macu i objavi na stranici na svih pet jezika. Vidi §6.9. Nije povezana iz javne navigacije — otvorite je preko ove oznake. |
 
 ---
 
