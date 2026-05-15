@@ -183,6 +183,9 @@ await page.waitForTimeout(120);
 log('\n=== B. /booking guest calendar ===');
 
 await page.goto(`${BASE}/booking`, { waitUntil: 'networkidle' });
+// Force EN so the literal "Book Your Stay" / "Previous" / "Next" matchers work.
+await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+await page.reload({ waitUntil: 'networkidle' });
 await page.waitForSelector('h1:has-text("Book Your Stay")');
 await shot(page, 'B-01-initial');
 

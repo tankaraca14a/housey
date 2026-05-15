@@ -27,7 +27,15 @@ ok(homeHtml.includes('name="twitter:card"'),       '1g: twitter:card meta presen
 ok(homeHtml.includes('name="twitter:title"'),      '1h: twitter:title meta present');
 ok(homeHtml.includes('name="twitter:image"'),      '1i: twitter:image meta present');
 ok(homeHtml.includes('summary_large_image'),       '1j: twitter:card type=summary_large_image');
-ok(homeHtml.includes('WhatsApp Image 2025-11-07'), '1k: og:image points to a real gallery photo');
+// The image filename appears either literally ("WhatsApp Image 2025-11-07")
+// in body <img> srcsets OR URL-encoded ("WhatsApp%20Image%202025-11-07") in
+// the og:image href. Either is a valid "real gallery photo is referenced
+// on the home page" signal — Next.js URL-encodes the metadata href.
+ok(
+  homeHtml.includes('WhatsApp Image 2025-11-07') ||
+    homeHtml.includes('WhatsApp%20Image%202025-11-07'),
+  '1k: og:image points to a real gallery photo',
+);
 
 // ── 2. Same OG meta on /contact (every page should have it) ──────────────────
 log('\n=== 2. OG meta on /contact ===');

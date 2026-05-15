@@ -43,6 +43,10 @@ const page = await ctx.newPage();
 // ─── 1. /booking ──────────────────────────────────────────────────────────────
 log('\n=== 1. Open /booking ===');
 await page.goto(`${BASE}/booking`, { waitUntil: 'networkidle' });
+// Public-page copy is now translated. Force EN so the literal-string
+// matchers below ("Book Your Stay", "Duration: …") work deterministically.
+await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+await page.reload({ waitUntil: 'networkidle' });
 await page.waitForSelector('h1:has-text("Book Your Stay")');
 await page.screenshot({ path: join(SCREENS, '01-form-empty.png'), fullPage: true });
 

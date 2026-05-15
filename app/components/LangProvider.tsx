@@ -77,3 +77,15 @@ export function useLang(): LangContextValue {
   }
   return ctx;
 }
+
+// Convenience: get a translator function bound to the current language.
+// Use in client components:
+//   const t = useT();
+//   <h1>{t('home.featuresTitle')}</h1>
+// The dict lives in app/lib/i18n/public.ts. Adding a new key there gets
+// you typechecked completion at every call site.
+import { publicTranslations, type PublicStrings } from "@/app/lib/i18n/public";
+export function useT(): (key: keyof PublicStrings) => string {
+  const { lang } = useLang();
+  return (key) => publicTranslations[lang][key];
+}

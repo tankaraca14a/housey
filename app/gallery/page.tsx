@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useT } from "@/app/components/LangProvider";
 
 type Category = "all" | "aerial" | "coast" | "exterior" | "terrace" | "interior";
 
@@ -109,14 +110,8 @@ const images: GalleryImage[] = [
   { src: "/images/ivana/coast-08.jpg", alt: "Calm sea horizon from the property edge", category: ["coast"] },
 ];
 
-const categoryLabels: Record<Category, string> = {
-  all: "All Photos",
-  aerial: "Aerial Views",
-  coast: "Sea & Coast",
-  exterior: "Exterior",
-  terrace: "Terrace",
-  interior: "Interior",
-};
+// Category labels are now resolved at render time via useT() so they
+// flip with the language picker. See `categoryKey` below.
 
 const categoryIcons: Record<Category, string> = {
   all: "🏡",
@@ -139,7 +134,19 @@ interface ApiImage {
   caption?: string;
 }
 
+// Map our internal Category enum to the translation-dict key that
+// renders its label in the current language.
+const categoryKey = {
+  all:      'gallery.catAll',
+  aerial:   'gallery.catAerial',
+  coast:    'gallery.catCoast',
+  exterior: 'gallery.catExterior',
+  terrace:  'gallery.catTerrace',
+  interior: 'gallery.catInterior',
+} as const;
+
 export default function GalleryPage() {
+  const t = useT();
   const [activeCategory, setActiveCategory] = useState<Category>("all");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -180,10 +187,10 @@ export default function GalleryPage() {
   return (
     <div className="min-h-screen bg-surface-900">
       <div className="container pt-16 pb-10 text-center">
-        <p className="uppercase text-xs tracking-[0.3em] text-slate-500 mb-4">Dalmatian Coast</p>
-        <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white mb-4">Gallery</h1>
+        <p className="uppercase text-xs tracking-[0.3em] text-slate-500 mb-4">{t("gallery.eyebrow")}</p>
+        <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white mb-4">{t("gallery.title")}</h1>
         <p className="text-slate-400 text-lg max-w-xl mx-auto">
-          Explore our Dalmatian coast hideaway — from azure waters and stone terraces to cozy interiors.
+          {t("gallery.description")}
         </p>
       </div>
 
@@ -200,7 +207,7 @@ export default function GalleryPage() {
               }`}
             >
               <span className="mr-1.5">{categoryIcons[cat]}</span>
-              {categoryLabels[cat]}
+              {t(categoryKey[cat])}
               <span className="ml-2 text-xs opacity-70">
                 ({cat === "all" ? allImages.length : allImages.filter((img) => img.category.includes(cat)).length})
               </span>
@@ -239,7 +246,7 @@ export default function GalleryPage() {
         )}
 
         {filteredImages.length === 0 && (
-          <div className="text-center py-20 text-slate-500">No images in this category.</div>
+          <div className="text-center py-20 text-slate-500">{t("gallery.emptyCategory")}</div>
         )}
       </div>
 

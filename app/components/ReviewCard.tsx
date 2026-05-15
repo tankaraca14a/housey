@@ -1,8 +1,12 @@
+"use client";
+
 // One review tile: stars + quote + author + source + optional link.
-// Used on the /reviews page and the homepage featured strip.
+// Used on the /reviews page and the homepage featured strip. Client
+// component so the "Read on {source} →" label flips with the picker.
 
 import type { Review } from '@/app/lib/reviews';
 import { ReviewStars } from './ReviewStars';
+import { useT } from '@/app/components/LangProvider';
 
 interface Props {
   review: Review;
@@ -10,6 +14,7 @@ interface Props {
 }
 
 export function ReviewCard({ review, featured = false }: Props) {
+  const t = useT();
   const sizeClass = featured ? 'p-8' : 'p-6';
   const quoteSize = featured ? 'text-lg md:text-xl' : 'text-base';
   return (
@@ -38,7 +43,7 @@ export function ReviewCard({ review, featured = false }: Props) {
           rel="noopener noreferrer"
           className="text-brand-400 hover:text-brand-300 text-xs"
         >
-          Read on {review.source} →
+          {t('reviews.readOnSource').replace('{source}', review.source)}
         </a>
       )}
     </div>

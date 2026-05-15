@@ -84,6 +84,9 @@ page.on('response', async (res) => {
 });
 
 await page.goto(`${BASE}/booking`, { waitUntil: 'networkidle' });
+// Force EN so literal matchers below stay deterministic.
+await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+await page.reload({ waitUntil: 'networkidle' });
 await page.waitForSelector('h1:has-text("Book Your Stay")');
 await page.screenshot({ path: join(SCREENS, 'C-01-form-empty.png'), fullPage: true });
 

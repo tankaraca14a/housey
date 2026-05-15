@@ -48,6 +48,9 @@ for (const engine of ENGINES) {
     // === /booking: pick dates + submit ===
     console.log(`  --- /booking ---`);
     await page.goto(`${BASE}/booking`, { waitUntil: 'networkidle' });
+    // Force EN — public copy is now language-aware.
+    await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+    await page.reload({ waitUntil: 'networkidle' });
     await page.waitForSelector('h1:has-text("Book Your Stay")', { timeout: 10_000 });
     const cells = await page.locator('div.grid.grid-cols-7 button:not([disabled])').elementHandles();
     if (cells.length < 5) { ok(false, `enabled cells (${cells.length} < 5)`); throw new Error('not enough cells'); }
