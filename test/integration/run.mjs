@@ -27,6 +27,9 @@ const FILES = [
   'email-resilience.mjs',
   'reviews-api.mjs',
   'reviews-public-render.mjs',
+  'reviews-xss.mjs',
+  'reviews-concurrent.mjs',
+  'reviews-scale.mjs',
 ];
 
 let failed = 0;
