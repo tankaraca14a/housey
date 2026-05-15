@@ -1844,21 +1844,39 @@ export default function AdminPage() {
                       className="mt-1 w-full px-3 py-2 bg-surface-700 border border-white/10 rounded-lg text-white text-sm"
                     />
                   </label>
-                  <label className="text-sm text-slate-300">
-                    {t.reviewRatingLabel}
-                    <select
-                      value={reviewForm.rating}
-                      onChange={(e) => setReviewForm((f) => ({ ...f, rating: e.target.value }))}
+                  <div className="text-sm text-slate-300">
+                    <span className="block">{t.reviewRatingLabel}</span>
+                    <div
+                      role="radiogroup"
+                      aria-label={t.reviewRatingLabel}
                       data-testid="review-rating"
-                      className="mt-1 w-full px-3 py-2 bg-surface-700 border border-white/10 rounded-lg text-white text-sm"
+                      className="mt-1 w-full flex items-center gap-1 px-3 py-2 bg-surface-700 border border-white/10 rounded-lg select-none"
                     >
-                      <option value="5">★★★★★ (5)</option>
-                      <option value="4">★★★★ (4)</option>
-                      <option value="3">★★★ (3)</option>
-                      <option value="2">★★ (2)</option>
-                      <option value="1">★ (1)</option>
-                    </select>
-                  </label>
+                      {[1, 2, 3, 4, 5].map((i) => {
+                        const selected = parseInt(reviewForm.rating, 10) || 0;
+                        const active = i <= selected;
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            role="radio"
+                            aria-checked={i === selected}
+                            aria-label={`${i} / 5`}
+                            data-testid={`review-rating-${i}`}
+                            onClick={() => setReviewForm((f) => ({ ...f, rating: String(i) }))}
+                            className={`text-2xl leading-none px-1 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 rounded ${
+                              active ? "text-amber-400" : "text-slate-500 hover:text-amber-300"
+                            }`}
+                          >
+                            ★
+                          </button>
+                        );
+                      })}
+                      <span className="ml-auto text-slate-400 text-xs tabular-nums">
+                        {parseInt(reviewForm.rating, 10) || 0}/5
+                      </span>
+                    </div>
+                  </div>
                   <label className="text-sm text-slate-300">
                     {t.reviewDateLabel}
                     <input

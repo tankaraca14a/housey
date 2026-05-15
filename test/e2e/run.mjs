@@ -27,6 +27,7 @@ const FILES = [
   'delete-undo-selenium.mjs',
   'image-undo-selenium.mjs',
   'confirm-decline-undo-selenium.mjs',
+  'admin-reviews-stars-selenium.mjs',
   'calendar-dirty-playwright.mjs',
   'mobile-admin-playwright.mjs',
   'heic-conversion-playwright.mjs',
