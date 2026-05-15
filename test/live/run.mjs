@@ -18,6 +18,7 @@ const FILES = [
   'images-lifecycle-live.mjs',
   'admin-reviews-stars-live.mjs',
   'admin-reviews-lang-live.mjs',
+  'submit-review-live.mjs',
   'i18n-cookie-live.mjs',
 ];
 

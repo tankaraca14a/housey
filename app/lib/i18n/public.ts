@@ -122,6 +122,27 @@ export interface PublicStrings {
   // "Show original"; once clicked, it flips to "Show translation".
   "reviews.showOriginal": string;
   "reviews.showTranslation": string;
+  // /submit-review page chrome — bookmarked owner page where Ivana
+  // drops a raw review for Mihaela to translate locally and publish.
+  "submit.title": string;
+  "submit.subtitle": string;
+  "submit.passwordPrompt": string;
+  "submit.passwordPlaceholder": string;
+  "submit.unlock": string;
+  "submit.wrongPassword": string;
+  "submit.authorLabel": string;
+  "submit.sourceLabel": string;
+  "submit.ratingLabel": string;
+  "submit.dateLabel": string;
+  "submit.quoteLabel": string;
+  "submit.langLabel": string;
+  "submit.notesLabel": string;
+  "submit.notesPlaceholder": string;
+  "submit.submitButton": string;
+  "submit.sending": string;
+  "submit.thanksTitle": string;
+  "submit.thanksBody": string;
+  "submit.submitAnother": string;
 
   // ── contact ────────────────────────────────────────────────────────
   "contact.title": string;
@@ -357,6 +378,25 @@ export const publicTranslations: Record<Lang, PublicStrings> = {
     "lang.fr": "French",
     "reviews.showOriginal": "Show original",
     "reviews.showTranslation": "Show translation",
+    "submit.title": "Submit a review for Mihaela to translate",
+    "submit.subtitle": "Drop a raw review here. Mihaela will translate it on her Mac and publish it to the site in all five languages.",
+    "submit.passwordPrompt": "Enter the admin password to continue",
+    "submit.passwordPlaceholder": "Password",
+    "submit.unlock": "Unlock",
+    "submit.wrongPassword": "Wrong password",
+    "submit.authorLabel": "Reviewer name",
+    "submit.sourceLabel": "Source (Airbnb / Booking.com / Direct …)",
+    "submit.ratingLabel": "Rating",
+    "submit.dateLabel": "Date",
+    "submit.quoteLabel": "Review text (in the language the guest wrote it)",
+    "submit.langLabel": "Original language",
+    "submit.notesLabel": "Notes for Mihaela (optional)",
+    "submit.notesPlaceholder": "Anything special I should know about this review?",
+    "submit.submitButton": "Send to Mihaela",
+    "submit.sending": "Sending…",
+    "submit.thanksTitle": "Sent ✓",
+    "submit.thanksBody": "Mihaela got your submission and will translate it. She'll publish it on the site as soon as the translations are ready.",
+    "submit.submitAnother": "Submit another review",
 
     "contact.title": "Contact Us",
     "contact.subtitle": "Have questions? We'd love to hear from you.",
@@ -588,6 +628,25 @@ export const publicTranslations: Record<Lang, PublicStrings> = {
     "lang.fr": "francuskom",
     "reviews.showOriginal": "Prikaži izvornik",
     "reviews.showTranslation": "Prikaži prijevod",
+    "submit.title": "Pošalji recenziju Mihaeli da je prevede",
+    "submit.subtitle": "Ostavite izvornu recenziju ovdje. Mihaela će je prevesti na svom Macu i objaviti na stranici na svih pet jezika.",
+    "submit.passwordPrompt": "Unesite admin lozinku za nastavak",
+    "submit.passwordPlaceholder": "Lozinka",
+    "submit.unlock": "Otključaj",
+    "submit.wrongPassword": "Pogrešna lozinka",
+    "submit.authorLabel": "Ime gosta",
+    "submit.sourceLabel": "Izvor (Airbnb / Booking.com / Direktno …)",
+    "submit.ratingLabel": "Ocjena",
+    "submit.dateLabel": "Datum",
+    "submit.quoteLabel": "Tekst recenzije (na jeziku na kojem je gost napisao)",
+    "submit.langLabel": "Izvorni jezik",
+    "submit.notesLabel": "Bilješke za Mihaelu (opcionalno)",
+    "submit.notesPlaceholder": "Ima li nešto posebno što bih trebala znati o ovoj recenziji?",
+    "submit.submitButton": "Pošalji Mihaeli",
+    "submit.sending": "Šaljem…",
+    "submit.thanksTitle": "Poslano ✓",
+    "submit.thanksBody": "Mihaela je primila vaš podnesak i prevest će ga. Objavit će ga na stranici čim prijevodi budu spremni.",
+    "submit.submitAnother": "Pošalji još jednu recenziju",
 
     "contact.title": "Kontaktirajte nas",
     "contact.subtitle": "Imate pitanja? Rado ćemo vas čuti.",
@@ -819,6 +878,25 @@ export const publicTranslations: Record<Lang, PublicStrings> = {
     "lang.fr": "Französisch",
     "reviews.showOriginal": "Original anzeigen",
     "reviews.showTranslation": "Übersetzung anzeigen",
+    "submit.title": "Eine Bewertung für Mihaela zur Übersetzung einreichen",
+    "submit.subtitle": "Hinterlegen Sie hier eine Rohbewertung. Mihaela übersetzt sie auf ihrem Mac und veröffentlicht sie in allen fünf Sprachen auf der Website.",
+    "submit.passwordPrompt": "Admin-Passwort eingeben, um fortzufahren",
+    "submit.passwordPlaceholder": "Passwort",
+    "submit.unlock": "Entsperren",
+    "submit.wrongPassword": "Falsches Passwort",
+    "submit.authorLabel": "Name des Gastes",
+    "submit.sourceLabel": "Quelle (Airbnb / Booking.com / Direkt …)",
+    "submit.ratingLabel": "Bewertung",
+    "submit.dateLabel": "Datum",
+    "submit.quoteLabel": "Bewertungstext (in der Sprache, in der der Gast geschrieben hat)",
+    "submit.langLabel": "Originalsprache",
+    "submit.notesLabel": "Notizen für Mihaela (optional)",
+    "submit.notesPlaceholder": "Gibt es etwas Besonderes, was ich über diese Bewertung wissen sollte?",
+    "submit.submitButton": "An Mihaela senden",
+    "submit.sending": "Senden…",
+    "submit.thanksTitle": "Gesendet ✓",
+    "submit.thanksBody": "Mihaela hat Ihre Einreichung erhalten und wird sie übersetzen. Sie wird sie auf der Website veröffentlichen, sobald die Übersetzungen fertig sind.",
+    "submit.submitAnother": "Eine weitere Bewertung einreichen",
 
     "contact.title": "Kontakt",
     "contact.subtitle": "Haben Sie Fragen? Wir freuen uns auf Ihre Nachricht.",
@@ -1050,6 +1128,25 @@ export const publicTranslations: Record<Lang, PublicStrings> = {
     "lang.fr": "francese",
     "reviews.showOriginal": "Mostra originale",
     "reviews.showTranslation": "Mostra traduzione",
+    "submit.title": "Invia una recensione a Mihaela da tradurre",
+    "submit.subtitle": "Lascia qui una recensione grezza. Mihaela la tradurrà sul suo Mac e la pubblicherà sul sito in tutte e cinque le lingue.",
+    "submit.passwordPrompt": "Inserisci la password admin per continuare",
+    "submit.passwordPlaceholder": "Password",
+    "submit.unlock": "Sblocca",
+    "submit.wrongPassword": "Password errata",
+    "submit.authorLabel": "Nome dell'ospite",
+    "submit.sourceLabel": "Fonte (Airbnb / Booking.com / Diretto …)",
+    "submit.ratingLabel": "Valutazione",
+    "submit.dateLabel": "Data",
+    "submit.quoteLabel": "Testo della recensione (nella lingua in cui l'ospite ha scritto)",
+    "submit.langLabel": "Lingua originale",
+    "submit.notesLabel": "Note per Mihaela (opzionale)",
+    "submit.notesPlaceholder": "C'è qualcosa di speciale che dovrei sapere su questa recensione?",
+    "submit.submitButton": "Invia a Mihaela",
+    "submit.sending": "Invio…",
+    "submit.thanksTitle": "Inviato ✓",
+    "submit.thanksBody": "Mihaela ha ricevuto la tua proposta e la tradurrà. La pubblicherà sul sito non appena le traduzioni saranno pronte.",
+    "submit.submitAnother": "Invia un'altra recensione",
 
     "contact.title": "Contattaci",
     "contact.subtitle": "Hai domande? Ci farebbe piacere sentirti.",
@@ -1281,6 +1378,25 @@ export const publicTranslations: Record<Lang, PublicStrings> = {
     "lang.fr": "français",
     "reviews.showOriginal": "Voir l'original",
     "reviews.showTranslation": "Voir la traduction",
+    "submit.title": "Soumettre un avis à Mihaela pour traduction",
+    "submit.subtitle": "Déposez ici un avis brut. Mihaela le traduira sur son Mac et le publiera sur le site dans les cinq langues.",
+    "submit.passwordPrompt": "Entrez le mot de passe admin pour continuer",
+    "submit.passwordPlaceholder": "Mot de passe",
+    "submit.unlock": "Déverrouiller",
+    "submit.wrongPassword": "Mot de passe incorrect",
+    "submit.authorLabel": "Nom de l'invité",
+    "submit.sourceLabel": "Source (Airbnb / Booking.com / Direct …)",
+    "submit.ratingLabel": "Note",
+    "submit.dateLabel": "Date",
+    "submit.quoteLabel": "Texte de l'avis (dans la langue dans laquelle l'invité a écrit)",
+    "submit.langLabel": "Langue d'origine",
+    "submit.notesLabel": "Notes pour Mihaela (facultatif)",
+    "submit.notesPlaceholder": "Y a-t-il quelque chose de spécial que je devrais savoir sur cet avis ?",
+    "submit.submitButton": "Envoyer à Mihaela",
+    "submit.sending": "Envoi…",
+    "submit.thanksTitle": "Envoyé ✓",
+    "submit.thanksBody": "Mihaela a reçu votre soumission et la traduira. Elle la publiera sur le site dès que les traductions seront prêtes.",
+    "submit.submitAnother": "Soumettre un autre avis",
 
     "contact.title": "Contactez-nous",
     "contact.subtitle": "Des questions ? Nous serions ravis d'échanger avec vous.",

@@ -109,6 +109,19 @@ interface Translations {
   reviewTranslationsSummary: string;
   reviewTranslationsHelp: string;
   reviewTranslationPlaceholder: string;
+  // Translation inbox section — pending submissions Ivana sent via
+  // /submit-review for Mihaela to translate + publish.
+  inboxHeading: string;
+  inboxHelp: string;
+  inboxEmpty: string;
+  inboxLoading: string;
+  inboxNotesLabel: string;
+  inboxOriginalLangLabel: string;
+  inboxPublishButton: string;
+  inboxDeleteButton: string;
+  inboxDeleteConfirm: string;
+  inboxPublishHeading: string;
+  inboxPublishFeatured: string;
 }
 
 const translations: Record<Lang, Translations> = {
@@ -202,6 +215,17 @@ const translations: Record<Lang, Translations> = {
     reviewTranslationsSummary: "Prijevodi (opcionalno)",
     reviewTranslationsHelp: "Ako želite da posjetitelji vide recenziju na svom jeziku, ovdje upišite ručni prijevod citata. Polje izvornog jezika je preskočeno. Prazna polja se ne spremaju.",
     reviewTranslationPlaceholder: "Ostavite prazno za izvornik",
+    inboxHeading: "Inbox za prijevode",
+    inboxHelp: "Recenzije koje je Ivana poslala kroz /submit-review čekaju ovdje. Prevedite citat na ostala 4 jezika i objavite — recenzija prelazi u glavni popis, a unos iz inboxa se briše.",
+    inboxEmpty: "Nema podnesaka na čekanju.",
+    inboxLoading: "Učitavanje inboxa…",
+    inboxNotesLabel: "Bilješke od Ivane",
+    inboxOriginalLangLabel: "Izvorni jezik",
+    inboxPublishButton: "Objavi s prijevodima",
+    inboxDeleteButton: "Odbaci",
+    inboxDeleteConfirm: "Odbaciti ovaj podnesak bez objave?",
+    inboxPublishHeading: "Objavi s prijevodima",
+    inboxPublishFeatured: "Označi kao istaknutu (prikaz na početnoj)",
   },
   en: {
     adminLogin: "Admin Login",
@@ -293,6 +317,17 @@ const translations: Record<Lang, Translations> = {
     reviewTranslationsSummary: "Translations (optional)",
     reviewTranslationsHelp: "If you want visitors to read the review in their own language, paste a hand-curated translation of the quote below. The original-language slot is skipped. Empty slots aren't saved.",
     reviewTranslationPlaceholder: "Leave empty to fall back to the original",
+    inboxHeading: "Translation inbox",
+    inboxHelp: "Reviews Ivana sent through /submit-review wait here. Translate the quote into the other 4 languages and publish — the review moves to the live list and the inbox row is deleted.",
+    inboxEmpty: "No pending submissions.",
+    inboxLoading: "Loading inbox…",
+    inboxNotesLabel: "Notes from Ivana",
+    inboxOriginalLangLabel: "Original language",
+    inboxPublishButton: "Publish with translations",
+    inboxDeleteButton: "Dismiss",
+    inboxDeleteConfirm: "Dismiss this submission without publishing?",
+    inboxPublishHeading: "Publish with translations",
+    inboxPublishFeatured: "Mark as Featured (show on home page)",
   },
   de: {
     adminLogin: "Admin-Anmeldung",
@@ -384,6 +419,17 @@ const translations: Record<Lang, Translations> = {
     reviewTranslationsSummary: "Übersetzungen (optional)",
     reviewTranslationsHelp: "Wenn Sie möchten, dass Besucher die Bewertung in ihrer eigenen Sprache lesen, fügen Sie hier eine von Hand kuratierte Übersetzung des Zitats ein. Das Originalsprachenfeld wird übersprungen. Leere Felder werden nicht gespeichert.",
     reviewTranslationPlaceholder: "Leer lassen, um auf das Original zurückzugreifen",
+    inboxHeading: "Übersetzungs-Inbox",
+    inboxHelp: "Bewertungen, die Ivana über /submit-review gesendet hat, warten hier. Übersetzen Sie das Zitat in die anderen 4 Sprachen und veröffentlichen Sie — die Bewertung wird in die Live-Liste verschoben und der Inbox-Eintrag gelöscht.",
+    inboxEmpty: "Keine ausstehenden Einreichungen.",
+    inboxLoading: "Inbox wird geladen…",
+    inboxNotesLabel: "Notizen von Ivana",
+    inboxOriginalLangLabel: "Originalsprache",
+    inboxPublishButton: "Mit Übersetzungen veröffentlichen",
+    inboxDeleteButton: "Verwerfen",
+    inboxDeleteConfirm: "Diese Einreichung ohne Veröffentlichung verwerfen?",
+    inboxPublishHeading: "Mit Übersetzungen veröffentlichen",
+    inboxPublishFeatured: "Als hervorgehoben markieren (auf der Startseite anzeigen)",
   },
   it: {
     adminLogin: "Accesso amministratore",
@@ -475,6 +521,17 @@ const translations: Record<Lang, Translations> = {
     reviewTranslationsSummary: "Traduzioni (opzionale)",
     reviewTranslationsHelp: "Se vuoi che i visitatori leggano la recensione nella loro lingua, incolla qui sotto una traduzione curata a mano della citazione. Lo slot della lingua originale viene saltato. Gli slot vuoti non vengono salvati.",
     reviewTranslationPlaceholder: "Lascia vuoto per tornare all'originale",
+    inboxHeading: "Casella delle traduzioni",
+    inboxHelp: "Le recensioni che Ivana ha inviato tramite /submit-review aspettano qui. Traduci la citazione nelle altre 4 lingue e pubblica — la recensione passa nella lista live e la voce della casella viene eliminata.",
+    inboxEmpty: "Nessuna proposta in attesa.",
+    inboxLoading: "Caricamento casella…",
+    inboxNotesLabel: "Note di Ivana",
+    inboxOriginalLangLabel: "Lingua originale",
+    inboxPublishButton: "Pubblica con le traduzioni",
+    inboxDeleteButton: "Scarta",
+    inboxDeleteConfirm: "Scartare questa proposta senza pubblicarla?",
+    inboxPublishHeading: "Pubblica con le traduzioni",
+    inboxPublishFeatured: "Contrassegna come in evidenza (mostra in homepage)",
   },
   fr: {
     adminLogin: "Connexion admin",
@@ -566,6 +623,17 @@ const translations: Record<Lang, Translations> = {
     reviewTranslationsSummary: "Traductions (facultatif)",
     reviewTranslationsHelp: "Si vous voulez que les visiteurs lisent l'avis dans leur propre langue, collez ci-dessous une traduction de la citation faite à la main. Le champ de la langue d'origine est ignoré. Les champs vides ne sont pas enregistrés.",
     reviewTranslationPlaceholder: "Laisser vide pour revenir à l'original",
+    inboxHeading: "Boîte de traduction",
+    inboxHelp: "Les avis qu'Ivana a envoyés via /submit-review attendent ici. Traduisez la citation dans les 4 autres langues et publiez — l'avis passe dans la liste publique et l'entrée de la boîte est supprimée.",
+    inboxEmpty: "Aucune soumission en attente.",
+    inboxLoading: "Chargement de la boîte…",
+    inboxNotesLabel: "Notes d'Ivana",
+    inboxOriginalLangLabel: "Langue d'origine",
+    inboxPublishButton: "Publier avec les traductions",
+    inboxDeleteButton: "Rejeter",
+    inboxDeleteConfirm: "Rejeter cette soumission sans la publier ?",
+    inboxPublishHeading: "Publier avec les traductions",
+    inboxPublishFeatured: "Marquer comme mis en avant (afficher sur la page d'accueil)",
   },
 };
 
@@ -827,6 +895,32 @@ export default function AdminPage() {
   const [reviewForm, setReviewForm] = useState<ReviewFormState>(blankReviewForm());
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [reviewSaving, setReviewSaving] = useState(false);
+
+  // ── Translation inbox state ──────────────────────────────────────────────
+  interface InboxRow {
+    id: string;
+    author: string;
+    source: string;
+    rating: 1 | 2 | 3 | 4 | 5;
+    quote: string;
+    date: string;
+    lang: 'en' | 'hr' | 'de' | 'it' | 'fr';
+    notes?: string;
+    createdAt: string;
+  }
+  const [inbox, setInbox] = useState<InboxRow[]>([]);
+  const [loadingInbox, setLoadingInbox] = useState(false);
+  const [publishingInboxId, setPublishingInboxId] = useState<string | null>(null);
+  // Per-language translation slots for the row currently being published.
+  // The slot matching the submission's original lang stays empty and is
+  // dropped before sending to the publish endpoint.
+  const [publishTranslations, setPublishTranslations] = useState<Record<'en'|'hr'|'de'|'it'|'fr', string>>({
+    en: '', hr: '', de: '', it: '', fr: '',
+  });
+  const [publishFeatured, setPublishFeatured] = useState(false);
+  const [publishSaving, setPublishSaving] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+
   const [bookingAction, setBookingAction] = useState<Record<string, "confirming" | "declining" | "deleting" | "saving" | false>>({});
 
   // Inline edit + manual-create state. `editingId === "new"` means the
@@ -1273,14 +1367,100 @@ export default function AdminPage() {
     });
   }, []);
 
+  // ── Translation inbox handlers ──────────────────────────────────────────
+  const fetchInbox = useCallback(async () => {
+    setLoadingInbox(true);
+    try {
+      const res = await fetch("/api/admin/submitted-reviews", {
+        headers: { "x-admin-password": authPassword },
+      });
+      if (!res.ok) throw new Error("inbox fetch failed");
+      const data = await res.json();
+      setInbox(Array.isArray(data.submissions) ? data.submissions : []);
+    } catch (e) {
+      console.error("fetchInbox failed:", e);
+    } finally {
+      setLoadingInbox(false);
+    }
+  }, [authPassword]);
+
+  const handleInboxPublishOpen = (row: InboxRow) => {
+    setPublishError(null);
+    setPublishingInboxId(row.id);
+    setPublishTranslations({ en: '', hr: '', de: '', it: '', fr: '' });
+    setPublishFeatured(false);
+  };
+
+  const handleInboxPublishCancel = () => {
+    setPublishingInboxId(null);
+    setPublishError(null);
+  };
+
+  const handleInboxPublishSave = async () => {
+    if (!publishingInboxId) return;
+    const row = inbox.find((r) => r.id === publishingInboxId);
+    if (!row) return;
+    setPublishSaving(true);
+    setPublishError(null);
+    // Strip empty + original-lang slots before sending — same logic as
+    // the live review-edit form so the publish endpoint only ever sees
+    // a clean translations map.
+    const trimmed: Record<string, string> = {};
+    for (const code of ['en', 'hr', 'de', 'it', 'fr'] as const) {
+      if (code === row.lang) continue;
+      const v = publishTranslations[code]?.trim();
+      if (v) trimmed[code] = v;
+    }
+    try {
+      const res = await fetch(`/api/admin/submitted-reviews/${publishingInboxId}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": authPassword },
+        body: JSON.stringify({
+          featured: publishFeatured,
+          translations: trimmed,
+          // Server uses submission fields as defaults; only override if
+          // we ever add per-row edit affordances. For now the queue is
+          // trust-Ivana-as-typed.
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "publish failed");
+      }
+      // Refresh both lists so the just-published row appears live and
+      // the queue entry disappears.
+      await Promise.all([fetchInbox(), fetchReviews()]);
+      setPublishingInboxId(null);
+    } catch (e) {
+      setPublishError(e instanceof Error ? e.message : "publish failed");
+    } finally {
+      setPublishSaving(false);
+    }
+  };
+
+  const handleInboxDelete = useCallback(async (id: string, confirmLabel: string) => {
+    if (!confirm(confirmLabel)) return;
+    try {
+      const res = await fetch(`/api/admin/submitted-reviews/${id}`, {
+        method: "DELETE",
+        headers: { "x-admin-password": authPassword },
+      });
+      if (!res.ok) throw new Error("dismiss failed");
+      await fetchInbox();
+    } catch (e) {
+      console.error("inbox delete failed:", e);
+    }
+  }, [authPassword, fetchInbox]);
+
   useEffect(() => {
     if (authenticated) {
       fetchBlockedDates();
       fetchBookings();
       fetchImages();
       fetchReviews();
+      fetchInbox();
     }
-  }, [authenticated, fetchBlockedDates, fetchBookings, fetchImages, fetchReviews]);
+  }, [authenticated, fetchBlockedDates, fetchBookings, fetchImages, fetchReviews, fetchInbox]);
 
   // Verify the typed password by attempting an authenticated GET. The
   // server responds 200 on match, 401 on mismatch. We avoid storing the
@@ -2396,6 +2576,147 @@ export default function AdminPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Translation Inbox Section ── */}
+          <div className="mt-16" data-testid="inbox-section">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="text-3xl font-bold text-white">{t.inboxHeading}</h2>
+                <p className="mt-1 text-sm text-slate-400 max-w-2xl">{t.inboxHelp}</p>
+              </div>
+            </div>
+
+            {loadingInbox ? (
+              <div className="text-center text-slate-400 py-8">{t.inboxLoading}</div>
+            ) : inbox.length === 0 ? (
+              <div className="bg-surface-800 border border-white/10 rounded-2xl p-8 text-center">
+                <p className="text-slate-400 text-sm" data-testid="inbox-empty">{t.inboxEmpty}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {inbox.map((row) => {
+                  if (publishingInboxId === row.id) {
+                    return (
+                      <div
+                        key={row.id}
+                        data-testid={`inbox-publish-panel-${row.id}`}
+                        className="bg-surface-800 border border-brand-400/30 rounded-2xl p-6 space-y-3"
+                      >
+                        <h3 className="text-lg font-semibold text-white">{t.inboxPublishHeading}</h3>
+                        <div className="text-sm text-slate-300 space-y-1">
+                          <p><span className="text-slate-400">{t.reviewAuthorLabel}:</span> <span dir="auto">{row.author}</span> · <span className="text-slate-400">{row.source}</span></p>
+                          <p><span className="text-slate-400">{t.reviewRatingLabel}:</span> {'★'.repeat(row.rating)}{'☆'.repeat(5 - row.rating)} <span className="text-slate-500 text-xs">{row.date}</span></p>
+                          <p><span className="text-slate-400">{t.inboxOriginalLangLabel}:</span> {row.lang.toUpperCase()}</p>
+                          <blockquote dir="auto" className="mt-2 p-3 bg-surface-700 rounded-lg italic text-slate-100">
+                            &ldquo;{row.quote}&rdquo;
+                          </blockquote>
+                          {row.notes && (
+                            <p className="text-xs text-slate-400 mt-2">
+                              <span className="font-semibold">{t.inboxNotesLabel}:</span> <span dir="auto">{row.notes}</span>
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2 pt-2">
+                          {(["en","hr","de","it","fr"] as const).map((code) => {
+                            if (code === row.lang) return null;
+                            const labelMap = {
+                              en: "EN — English",
+                              hr: "HR — Hrvatski",
+                              de: "DE — Deutsch",
+                              it: "IT — Italiano",
+                              fr: "FR — Français",
+                            } as const;
+                            return (
+                              <label key={code} className="block text-xs text-slate-300">
+                                {labelMap[code]}
+                                <textarea
+                                  dir="auto"
+                                  rows={2}
+                                  value={publishTranslations[code]}
+                                  onChange={(e) =>
+                                    setPublishTranslations((p) => ({ ...p, [code]: e.target.value }))
+                                  }
+                                  data-testid={`inbox-translation-${code}`}
+                                  className="mt-1 w-full px-2 py-1 bg-surface-700 border border-white/10 rounded text-white text-sm"
+                                />
+                              </label>
+                            );
+                          })}
+                        </div>
+                        <label className="flex items-center gap-2 text-sm text-slate-300">
+                          <input
+                            type="checkbox"
+                            checked={publishFeatured}
+                            onChange={(e) => setPublishFeatured(e.target.checked)}
+                            data-testid={`inbox-publish-featured-${row.id}`}
+                          />
+                          {t.inboxPublishFeatured}
+                        </label>
+                        {publishError && (
+                          <p className="text-red-400 text-sm" data-testid="inbox-publish-error">{publishError}</p>
+                        )}
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={handleInboxPublishSave}
+                            disabled={publishSaving}
+                            data-testid={`inbox-publish-save-${row.id}`}
+                            className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50"
+                          >
+                            {publishSaving ? t.saving : t.inboxPublishButton}
+                          </button>
+                          <button
+                            onClick={handleInboxPublishCancel}
+                            data-testid={`inbox-publish-cancel-${row.id}`}
+                            className="px-4 py-2 bg-surface-700 hover:bg-surface-600 text-slate-200 text-sm font-semibold rounded-xl transition border border-white/10"
+                          >
+                            {t.cancel}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={row.id}
+                      data-testid={`inbox-row-${row.id}`}
+                      className="bg-surface-800 border border-white/10 rounded-2xl p-5"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0 space-y-1 text-sm">
+                          <p className="text-white"><span dir="auto" className="font-semibold">{row.author}</span> <span className="text-slate-400">· {row.source}</span> <span className="text-slate-500 text-xs">· {row.lang.toUpperCase()}</span></p>
+                          <p className="text-amber-400">{'★'.repeat(row.rating)}<span className="text-slate-600">{'☆'.repeat(5 - row.rating)}</span> <span className="text-slate-500 text-xs ml-2 tabular-nums">{row.date}</span></p>
+                          <blockquote dir="auto" className="mt-1 italic text-slate-200 text-sm">
+                            &ldquo;{row.quote}&rdquo;
+                          </blockquote>
+                          {row.notes && (
+                            <p className="text-xs text-slate-400 mt-1">
+                              <span className="font-semibold">{t.inboxNotesLabel}:</span> <span dir="auto">{row.notes}</span>
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleInboxPublishOpen(row)}
+                            data-testid={`inbox-publish-${row.id}`}
+                            className="px-3 py-1.5 text-xs bg-brand-500 hover:bg-brand-400 text-white rounded-lg transition"
+                          >
+                            {t.inboxPublishButton}
+                          </button>
+                          <button
+                            onClick={() => handleInboxDelete(row.id, t.inboxDeleteConfirm)}
+                            data-testid={`inbox-delete-${row.id}`}
+                            className="px-3 py-1.5 text-xs bg-red-600 hover:bg-red-500 text-white rounded-lg transition"
+                          >
+                            {t.inboxDeleteButton}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

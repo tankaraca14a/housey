@@ -334,6 +334,30 @@ Kako to radi:
 
 Koristite štedljivo. Stranica nikad sama strojno ne prevodi recenzije, ono što zalijepite je ono što posjetitelji vide. Ako je gost napisao nešto posebno lijepo na hrvatskom i želite da i njemački posjetitelji to osjete, zalijepite svoj njemački prijevod u polje **DE** i spremite.
 
+### 6.9 Slanje recenzije Mihaeli na prijevod
+
+Ako ne želite svaku recenziju prepisivati na pet jezika, možete je proslijediti Mihaeli. Otvorite adresu **`/submit-review`** (zabilježite je jednom — nije u javnoj navigaciji). Upišite istu admin lozinku, ispunite obrazac, kliknite **Pošalji Mihaeli**.
+
+![Obrazac /submit-review](./admin-screenshots-hr/35-submit-review-form.png)
+
+Što se događa dalje:
+
+1. Recenzija stiže u privatni „Inbox za prijevode” koji vide samo Mihaela (i vi, u svom adminu). **Još nije** objavljena na javnoj stranici.
+2. Mihaela dobije email s izvornim tekstom + vašim bilješkama.
+3. Mihaela prevede citat na svom Macu i objavi ga iz vaše `/admin` stranice — unos iz reda tada nestaje, a nova recenzija ide u promet na **svih pet jezika odjednom**.
+
+Da vidite red u svom adminu, skrolajte ispod sekcije **Recenzije** do **Inbox za prijevode**:
+
+![Inbox za prijevode u /admin s jednim podneskom na čekanju](./admin-screenshots-hr/36-translation-inbox.png)
+
+Kad Mihaela klikne **Objavi s prijevodima**, vidi cijeli panel za objavu s vašim izvornim citatom na vrhu i četiri polja za prijevode (po jedno za svaki ne-izvorni jezik). Zalijepi prijevode, opcionalno označi **Označi kao istaknutu**, i klikne **Objavi s prijevodima**. Podnesak nestaje iz inboxa, a nova recenzija se pojavljuje na stranici.
+
+![Panel za objavu s prijevodima unutar admin inboxa](./admin-screenshots-hr/37-publish-panel.png)
+
+Ako je podnesak pogrešan ili duplikat, kliknite **Odbaci** da ga uklonite iz reda bez objave. Odbačeni redovi nikad ne dođu na javnu stranicu.
+
+Ovo je čisto pogodnost — i dalje možete koristiti §6.1–§6.8 da sami objavite recenzije ako imate svoje prijevode ili ne želite gnjaviti Mihaelu.
+
 ---
 
 ## 7. Prebacivanje jezika

@@ -334,6 +334,30 @@ How it works:
 
 Use this sparingly. The site never machine-translates reviews — what you paste is what visitors see. If a guest wrote something especially nice in Croatian and you want German visitors to feel it too, paste your own German translation into the **DE** slot and save.
 
+### 6.9 Sending a review to Mihaela for translation
+
+If you'd rather not retype the same review in five languages, you can hand it off to Mihaela. Open the URL **`/submit-review`** (bookmark it once — it's not in the public navigation). Type the same admin password, fill the form, hit **Send to Mihaela**.
+
+![/submit-review form](./admin-screenshots/35-submit-review-form.png)
+
+What happens next:
+
+1. The review lands in a private "Translation inbox" that only Mihaela (and you, in your admin) can see. It is **not** published to the public site yet.
+2. Mihaela gets an email with the original text + your notes.
+3. Mihaela translates the quote on her Mac and publishes from your `/admin` page — the queue entry then disappears and a new review row goes live in **all five languages at once**.
+
+To see the queue inside your admin, scroll past the **Reviews** section to **Translation inbox**:
+
+![Translation inbox in /admin showing one pending submission](./admin-screenshots/36-translation-inbox.png)
+
+When Mihaela clicks **Publish with translations**, she sees the full publish panel with your original quote at the top and four translation textareas (one per non-original language). She pastes her translations, optionally ticks **Mark as Featured**, and clicks **Publish with translations**. The submission disappears from the inbox and the new review appears live.
+
+![Publish-with-translations panel inside the admin inbox](./admin-screenshots/37-publish-panel.png)
+
+If a submission is wrong or a duplicate, click **Dismiss** to remove it from the queue without publishing. Dismissed rows never reach the public site.
+
+This is purely a convenience — you can still use §6.1–§6.8 to publish reviews directly if you have your own translations ready or don't want to bother Mihaela.
+
 ---
 
 ## 7. Switching language

@@ -5,9 +5,14 @@ import { fileBookingsRepository, fileBlockedDatesRepository } from './file-repos
 import { kvBookingsRepository, kvBlockedDatesRepository } from './kv-repository';
 import { fileImageRepository, kvImageRepository } from './image-repository';
 import { fileReviewRepository, kvReviewRepository } from './review-repository';
+import {
+  fileSubmittedReviewRepository,
+  kvSubmittedReviewRepository,
+} from './submitted-review-repository';
 import type { BookingsRepository, BlockedDatesRepository } from './repository';
 import type { ImageRepository } from './image-repository';
 import type { ReviewRepository } from './review-repository';
+import type { SubmittedReviewRepository } from './submitted-review-repository';
 
 function kvConfigured(): boolean {
   const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
@@ -32,6 +37,10 @@ export const images: ImageRepository = STORAGE_BACKEND === 'kv'
 export const reviews: ReviewRepository = STORAGE_BACKEND === 'kv'
   ? kvReviewRepository
   : fileReviewRepository;
+
+export const submittedReviews: SubmittedReviewRepository = STORAGE_BACKEND === 'kv'
+  ? kvSubmittedReviewRepository
+  : fileSubmittedReviewRepository;
 
 // Visible in server logs once at startup so the operator can confirm
 // which backend is active.
