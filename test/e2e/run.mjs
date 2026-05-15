@@ -32,6 +32,8 @@ const FILES = [
   'admin-reviews-mobile-hr-playwright.mjs',
   'admin-reviews-keyboard-playwright.mjs',
   'reviews-cross-browser-playwright.mjs',
+  'admin-reviews-undo-playwright.mjs',
+  'admin-reviews-cancel-validation-playwright.mjs',
   'calendar-dirty-playwright.mjs',
   'mobile-admin-playwright.mjs',
   'heic-conversion-playwright.mjs',

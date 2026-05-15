@@ -30,6 +30,7 @@ const FILES = [
   'reviews-xss.mjs',
   'reviews-concurrent.mjs',
   'reviews-scale.mjs',
+  'reviews-empty-states.mjs',
 ];
 
 let failed = 0;
