@@ -17,6 +17,7 @@ const FILES = [
   'email-delivery-live.mjs',
   'images-lifecycle-live.mjs',
   'admin-reviews-stars-live.mjs',
+  'admin-reviews-lang-live.mjs',
   'i18n-cookie-live.mjs',
 ];
 

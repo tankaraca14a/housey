@@ -98,6 +98,17 @@ interface Translations {
   reviewDateLabel: string;
   reviewUrlLabel: string;
   reviewFeaturedLabel: string;
+  // "Original language" picker on the review form — drives the
+  // "in {language}" badge guests on other languages see.
+  reviewLangLabel: string;
+  reviewLangHelp: string;
+  // Translations panel: an optional set of textareas (one per non-original
+  // lang) where the owner can paste hand-edited translations of the quote.
+  // Visitors whose language has a translation see that instead of the
+  // original, with a "Show original" toggle on the card.
+  reviewTranslationsSummary: string;
+  reviewTranslationsHelp: string;
+  reviewTranslationPlaceholder: string;
 }
 
 const translations: Record<Lang, Translations> = {
@@ -186,6 +197,11 @@ const translations: Record<Lang, Translations> = {
     reviewDateLabel: "Datum",
     reviewUrlLabel: "URL (opcionalno)",
     reviewFeaturedLabel: "Istaknuti (prikaz na početnoj)",
+    reviewLangLabel: "Izvorni jezik",
+    reviewLangHelp: "Na kojem je jeziku gost napisao recenziju. Posjetitelji na drugom jeziku vide malu oznaku „na engleskom” / „na hrvatskom”.",
+    reviewTranslationsSummary: "Prijevodi (opcionalno)",
+    reviewTranslationsHelp: "Ako želite da posjetitelji vide recenziju na svom jeziku, ovdje upišite ručni prijevod citata. Polje izvornog jezika je preskočeno. Prazna polja se ne spremaju.",
+    reviewTranslationPlaceholder: "Ostavite prazno za izvornik",
   },
   en: {
     adminLogin: "Admin Login",
@@ -272,6 +288,11 @@ const translations: Record<Lang, Translations> = {
     reviewDateLabel: "Date",
     reviewUrlLabel: "URL (optional)",
     reviewFeaturedLabel: "Featured (shown on home page)",
+    reviewLangLabel: "Original language",
+    reviewLangHelp: "What language the guest wrote the review in. Visitors on a different language see a small \"in English\" / \"in Croatian\" badge.",
+    reviewTranslationsSummary: "Translations (optional)",
+    reviewTranslationsHelp: "If you want visitors to read the review in their own language, paste a hand-curated translation of the quote below. The original-language slot is skipped. Empty slots aren't saved.",
+    reviewTranslationPlaceholder: "Leave empty to fall back to the original",
   },
   de: {
     adminLogin: "Admin-Anmeldung",
@@ -358,6 +379,11 @@ const translations: Record<Lang, Translations> = {
     reviewDateLabel: "Datum",
     reviewUrlLabel: "URL (optional)",
     reviewFeaturedLabel: "Hervorgehoben (auf der Startseite angezeigt)",
+    reviewLangLabel: "Originalsprache",
+    reviewLangHelp: "In welcher Sprache der Gast die Bewertung geschrieben hat. Besucher in anderen Sprachen sehen ein kleines „auf Englisch” / „auf Kroatisch”-Etikett.",
+    reviewTranslationsSummary: "Übersetzungen (optional)",
+    reviewTranslationsHelp: "Wenn Sie möchten, dass Besucher die Bewertung in ihrer eigenen Sprache lesen, fügen Sie hier eine von Hand kuratierte Übersetzung des Zitats ein. Das Originalsprachenfeld wird übersprungen. Leere Felder werden nicht gespeichert.",
+    reviewTranslationPlaceholder: "Leer lassen, um auf das Original zurückzugreifen",
   },
   it: {
     adminLogin: "Accesso amministratore",
@@ -444,6 +470,11 @@ const translations: Record<Lang, Translations> = {
     reviewDateLabel: "Data",
     reviewUrlLabel: "URL (opzionale)",
     reviewFeaturedLabel: "In evidenza (mostrata in homepage)",
+    reviewLangLabel: "Lingua originale",
+    reviewLangHelp: "In quale lingua l'ospite ha scritto la recensione. I visitatori in un'altra lingua vedono una piccola etichetta \"in inglese\" / \"in croato\".",
+    reviewTranslationsSummary: "Traduzioni (opzionale)",
+    reviewTranslationsHelp: "Se vuoi che i visitatori leggano la recensione nella loro lingua, incolla qui sotto una traduzione curata a mano della citazione. Lo slot della lingua originale viene saltato. Gli slot vuoti non vengono salvati.",
+    reviewTranslationPlaceholder: "Lascia vuoto per tornare all'originale",
   },
   fr: {
     adminLogin: "Connexion admin",
@@ -530,6 +561,11 @@ const translations: Record<Lang, Translations> = {
     reviewDateLabel: "Date",
     reviewUrlLabel: "URL (facultatif)",
     reviewFeaturedLabel: "Mis en avant (affiché sur la page d'accueil)",
+    reviewLangLabel: "Langue d'origine",
+    reviewLangHelp: "Dans quelle langue l'invité a écrit l'avis. Les visiteurs sur une autre langue voient une petite étiquette « en anglais » / « en croate ».",
+    reviewTranslationsSummary: "Traductions (facultatif)",
+    reviewTranslationsHelp: "Si vous voulez que les visiteurs lisent l'avis dans leur propre langue, collez ci-dessous une traduction de la citation faite à la main. Le champ de la langue d'origine est ignoré. Les champs vides ne sont pas enregistrés.",
+    reviewTranslationPlaceholder: "Laisser vide pour revenir à l'original",
   },
 };
 
@@ -749,6 +785,8 @@ export default function AdminPage() {
     featured: boolean;
     sortOrder: number;
     createdAt: string;
+    lang?: 'en' | 'hr' | 'de' | 'it' | 'fr';
+    translations?: Partial<Record<'en' | 'hr' | 'de' | 'it' | 'fr', string>>;
   }
   interface ReviewFormState {
     author: string;
@@ -758,7 +796,20 @@ export default function AdminPage() {
     date: string;
     url: string;
     featured: boolean;
+    // Original language of the quote — drives the "in {language}" badge
+    // visitors on other languages see on the public site. Defaults to "en"
+    // because most guest reviews on Airbnb / Booking arrive in English.
+    lang: 'en' | 'hr' | 'de' | 'it' | 'fr';
+    // Hand-curated translations of the quote into other site languages.
+    // The form always holds 5 string slots (one per supported lang); the
+    // slot matching `lang` is ignored on submit (that's the original).
+    // Empty strings are stripped before sending so we don't pile dead
+    // keys into the data file.
+    translations: Record<'en' | 'hr' | 'de' | 'it' | 'fr', string>;
   }
+  const emptyTranslations = (): Record<'en' | 'hr' | 'de' | 'it' | 'fr', string> => ({
+    en: '', hr: '', de: '', it: '', fr: '',
+  });
   const blankReviewForm = (): ReviewFormState => ({
     author: '',
     source: 'Airbnb',
@@ -767,6 +818,8 @@ export default function AdminPage() {
     date: new Date().toISOString().slice(0, 10),
     url: '',
     featured: false,
+    lang: 'en',
+    translations: emptyTranslations(),
   });
   const [reviewsList, setReviewsList] = useState<ReviewRow[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
@@ -1092,6 +1145,17 @@ export default function AdminPage() {
       date: r.date,
       url: r.url ?? '',
       featured: r.featured,
+      // Legacy reviews stored before the lang field existed default to
+      // English when opened for edit so saving doesn't accidentally
+      // clear data and so the dropdown has a sensible selected value.
+      lang: r.lang ?? 'en',
+      translations: {
+        en: r.translations?.en ?? '',
+        hr: r.translations?.hr ?? '',
+        de: r.translations?.de ?? '',
+        it: r.translations?.it ?? '',
+        fr: r.translations?.fr ?? '',
+      },
     });
   };
 
@@ -1105,6 +1169,16 @@ export default function AdminPage() {
     setReviewError(null);
     setReviewSaving(true);
     const ratingNum = parseInt(reviewForm.rating, 10);
+    // Strip empty translation slots + the slot matching the original
+    // lang so we don't ever store a "translation" that's a dupe of the
+    // quote field. The API also validates this, but doing it here keeps
+    // the wire payload clean.
+    const trimmedTranslations: Record<string, string> = {};
+    for (const code of ['en', 'hr', 'de', 'it', 'fr'] as const) {
+      if (code === reviewForm.lang) continue;
+      const v = reviewForm.translations[code]?.trim();
+      if (v) trimmedTranslations[code] = v;
+    }
     const payload = {
       author: reviewForm.author.trim(),
       source: reviewForm.source.trim(),
@@ -1114,6 +1188,10 @@ export default function AdminPage() {
       url: reviewForm.url.trim() || undefined,
       featured: reviewForm.featured,
       sortOrder: editingReviewId === "new" ? Date.now() : undefined,
+      lang: reviewForm.lang,
+      // Send the sanitised map on every save (including empty) so PATCH
+      // can remove a previously-saved translation by clearing the textarea.
+      translations: trimmedTranslations,
     };
     try {
       const isNew = editingReviewId === "new";
@@ -2143,6 +2221,27 @@ export default function AdminPage() {
                       className="mt-1 w-full px-3 py-2 bg-surface-700 border border-white/10 rounded-lg text-white text-sm"
                     />
                   </label>
+                  <label className="text-sm text-slate-300">
+                    {t.reviewLangLabel}
+                    <select
+                      value={reviewForm.lang}
+                      onChange={(e) =>
+                        setReviewForm((f) => ({
+                          ...f,
+                          lang: e.target.value as 'en' | 'hr' | 'de' | 'it' | 'fr',
+                        }))
+                      }
+                      data-testid="review-lang"
+                      className="mt-1 w-full px-3 py-2 bg-surface-700 border border-white/10 rounded-lg text-white text-sm"
+                    >
+                      <option value="en">EN — English</option>
+                      <option value="hr">HR — Hrvatski</option>
+                      <option value="de">DE — Deutsch</option>
+                      <option value="it">IT — Italiano</option>
+                      <option value="fr">FR — Français</option>
+                    </select>
+                    <span className="block mt-1 text-xs text-slate-500">{t.reviewLangHelp}</span>
+                  </label>
                 </div>
                 <label className="text-sm text-slate-300 block">
                   {t.reviewQuoteLabel}
@@ -2175,6 +2274,54 @@ export default function AdminPage() {
                   />
                   {t.reviewFeaturedLabel}
                 </label>
+                {/* Translations panel. Native <details> for zero-state UI
+                    weight: closed by default so the form looks the same as
+                    before for owners who never use translations. Inside,
+                    one textarea per non-original lang. Empty slots are
+                    stripped before save. */}
+                <details
+                  data-testid="review-translations-panel"
+                  className="bg-surface-700/50 border border-white/10 rounded-lg p-3"
+                  open={(["en","hr","de","it","fr"] as const).some(
+                    (c) => c !== reviewForm.lang && (reviewForm.translations[c] ?? "").trim().length > 0
+                  )}
+                >
+                  <summary className="cursor-pointer text-sm text-slate-200 font-medium">
+                    {t.reviewTranslationsSummary}
+                  </summary>
+                  <p className="mt-2 text-xs text-slate-400">{t.reviewTranslationsHelp}</p>
+                  <div className="mt-3 space-y-2">
+                    {(["en","hr","de","it","fr"] as const).map((code) => {
+                      if (code === reviewForm.lang) return null;
+                      const labelMap = {
+                        en: "EN — English",
+                        hr: "HR — Hrvatski",
+                        de: "DE — Deutsch",
+                        it: "IT — Italiano",
+                        fr: "FR — Français",
+                      } as const;
+                      return (
+                        <label key={code} className="block text-xs text-slate-300">
+                          {labelMap[code]}
+                          <textarea
+                            dir="auto"
+                            rows={2}
+                            value={reviewForm.translations[code]}
+                            onChange={(e) =>
+                              setReviewForm((f) => ({
+                                ...f,
+                                translations: { ...f.translations, [code]: e.target.value },
+                              }))
+                            }
+                            data-testid={`review-translation-${code}`}
+                            placeholder={t.reviewTranslationPlaceholder}
+                            className="mt-1 w-full px-2 py-1 bg-surface-800 border border-white/10 rounded text-white text-sm"
+                          />
+                        </label>
+                      );
+                    })}
+                  </div>
+                </details>
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleReviewSave}

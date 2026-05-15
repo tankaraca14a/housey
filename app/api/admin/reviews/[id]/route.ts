@@ -4,8 +4,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { reviews as reviewsRepo } from '@/app/lib/store-factory';
 import { validateReviewPatch, type ReviewPatch } from '@/app/lib/reviews';
+import { SUPPORTED_LANGS, type Lang } from '@/app/lib/i18n/types';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
+
+// Mirror of the helper in the collection route. Re-declared here to keep
+// each endpoint file self-contained — adding a /lib helper for 20 lines
+// of sanitisation isn't worth the indirection.
+function sanitizeTranslations(raw: unknown): Partial<Record<Lang, string>> | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+  const out: Partial<Record<Lang, string>> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!(SUPPORTED_LANGS as readonly string[]).includes(k)) continue;
+    if (typeof v !== 'string') continue;
+    const trimmed = v.trim();
+    if (trimmed.length === 0 || trimmed.length > 2000) continue;
+    out[k as Lang] = trimmed;
+  }
+  return Object.keys(out).length === 0 ? undefined : out;
+}
 
 export async function PATCH(
   request: NextRequest,
@@ -30,6 +47,17 @@ export async function PATCH(
   if (body.url !== undefined) patch.url = typeof body.url === 'string' && body.url ? body.url : undefined;
   if (typeof body.featured === 'boolean') patch.featured = body.featured;
   if (typeof body.sortOrder === 'number') patch.sortOrder = body.sortOrder;
+  if (body.lang !== undefined) {
+    patch.lang = typeof body.lang === 'string' && (SUPPORTED_LANGS as readonly string[]).includes(body.lang)
+      ? (body.lang as Lang)
+      : undefined;
+  }
+  if (body.translations !== undefined) {
+    // null or empty object explicitly clears existing translations; a
+    // valid object replaces the previous map wholesale (not merged) so
+    // the admin can both add and remove translations from one PATCH.
+    patch.translations = sanitizeTranslations(body.translations);
+  }
 
   const err = validateReviewPatch(patch);
   if (err) return NextResponse.json({ error: err }, { status: 400 });

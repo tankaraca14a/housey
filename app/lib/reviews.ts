@@ -2,6 +2,8 @@
 // from past guests with star ratings, copied in from Airbnb / Booking.com
 // / private guests so the owner controls which ones show on the site.
 
+import { SUPPORTED_LANGS, type Lang } from './i18n/types';
+
 export interface Review {
   id: string;          // uuid
   author: string;      // guest's display name ("Anna S." / "Marco" / "Tomás García")
@@ -13,6 +15,46 @@ export interface Review {
   featured: boolean;   // shown in the homepage "Featured reviews" strip
   sortOrder: number;   // integer; lower = first
   createdAt: string;   // ISO timestamp
+  // The language the quote is *originally* in. We don't translate review
+  // bodies — that would lose the guest's voice — but knowing the original
+  // language lets ReviewCard show a small "in Croatian" / "auf Englisch"
+  // badge to visitors whose current language differs, so they don't think
+  // the site is broken when they hit a quote they can't read.
+  //
+  // Optional for backwards compatibility: reviews entered before this
+  // field existed have no lang and render with no badge.
+  lang?: Lang;
+  // Hand-curated translations of the quote into other site languages.
+  // The site never machine-translates reviews — the owner enters these
+  // manually (or imports them, see future enhancement in memory). When a
+  // visitor's language has a translation here, ReviewCard prefers it
+  // over the original quote and offers a "Show original" toggle.
+  //
+  // Shape: { hr: "Divno mjesto…", de: "Wunderschöner Ort…" }. Keys must
+  // be one of the 5 supported lang codes; the value is the translated
+  // quote text (plain string, no markup). The original-language key is
+  // *not* expected to be set — the original lives in the `quote` field.
+  translations?: Partial<Record<Lang, string>>;
+}
+
+function isLangValue(v: unknown): v is Lang {
+  return typeof v === 'string' && (SUPPORTED_LANGS as readonly string[]).includes(v);
+}
+
+// Translations must be a plain object whose keys are a subset of the 5
+// supported langs and whose values are non-empty strings. Empty / null
+// translations should be omitted by the caller before validation — we
+// reject them here so the data file doesn't pile up dead keys.
+const MAX_TRANSLATION_LEN = 2000;
+function isTranslationsMap(v: unknown): v is Partial<Record<Lang, string>> {
+  if (!v || typeof v !== 'object') return false;
+  if (Array.isArray(v)) return false;
+  for (const [k, val] of Object.entries(v)) {
+    if (!isLangValue(k)) return false;
+    if (typeof val !== 'string') return false;
+    if (val.length === 0 || val.length > MAX_TRANSLATION_LEN) return false;
+  }
+  return true;
 }
 
 export function isReview(x: unknown): x is Review {
@@ -29,7 +71,9 @@ export function isReview(x: unknown): x is Review {
     (r.url === undefined || typeof r.url === 'string') &&
     typeof r.featured === 'boolean' &&
     typeof r.sortOrder === 'number' &&
-    typeof r.createdAt === 'string'
+    typeof r.createdAt === 'string' &&
+    (r.lang === undefined || isLangValue(r.lang)) &&
+    (r.translations === undefined || isTranslationsMap(r.translations))
   );
 }
 
@@ -61,6 +105,17 @@ export function validateReviewInput(input: Partial<ReviewInput>): string | null 
   }
   if (typeof input.featured !== 'boolean') return 'featured must be boolean';
   if (typeof input.sortOrder !== 'number') return 'sortOrder must be number';
+  if (input.lang !== undefined && !isLangValue(input.lang)) {
+    return 'lang must be one of: en, hr, de, it, fr';
+  }
+  if (input.translations !== undefined && !isTranslationsMap(input.translations)) {
+    return 'translations must be an object of lang → quote string (≤2000 chars)';
+  }
+  if (input.translations && input.lang && input.lang in input.translations) {
+    // A "translation" into the original language would be a duplicate of
+    // `quote` and would confuse the ReviewCard fallback logic. Reject.
+    return 'translations cannot include the original language';
+  }
   return null;
 }
 
@@ -91,5 +146,11 @@ export function validateReviewPatch(patch: ReviewPatch): string | null {
   }
   if (patch.featured !== undefined && typeof patch.featured !== 'boolean') return 'featured must be boolean';
   if (patch.sortOrder !== undefined && typeof patch.sortOrder !== 'number') return 'sortOrder must be number';
+  if (patch.lang !== undefined && !isLangValue(patch.lang)) {
+    return 'lang must be one of: en, hr, de, it, fr';
+  }
+  if (patch.translations !== undefined && !isTranslationsMap(patch.translations)) {
+    return 'translations must be an object of lang → quote string (≤2000 chars)';
+  }
   return null;
 }

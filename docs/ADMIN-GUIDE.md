@@ -299,6 +299,35 @@ On the public **/reviews** page, each card flips independently:
 
 There's nothing to toggle, no setting to remember. Paste the text exactly as the guest wrote it and click **Save**.
 
+### 6.7 Marking the original language of a review
+
+Each review has an **Original language** dropdown right next to the date. Pick whichever language the guest actually wrote in: English, Croatian, German, Italian, or French. The default is **English**, since most reviews on Airbnb / Booking arrive that way.
+
+![Original language dropdown on the review form](./admin-screenshots/31-review-form-lang.png)
+
+Why it matters:
+
+- When a visitor on the site is reading in a **different** language from the review's original, a tiny grey badge appears at the bottom of the card: *"in Croatian"*, *"auf Englisch"*, *"in francese"*. They know the quote isn't broken or in the wrong place, it's just in another language and they can use their browser's built-in translate if they want.
+- When the visitor's language **matches** the review's original, no badge appears — it would be noise.
+- Older reviews from before this feature existed have no original language set. They simply never show a badge, which is fine: the quote renders as-is.
+
+Setting the original language correctly takes one click and makes the public site feel polished. If you forget, the review still works; you just lose the badge.
+
+### 6.8 Adding translations to a review
+
+If a particular review is special and you want every visitor to read it in their own language, you can add **hand-curated translations** alongside the original quote. Open the **Translations (optional)** panel at the bottom of the review form to reveal four small textareas — one per non-original language.
+
+![Translations panel on the review form](./admin-screenshots/32-review-form-translations.png)
+
+How it works:
+
+- Type a translation only in the languages you actually have. Leave the others blank; empty slots are not saved.
+- The original-language slot is hidden (it would be a duplicate of the **Quote** field above).
+- On the public site, a visitor whose language has a translation sees the translated quote, with no language badge (because the quote is now in their language). A small **Show original** link sits under the quote; clicking it swaps to the source text and the badge appears.
+- A visitor whose language doesn't have a translation gets the original quote and the *"in {language}"* badge, exactly like §6.7.
+
+Use this sparingly. The site never machine-translates reviews — what you paste is what visitors see. If a guest wrote something especially nice in Croatian and you want German visitors to feel it too, paste your own German translation into the **DE** slot and save.
+
 ---
 
 ## 7. Switching language

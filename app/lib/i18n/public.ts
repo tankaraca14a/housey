@@ -107,6 +107,21 @@ export interface PublicStrings {
   "reviews.description": string;
   "reviews.emptyState": string;
   "reviews.readOnSource": string; // template "Read on {source} →"
+  // Badge shown when a review's original language differs from the
+  // visitor's current language. Template: "in {language}" where {language}
+  // is one of the five "lang.*" values below, declined into the right
+  // grammatical case for the carrier preposition ("in" / "na" / "auf" / etc).
+  "reviews.inLanguage": string;
+  "lang.en": string;
+  "lang.hr": string;
+  "lang.de": string;
+  "lang.it": string;
+  "lang.fr": string;
+  // Toggle text on translated review cards. When a card is currently
+  // showing the translated quote (visitor's lang), the button reads
+  // "Show original"; once clicked, it flips to "Show translation".
+  "reviews.showOriginal": string;
+  "reviews.showTranslation": string;
 
   // ── contact ────────────────────────────────────────────────────────
   "contact.title": string;
@@ -334,6 +349,14 @@ export const publicTranslations: Record<Lang, PublicStrings> = {
     "reviews.description": "What guests have said after staying at Housey, Vela Luka.",
     "reviews.emptyState": "No reviews yet — check back soon.",
     "reviews.readOnSource": "Read on {source} →",
+    "reviews.inLanguage": "in {language}",
+    "lang.en": "English",
+    "lang.hr": "Croatian",
+    "lang.de": "German",
+    "lang.it": "Italian",
+    "lang.fr": "French",
+    "reviews.showOriginal": "Show original",
+    "reviews.showTranslation": "Show translation",
 
     "contact.title": "Contact Us",
     "contact.subtitle": "Have questions? We'd love to hear from you.",
@@ -557,6 +580,14 @@ export const publicTranslations: Record<Lang, PublicStrings> = {
     "reviews.description": "Što su gosti rekli nakon boravka u kući Housey, Vela Luka.",
     "reviews.emptyState": "Još nema recenzija — provjerite uskoro.",
     "reviews.readOnSource": "Pročitajte na {source} →",
+    "reviews.inLanguage": "na {language}",
+    "lang.en": "engleskom",
+    "lang.hr": "hrvatskom",
+    "lang.de": "njemačkom",
+    "lang.it": "talijanskom",
+    "lang.fr": "francuskom",
+    "reviews.showOriginal": "Prikaži izvornik",
+    "reviews.showTranslation": "Prikaži prijevod",
 
     "contact.title": "Kontaktirajte nas",
     "contact.subtitle": "Imate pitanja? Rado ćemo vas čuti.",
@@ -780,6 +811,14 @@ export const publicTranslations: Record<Lang, PublicStrings> = {
     "reviews.description": "Was Gäste nach ihrem Aufenthalt im Housey, Vela Luka, gesagt haben.",
     "reviews.emptyState": "Noch keine Bewertungen — schauen Sie bald wieder vorbei.",
     "reviews.readOnSource": "Auf {source} lesen →",
+    "reviews.inLanguage": "auf {language}",
+    "lang.en": "Englisch",
+    "lang.hr": "Kroatisch",
+    "lang.de": "Deutsch",
+    "lang.it": "Italienisch",
+    "lang.fr": "Französisch",
+    "reviews.showOriginal": "Original anzeigen",
+    "reviews.showTranslation": "Übersetzung anzeigen",
 
     "contact.title": "Kontakt",
     "contact.subtitle": "Haben Sie Fragen? Wir freuen uns auf Ihre Nachricht.",
@@ -1003,6 +1042,14 @@ export const publicTranslations: Record<Lang, PublicStrings> = {
     "reviews.description": "Cosa hanno detto gli ospiti dopo aver soggiornato a Housey, Vela Luka.",
     "reviews.emptyState": "Ancora nessuna recensione — torna a trovarci presto.",
     "reviews.readOnSource": "Leggi su {source} →",
+    "reviews.inLanguage": "in {language}",
+    "lang.en": "inglese",
+    "lang.hr": "croato",
+    "lang.de": "tedesco",
+    "lang.it": "italiano",
+    "lang.fr": "francese",
+    "reviews.showOriginal": "Mostra originale",
+    "reviews.showTranslation": "Mostra traduzione",
 
     "contact.title": "Contattaci",
     "contact.subtitle": "Hai domande? Ci farebbe piacere sentirti.",
@@ -1226,6 +1273,14 @@ export const publicTranslations: Record<Lang, PublicStrings> = {
     "reviews.description": "Ce que les voyageurs ont dit après leur séjour chez Housey, Vela Luka.",
     "reviews.emptyState": "Pas encore d'avis — revenez bientôt.",
     "reviews.readOnSource": "Lire sur {source} →",
+    "reviews.inLanguage": "en {language}",
+    "lang.en": "anglais",
+    "lang.hr": "croate",
+    "lang.de": "allemand",
+    "lang.it": "italien",
+    "lang.fr": "français",
+    "reviews.showOriginal": "Voir l'original",
+    "reviews.showTranslation": "Voir la traduction",
 
     "contact.title": "Contactez-nous",
     "contact.subtitle": "Des questions ? Nous serions ravis d'échanger avec vous.",
