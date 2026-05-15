@@ -73,7 +73,7 @@ Two skills are framework-neutral: `/setup-multi-identity-git`, `/write-admin-gui
 | Skill | What |
 |---|---|
 | `/write-admin-guide` | Non-technical user guide with deterministic screenshots, bilingual variants, troubleshooting section keyed by likely mistakes |
-| `/regenerate-admin-screenshots` | Re-seed admin demo data + run EN + HR Playwright generators |
+| `/regenerate-admin-screenshots` | Re-seed admin demo data + run all 3 Playwright generators (EN admin, HR admin, feature shots) + verify pristine (no orphan PNGs, no broken refs) |
 
 ## 7. Test + verify (run as needed)
 
