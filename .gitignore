@@ -52,6 +52,13 @@ public/static/cache/
 # === Vercel / deployment ===
 .vercel/
 
+# === Runtime artifacts (never commit) ===
+# Append-only audit log written by app/lib/blocked-dates-audit.ts on
+# every block/unblock — local-machine state, never source.
+data/blocked-dates-audit.jsonl
+# Hand-disabled env files (renamed during test runs to remove KV creds).
+.env.local.DISABLED-*
+
 # === Test artifacts ===
 test/screens/
 test/screens-selenium/

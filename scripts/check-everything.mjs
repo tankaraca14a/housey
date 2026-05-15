@@ -98,9 +98,18 @@ try {
   await driver.get(`${BASE}/admin`);
   await driver.wait(until.elementLocated(By.css('input[type=password]')), 10_000);
   await shot('08-admin-login');
-  // Switch to EN for predictable selectors
-  const lang = await driver.findElement(By.xpath("//button[normalize-space()='HR' or normalize-space()='EN']"));
-  if ((await lang.getText()).trim() === 'EN') await lang.click();
+  // Switch to EN for predictable selectors. The site used to have a
+  // standalone HR/EN button; it was replaced by the global LangPicker
+  // <select> in the SiteHeader (data-testid="lang-picker"). Honour
+  // whichever exists so this script keeps working through future
+  // navigation tweaks.
+  const pickers = await driver.findElements(By.css('[data-testid="lang-picker"]'));
+  if (pickers.length > 0) {
+    await driver.executeScript(`
+      const el = document.querySelector('[data-testid="lang-picker"]');
+      if (el) { el.value = 'en'; el.dispatchEvent(new Event('change', { bubbles: true })); }
+    `);
+  }
   await driver.sleep(150);
   await driver.findElement(By.css('input[type=password]')).sendKeys(PASS, Key.RETURN);
   await driver.wait(until.elementLocated(By.css('h1')), 15_000);
@@ -154,18 +163,59 @@ try {
   await driver.sleep(300);
 
   // ────────────────────────────────────────────────────────────────────
+  // 5b. Translation inbox section visible in /admin
+  // ────────────────────────────────────────────────────────────────────
+  console.log('\n=== Translation inbox in /admin ===');
+  await driver.executeScript(`
+    const h = [...document.querySelectorAll('h2')].find((e) =>
+      /Translation inbox|Inbox za prijevode|Übersetzungs-Inbox|Casella delle traduzioni|Boîte de traduction/.test(e.textContent)
+    );
+    if (h) h.scrollIntoView({block: 'center'});
+  `);
+  await driver.sleep(400);
+  const bodyInbox = await driver.findElement(By.css('body')).getText();
+  ok(/Translation inbox|Inbox za prijevode/.test(bodyInbox), '5b1: Translation inbox heading present in /admin');
+  await shot('12b-admin-inbox-section');
+
+  // ────────────────────────────────────────────────────────────────────
   // 6. Logout
   // ────────────────────────────────────────────────────────────────────
   console.log('\n=== Logout ===');
   // Scroll to top so Logout is visible
   await driver.executeScript('window.scrollTo(0, 0)');
   await driver.sleep(200);
-  const logoutBtn = await driver.findElement(By.xpath("//button[normalize-space()='Logout' or normalize-space()='Odjava']"));
+  // Accept the logout label in any of the 5 supported languages — the
+  // global lang cookie may have it set to HR/DE/IT/FR depending on the
+  // previous test runs in the same browser session.
+  const logoutBtn = await driver.findElement(By.xpath(
+    "//button[normalize-space()='Logout' or normalize-space()='Odjava' " +
+    "or normalize-space()='Abmelden' or normalize-space()='Esci' " +
+    "or normalize-space()='Déconnexion']"
+  ));
   await logoutBtn.click();
   await driver.wait(until.elementLocated(By.css('input[type=password]')), 5_000);
   await driver.sleep(200);
   await shot('13-admin-logged-out');
   ok(true, '6a: logged out cleanly');
+
+  // ────────────────────────────────────────────────────────────────────
+  // 7. /submit-review reachable + password-gated (unauthenticated check)
+  // ────────────────────────────────────────────────────────────────────
+  console.log('\n=== /submit-review ===');
+  await driver.get(`${BASE}/submit-review`);
+  await driver.wait(until.elementLocated(By.css('[data-testid="submit-password"]')), 10_000);
+  await shot('14-submit-review-locked');
+  ok(true, '7a: /submit-review renders with password gate');
+  // SiteHeader (and therefore LangPicker) must show on this route too.
+  const pickerOnSubmit = await driver.findElements(By.css('[data-testid="lang-picker"]'));
+  ok(pickerOnSubmit.length === 1, `7b: LangPicker available on /submit-review (count=${pickerOnSubmit.length})`);
+  // Wrong password → auth error, form NOT revealed.
+  await driver.findElement(By.css('[data-testid="submit-password"]')).sendKeys('wrong-pw');
+  await driver.findElement(By.css('[data-testid="submit-unlock"]')).click();
+  await driver.wait(until.elementLocated(By.css('[data-testid="submit-auth-error"]')), 5_000);
+  const formFields = await driver.findElements(By.css('[data-testid="submit-author"]'));
+  ok(formFields.length === 0, `7c: wrong password keeps form hidden (form-fields=${formFields.length})`);
+  await shot('15-submit-review-wrong-pw');
 } catch (e) {
   console.error(`\nFATAL: ${e.stack || e}`);
   failures++;
