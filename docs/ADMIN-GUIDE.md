@@ -309,6 +309,14 @@ These exist on the backlog as GitHub issues — none of them block you from runn
 
 - **Instagram / Facebook links** ([#2](https://github.com/tankaraca14a/housey/issues/2)) — once you create the accounts, ping Mihaela with the URLs.
 - **More featured photos visible at once** ([#7](https://github.com/tankaraca14a/housey/issues/7)) — currently only the first 3 featured photos get the hero spots.
+- **Owner-written posts** ([#8](https://github.com/tankaraca14a/housey/issues/8)) — a "Stories" / "Diary" / "News" section where you publish short updates from the house (olive harvest, sea temperature, recipes). Edited via the admin.
+- **Guest reviews with stars** ([#9](https://github.com/tankaraca14a/housey/issues/9)) — curated review citations with star ratings, copied in from Airbnb / Booking.com / private guests so you choose which ones show.
+- **FAQ section** ([#10](https://github.com/tankaraca14a/housey/issues/10)) — admin-edited Q+A pairs (wifi, checkin time, parking, breakfast, etc.) so guests don't email the same questions over and over.
+- **House Rules page** ([#11](https://github.com/tankaraca14a/housey/issues/11)) — single markdown page you edit yourself.
+- **Pricing display** ([#12](https://github.com/tankaraca14a/housey/issues/12)) — "from €X / night" shown before guests submit the booking form, with optional seasonal breakdown.
+- **Things to do nearby** ([#13](https://github.com/tankaraca14a/housey/issues/13)) — your curated local guide: restaurants, beaches, walks, viewpoints. Differentiator from cookie-cutter rentals.
+- **Newsletter for past guests** ([#14](https://github.com/tankaraca14a/housey/issues/14)) — a way to email returning guests a few times a year ("the olives are ripe", "autumn rate dropped").
+- **Printable info card PDF** ([#15](https://github.com/tankaraca14a/housey/issues/15)) — one-page PDF you tape to the fridge: wifi password, checkout instructions, taxi numbers, QR code to the nearby guide.
 
 ---
 

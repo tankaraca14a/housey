@@ -307,6 +307,14 @@ Postoji na listi zadataka kao GitHub issues — ništa od ovoga vas ne sprječav
 
 - **Instagram / Facebook linkovi** ([#2](https://github.com/tankaraca14a/housey/issues/2)) — kad napravite račune, javite Mihaeli URL-ove.
 - **Više istaknutih fotografija vidljivo odjednom** ([#7](https://github.com/tankaraca14a/housey/issues/7)) — trenutno samo prve 3 istaknute fotografije dobivaju hero pozicije.
+- **Vaši zapisi (Priče / Dnevnik / Novosti)** ([#8](https://github.com/tankaraca14a/housey/issues/8)) — sekcija gdje objavljujete kratke vijesti iz kuće (berba maslina, temperatura mora, recepti). Uređuje se kroz admin.
+- **Recenzije gostiju sa zvjezdicama** ([#9](https://github.com/tankaraca14a/housey/issues/9)) — citati s ocjenom zvjezdicama, kopirani iz Airbnb / Booking.com / privatnih gostiju, vi birate koje se prikazuju.
+- **FAQ sekcija (pitanja i odgovori)** ([#10](https://github.com/tankaraca14a/housey/issues/10)) — admin-uređeni parovi pitanja+odgovora (wifi, vrijeme dolaska, parking, doručak…) tako da gosti ne pišu ista pitanja stalno.
+- **Kućni red** ([#11](https://github.com/tankaraca14a/housey/issues/11)) — jedna markdown stranica koju sami uređujete.
+- **Prikaz cijene** ([#12](https://github.com/tankaraca14a/housey/issues/12)) — "od €X / noć" prikazano prije nego gost pošalje formu, s opcionalnom sezonskom razlikom.
+- **Što vidjeti u blizini** ([#13](https://github.com/tankaraca14a/housey/issues/13)) — vaš odabir lokalnih restorana, plaža, šetnji, vidikovaca. Razlika od običnih najmova.
+- **Newsletter za bivše goste** ([#14](https://github.com/tankaraca14a/housey/issues/14)) — način da povremeno pošaljete email gostima koji su već boravili ("masline su zrele", "jesenska cijena spuštena").
+- **Ispisivi info kartica PDF** ([#15](https://github.com/tankaraca14a/housey/issues/15)) — jedna stranica PDF-a koju zalijepite na hladnjak: wifi lozinka, upute za odjavu, brojevi taksija, QR kod za vodič o okolici.
 
 ---
 
