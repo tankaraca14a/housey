@@ -49,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <li><Link href="/gallery" className="hover:text-brand-300 transition-colors">Gallery</Link></li>
               <li><Link href="/location" className="hover:text-brand-300 transition-colors">Location</Link></li>
               <li><Link href="/booking" className="hover:text-brand-300 transition-colors">Booking</Link></li>
+              <li><Link href="/reviews" className="hover:text-brand-300 transition-colors">Reviews</Link></li>
               <li><Link href="/contact" className="hover:text-brand-300 transition-colors">Contact</Link></li>
             </ul>
             {/* Mobile fallback: a single compact button linking to the gallery (the

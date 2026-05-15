@@ -25,6 +25,7 @@ const FILES = [
   'nav-404.mjs',
   'booking-conflict.mjs',
   'email-resilience.mjs',
+  'reviews-api.mjs',
 ];
 
 let failed = 0;

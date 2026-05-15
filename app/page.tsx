@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { FeaturedReviewsStrip } from "@/app/components/FeaturedReviewsStrip";
 
 export default function HomePage() {
   return (
@@ -78,6 +79,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Featured reviews strip — only renders if there are featured reviews */}
+      <FeaturedReviewsStrip />
     </>
   )
 }

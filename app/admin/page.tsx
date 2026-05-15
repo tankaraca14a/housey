@@ -81,6 +81,21 @@ interface Translations {
   unsavedCalendarWarning: string;
   confirmedToast: string;
   declinedToast: string;
+  reviewsHeading: string;
+  addReview: string;
+  editReview: string;
+  noReviews: string;
+  loadingReviews: string;
+  reviewDeleteConfirm: string;
+  reviewDeleteConfirm2: string;
+  reviewDeletedToast: string;
+  reviewAuthorLabel: string;
+  reviewSourceLabel: string;
+  reviewRatingLabel: string;
+  reviewQuoteLabel: string;
+  reviewDateLabel: string;
+  reviewUrlLabel: string;
+  reviewFeaturedLabel: string;
 }
 
 const translations: Record<"hr" | "en", Translations> = {
@@ -154,6 +169,21 @@ const translations: Record<"hr" | "en", Translations> = {
     unsavedCalendarWarning: "Imate nespremljene promjene u kalendaru. Stvarno odustati?",
     confirmedToast: "Potvrđeno",
     declinedToast: "Odbijeno",
+    reviewsHeading: "Recenzije",
+    addReview: "Dodaj recenziju",
+    editReview: "Uredi recenziju",
+    noReviews: "Još nema recenzija",
+    loadingReviews: "Učitavanje recenzija...",
+    reviewDeleteConfirm: "Obrisati ovu recenziju?",
+    reviewDeleteConfirm2: "Stvarno obrisati recenziju od:",
+    reviewDeletedToast: "Recenzija obrisana",
+    reviewAuthorLabel: "Autor",
+    reviewSourceLabel: "Izvor",
+    reviewRatingLabel: "Ocjena",
+    reviewQuoteLabel: "Citat",
+    reviewDateLabel: "Datum",
+    reviewUrlLabel: "URL (opcionalno)",
+    reviewFeaturedLabel: "Istaknuti (prikaz na početnoj)",
   },
   en: {
     adminLogin: "Admin Login",
@@ -225,6 +255,21 @@ const translations: Record<"hr" | "en", Translations> = {
     unsavedCalendarWarning: "You have unsaved calendar changes. Really discard them?",
     confirmedToast: "Confirmed",
     declinedToast: "Declined",
+    reviewsHeading: "Reviews",
+    addReview: "Add review",
+    editReview: "Edit review",
+    noReviews: "No reviews yet",
+    loadingReviews: "Loading reviews...",
+    reviewDeleteConfirm: "Delete this review?",
+    reviewDeleteConfirm2: "Really delete the review by:",
+    reviewDeletedToast: "Review deleted",
+    reviewAuthorLabel: "Author",
+    reviewSourceLabel: "Source",
+    reviewRatingLabel: "Rating",
+    reviewQuoteLabel: "Quote",
+    reviewDateLabel: "Date",
+    reviewUrlLabel: "URL (optional)",
+    reviewFeaturedLabel: "Featured (shown on home page)",
   },
 };
 
@@ -431,6 +476,44 @@ export default function AdminPage() {
   const [loadingImages, setLoadingImages] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(0);  // count of in-flight uploads
   const [imageError, setImageError] = useState<string | null>(null);
+
+  // ── Review management state ───────────────────────────────────────────────
+  interface ReviewRow {
+    id: string;
+    author: string;
+    source: string;
+    rating: 1 | 2 | 3 | 4 | 5;
+    quote: string;
+    date: string;
+    url?: string;
+    featured: boolean;
+    sortOrder: number;
+    createdAt: string;
+  }
+  interface ReviewFormState {
+    author: string;
+    source: string;
+    rating: string;     // input field is a string until we parse
+    quote: string;
+    date: string;
+    url: string;
+    featured: boolean;
+  }
+  const blankReviewForm = (): ReviewFormState => ({
+    author: '',
+    source: 'Airbnb',
+    rating: '5',
+    quote: '',
+    date: new Date().toISOString().slice(0, 10),
+    url: '',
+    featured: false,
+  });
+  const [reviewsList, setReviewsList] = useState<ReviewRow[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [reviewForm, setReviewForm] = useState<ReviewFormState>(blankReviewForm());
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewSaving, setReviewSaving] = useState(false);
   const [bookingAction, setBookingAction] = useState<Record<string, "confirming" | "declining" | "deleting" | "saving" | false>>({});
 
   // Inline edit + manual-create state. `editingId === "new"` means the
@@ -473,6 +556,14 @@ export default function AdminPage() {
     deadline: number;
   }
   const [pendingImageDeletes, setPendingImageDeletes] = useState<Record<string, PendingImageDelete>>({});
+
+  // Same pattern for reviews. 10s deferred DELETE + undo toast.
+  interface PendingReviewDelete {
+    review: ReviewRow;
+    timerId: ReturnType<typeof setTimeout>;
+    deadline: number;
+  }
+  const [pendingReviewDeletes, setPendingReviewDeletes] = useState<Record<string, PendingReviewDelete>>({});
 
   // Same pattern for Confirm and Decline. The /confirm endpoint has two
   // irreversible side effects: it emails the guest and it auto-blocks the
@@ -550,6 +641,22 @@ export default function AdminPage() {
       console.error("Failed to load images", e);
     } finally {
       setLoadingImages(false);
+    }
+  }, [authPassword]);
+
+  const fetchReviews = useCallback(async () => {
+    if (!authPassword) return;
+    setLoadingReviews(true);
+    try {
+      const res = await fetch("/api/admin/reviews", {
+        headers: { "x-admin-password": authPassword },
+      });
+      const data = await res.json();
+      setReviewsList(data.reviews || []);
+    } catch (e) {
+      console.error("Failed to load reviews", e);
+    } finally {
+      setLoadingReviews(false);
     }
   }, [authPassword]);
 
@@ -707,13 +814,135 @@ export default function AdminPage() {
     }
   }, [authPassword, fetchImages]);
 
+  // ── Review handlers ────────────────────────────────────────────────────────
+  const handleReviewAddOpen = () => {
+    setReviewError(null);
+    setEditingReviewId("new");
+    setReviewForm(blankReviewForm());
+  };
+
+  const handleReviewEditOpen = (r: ReviewRow) => {
+    setReviewError(null);
+    setEditingReviewId(r.id);
+    setReviewForm({
+      author: r.author,
+      source: r.source,
+      rating: String(r.rating),
+      quote: r.quote,
+      date: r.date,
+      url: r.url ?? '',
+      featured: r.featured,
+    });
+  };
+
+  const handleReviewEditCancel = () => {
+    setReviewError(null);
+    setEditingReviewId(null);
+    setReviewForm(blankReviewForm());
+  };
+
+  const handleReviewSave = async () => {
+    setReviewError(null);
+    setReviewSaving(true);
+    const ratingNum = parseInt(reviewForm.rating, 10);
+    const payload = {
+      author: reviewForm.author.trim(),
+      source: reviewForm.source.trim(),
+      rating: ratingNum,
+      quote: reviewForm.quote.trim(),
+      date: reviewForm.date,
+      url: reviewForm.url.trim() || undefined,
+      featured: reviewForm.featured,
+      sortOrder: editingReviewId === "new" ? Date.now() : undefined,
+    };
+    try {
+      const isNew = editingReviewId === "new";
+      const url = isNew ? "/api/admin/reviews" : `/api/admin/reviews/${editingReviewId}`;
+      const method = isNew ? "POST" : "PATCH";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json", "x-admin-password": authPassword },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "save failed");
+      }
+      await fetchReviews();
+      setEditingReviewId(null);
+      setReviewForm(blankReviewForm());
+    } catch (e) {
+      setReviewError(e instanceof Error ? e.message : "save failed");
+    } finally {
+      setReviewSaving(false);
+    }
+  };
+
+  const handleReviewToggleFeatured = useCallback(async (id: string, next: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/reviews/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "x-admin-password": authPassword },
+        body: JSON.stringify({ featured: next }),
+      });
+      if (!res.ok) throw new Error("toggle featured failed");
+      await fetchReviews();
+    } catch (e) {
+      console.error("toggle review featured failed:", e);
+    }
+  }, [authPassword, fetchReviews]);
+
+  // 10s deferred delete + undo toast — mirrors the image-delete pattern.
+  const handleReviewDelete = useCallback((id: string) => {
+    const r = reviewsList.find((x) => x.id === id);
+    if (!r) return;
+    if (!confirm(t.reviewDeleteConfirm)) return;
+    if (!confirm(`${t.reviewDeleteConfirm2}\n\n${r.author} — ${r.source}`)) return;
+
+    const timerId = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/admin/reviews/${id}`, {
+          method: "DELETE",
+          headers: { "x-admin-password": authPassword },
+        });
+        if (!res.ok) throw new Error("delete failed");
+      } catch (e) {
+        console.error("delete review failed:", e);
+      } finally {
+        setPendingReviewDeletes((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        await fetchReviews();
+      }
+    }, DELETE_GRACE_MS);
+
+    setPendingReviewDeletes((prev) => ({
+      ...prev,
+      [id]: { review: r, timerId, deadline: Date.now() + DELETE_GRACE_MS },
+    }));
+  }, [authPassword, fetchReviews, reviewsList, t]);
+
+  const handleUndoReviewDelete = useCallback((id: string) => {
+    setPendingReviewDeletes((prev) => {
+      const p = prev[id];
+      if (!p) return prev;
+      clearTimeout(p.timerId);
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     if (authenticated) {
       fetchBlockedDates();
       fetchBookings();
       fetchImages();
+      fetchReviews();
     }
-  }, [authenticated, fetchBlockedDates, fetchBookings, fetchImages]);
+  }, [authenticated, fetchBlockedDates, fetchBookings, fetchImages, fetchReviews]);
 
   // Verify the typed password by attempting an authenticated GET. The
   // server responds 200 on match, 401 on mismatch. We avoid storing the
@@ -972,12 +1201,13 @@ export default function AdminPage() {
       Object.keys(pendingDeletes).length === 0 &&
       Object.keys(pendingEdits).length === 0 &&
       Object.keys(pendingImageDeletes).length === 0 &&
+      Object.keys(pendingReviewDeletes).length === 0 &&
       Object.keys(pendingConfirms).length === 0 &&
       Object.keys(pendingDeclines).length === 0
     ) return;
     const id = setInterval(() => setNowMs(Date.now()), 250);
     return () => clearInterval(id);
-  }, [pendingDeletes, pendingEdits, pendingImageDeletes, pendingConfirms, pendingDeclines]);
+  }, [pendingDeletes, pendingEdits, pendingImageDeletes, pendingReviewDeletes, pendingConfirms, pendingDeclines]);
 
   // On unmount / logout: flush any pending deletes immediately. This makes
   // navigating away mid-grace-window NOT silently drop the action — the
@@ -1213,6 +1443,7 @@ export default function AdminPage() {
   const pendingDeleteList = Object.values(pendingDeletes);
   const pendingEditList = Object.values(pendingEdits);
   const pendingImageDeleteList = Object.values(pendingImageDeletes);
+  const pendingReviewDeleteList = Object.values(pendingReviewDeletes);
   const pendingConfirmList = Object.values(pendingConfirms);
   const pendingDeclineList = Object.values(pendingDeclines);
 
@@ -1221,7 +1452,7 @@ export default function AdminPage() {
       <LangToggle />
 
       {/* ── Undo toasts (delete + edit + image-delete + confirm + decline) ── */}
-      {(pendingDeleteList.length > 0 || pendingEditList.length > 0 || pendingImageDeleteList.length > 0 || pendingConfirmList.length > 0 || pendingDeclineList.length > 0) && (
+      {(pendingDeleteList.length > 0 || pendingEditList.length > 0 || pendingImageDeleteList.length > 0 || pendingReviewDeleteList.length > 0 || pendingConfirmList.length > 0 || pendingDeclineList.length > 0) && (
         <div data-testid="undo-toast-container"
              className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
           {pendingDeleteList.map((p) => {
@@ -1319,6 +1550,30 @@ export default function AdminPage() {
                 <button
                   onClick={() => handleUndoImageDelete(p.image.id)}
                   data-testid={`undo-image-btn-${p.image.id}`}
+                  className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition whitespace-nowrap"
+                >
+                  ↶ {t.undo}
+                </button>
+              </div>
+            );
+          })}
+          {pendingReviewDeleteList.map((p) => {
+            const secondsLeft = Math.max(0, Math.ceil((p.deadline - nowMs) / 1000));
+            return (
+              <div
+                key={`rev-del-${p.review.id}`}
+                data-testid={`undo-review-toast-${p.review.id}`}
+                className="bg-surface-800 border border-brand-400/50 shadow-2xl rounded-2xl px-5 py-4 flex items-center gap-4 min-w-[320px]"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm">
+                    🗑 {t.reviewDeletedToast}: <span className="text-slate-300 font-normal truncate">{p.review.author} — {p.review.source}</span>
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">{secondsLeft}s</p>
+                </div>
+                <button
+                  onClick={() => handleUndoReviewDelete(p.review.id)}
+                  data-testid={`undo-review-btn-${p.review.id}`}
                   className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition whitespace-nowrap"
                 >
                   ↶ {t.undo}
@@ -1531,6 +1786,189 @@ export default function AdminPage() {
                           🗑
                         </button>
                       </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Reviews Section ── */}
+          <div className="mt-16">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-3xl font-bold text-white">{t.reviewsHeading}</h2>
+                <p className="text-slate-400 mt-1">{reviewsList.length} {t.total}</p>
+              </div>
+              {editingReviewId === null && (
+                <button
+                  onClick={handleReviewAddOpen}
+                  data-testid="review-add-trigger"
+                  className="px-4 py-2 text-sm bg-brand-500 hover:bg-brand-400 text-white font-semibold rounded-xl transition"
+                >
+                  + {t.addReview}
+                </button>
+              )}
+            </div>
+
+            {editingReviewId !== null && (
+              <div
+                data-testid="review-edit-panel"
+                className="bg-surface-800 border border-brand-400/30 rounded-2xl p-6 mb-4 space-y-3"
+              >
+                <h3 className="text-lg font-semibold text-white">
+                  {editingReviewId === "new" ? t.addReview : t.editReview}
+                </h3>
+                {reviewError && (
+                  <p className="text-red-400 text-sm" data-testid="review-error">{reviewError}</p>
+                )}
+                <div className="grid md:grid-cols-2 gap-3">
+                  <label className="text-sm text-slate-300">
+                    {t.reviewAuthorLabel}
+                    <input
+                      type="text"
+                      value={reviewForm.author}
+                      onChange={(e) => setReviewForm((f) => ({ ...f, author: e.target.value }))}
+                      data-testid="review-author"
+                      className="mt-1 w-full px-3 py-2 bg-surface-700 border border-white/10 rounded-lg text-white text-sm"
+                    />
+                  </label>
+                  <label className="text-sm text-slate-300">
+                    {t.reviewSourceLabel}
+                    <input
+                      type="text"
+                      value={reviewForm.source}
+                      onChange={(e) => setReviewForm((f) => ({ ...f, source: e.target.value }))}
+                      data-testid="review-source"
+                      placeholder="Airbnb / Booking.com / Direct"
+                      className="mt-1 w-full px-3 py-2 bg-surface-700 border border-white/10 rounded-lg text-white text-sm"
+                    />
+                  </label>
+                  <label className="text-sm text-slate-300">
+                    {t.reviewRatingLabel}
+                    <select
+                      value={reviewForm.rating}
+                      onChange={(e) => setReviewForm((f) => ({ ...f, rating: e.target.value }))}
+                      data-testid="review-rating"
+                      className="mt-1 w-full px-3 py-2 bg-surface-700 border border-white/10 rounded-lg text-white text-sm"
+                    >
+                      <option value="5">★★★★★ (5)</option>
+                      <option value="4">★★★★ (4)</option>
+                      <option value="3">★★★ (3)</option>
+                      <option value="2">★★ (2)</option>
+                      <option value="1">★ (1)</option>
+                    </select>
+                  </label>
+                  <label className="text-sm text-slate-300">
+                    {t.reviewDateLabel}
+                    <input
+                      type="date"
+                      value={reviewForm.date}
+                      onChange={(e) => setReviewForm((f) => ({ ...f, date: e.target.value }))}
+                      data-testid="review-date"
+                      className="mt-1 w-full px-3 py-2 bg-surface-700 border border-white/10 rounded-lg text-white text-sm"
+                    />
+                  </label>
+                </div>
+                <label className="text-sm text-slate-300 block">
+                  {t.reviewQuoteLabel}
+                  <textarea
+                    value={reviewForm.quote}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, quote: e.target.value }))}
+                    rows={4}
+                    data-testid="review-quote"
+                    className="mt-1 w-full px-3 py-2 bg-surface-700 border border-white/10 rounded-lg text-white text-sm"
+                  />
+                </label>
+                <label className="text-sm text-slate-300 block">
+                  {t.reviewUrlLabel}
+                  <input
+                    type="url"
+                    value={reviewForm.url}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, url: e.target.value }))}
+                    placeholder="https://airbnb.com/..."
+                    data-testid="review-url"
+                    className="mt-1 w-full px-3 py-2 bg-surface-700 border border-white/10 rounded-lg text-white text-sm"
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={reviewForm.featured}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, featured: e.target.checked }))}
+                    data-testid="review-featured"
+                  />
+                  {t.reviewFeaturedLabel}
+                </label>
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={handleReviewSave}
+                    disabled={reviewSaving}
+                    data-testid="review-save"
+                    className="px-4 py-2 bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50"
+                  >
+                    {reviewSaving ? (editingReviewId === "new" ? t.creating : t.saving) : t.save}
+                  </button>
+                  <button
+                    onClick={handleReviewEditCancel}
+                    data-testid="review-cancel"
+                    className="px-4 py-2 bg-surface-700 hover:bg-surface-600 text-slate-200 text-sm font-semibold rounded-xl transition border border-white/10"
+                  >
+                    {t.cancel}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {loadingReviews ? (
+              <div className="text-center text-slate-400 py-8">{t.loadingReviews}</div>
+            ) : reviewsList.filter((r) => !pendingReviewDeletes[r.id]).length === 0 ? (
+              <div className="bg-surface-800 border border-white/10 border-dashed rounded-2xl p-10 text-center text-slate-400">
+                {t.noReviews}
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-3">
+                {reviewsList.filter((r) => !pendingReviewDeletes[r.id]).map((r) => (
+                  <div
+                    key={r.id}
+                    data-testid={`review-row-${r.id}`}
+                    className="bg-surface-800 border border-white/10 rounded-2xl p-4 flex flex-col gap-2"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-amber-400 text-sm">
+                          {'★'.repeat(r.rating)}<span className="text-slate-600">{'★'.repeat(5 - r.rating)}</span>
+                        </div>
+                        <p className="text-white font-semibold text-sm mt-1">{r.author}</p>
+                        <p className="text-slate-400 text-xs">{r.source} · {r.date}</p>
+                      </div>
+                      {r.featured && (
+                        <span className="text-[10px] bg-yellow-400/90 text-black font-bold px-2 py-0.5 rounded">★ FEATURED</span>
+                      )}
+                    </div>
+                    <p className="text-slate-200 text-sm italic">&ldquo;{r.quote}&rdquo;</p>
+                    <div className="flex gap-2 pt-2 mt-auto">
+                      <button
+                        onClick={() => handleReviewEditOpen(r)}
+                        data-testid={`review-edit-${r.id}`}
+                        className="flex-1 px-3 py-1.5 text-xs bg-surface-700 hover:bg-surface-600 text-slate-200 rounded-lg transition border border-white/10"
+                      >
+                        ✎ {t.edit}
+                      </button>
+                      <button
+                        onClick={() => handleReviewToggleFeatured(r.id, !r.featured)}
+                        data-testid={`review-featured-toggle-${r.id}`}
+                        className="px-3 py-1.5 text-xs bg-surface-700 hover:bg-yellow-500/30 text-slate-200 rounded-lg transition"
+                      >
+                        {r.featured ? 'Unstar' : '★ Feature'}
+                      </button>
+                      <button
+                        onClick={() => handleReviewDelete(r.id)}
+                        data-testid={`review-delete-${r.id}`}
+                        className="px-3 py-1.5 text-xs bg-red-600 hover:bg-red-500 text-white rounded-lg transition"
+                      >
+                        🗑
+                      </button>
                     </div>
                   </div>
                 ))}
