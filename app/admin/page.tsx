@@ -1827,6 +1827,7 @@ export default function AdminPage() {
                     {t.reviewAuthorLabel}
                     <input
                       type="text"
+                      dir="auto"
                       value={reviewForm.author}
                       onChange={(e) => setReviewForm((f) => ({ ...f, author: e.target.value }))}
                       data-testid="review-author"
@@ -1891,6 +1892,7 @@ export default function AdminPage() {
                 <label className="text-sm text-slate-300 block">
                   {t.reviewQuoteLabel}
                   <textarea
+                    dir="auto"
                     value={reviewForm.quote}
                     onChange={(e) => setReviewForm((f) => ({ ...f, quote: e.target.value }))}
                     rows={4}
@@ -1957,14 +1959,16 @@ export default function AdminPage() {
                         <div className="text-amber-400 text-sm">
                           {'★'.repeat(r.rating)}<span className="text-slate-600">{'★'.repeat(5 - r.rating)}</span>
                         </div>
-                        <p className="text-white font-semibold text-sm mt-1">{r.author}</p>
+                        {/* dir="auto" so an Arabic/Hebrew/Farsi author or quote
+                            displays right-to-left in the admin tile. */}
+                        <p dir="auto" className="text-white font-semibold text-sm mt-1">{r.author}</p>
                         <p className="text-slate-400 text-xs">{r.source} · {r.date}</p>
                       </div>
                       {r.featured && (
                         <span className="text-[10px] bg-yellow-400/90 text-black font-bold px-2 py-0.5 rounded">★ FEATURED</span>
                       )}
                     </div>
-                    <p className="text-slate-200 text-sm italic">&ldquo;{r.quote}&rdquo;</p>
+                    <p dir="auto" className="text-slate-200 text-sm italic">&ldquo;{r.quote}&rdquo;</p>
                     <div className="flex gap-2 pt-2 mt-auto">
                       <button
                         onClick={() => handleReviewEditOpen(r)}

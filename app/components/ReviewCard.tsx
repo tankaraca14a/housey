@@ -18,12 +18,15 @@ export function ReviewCard({ review, featured = false }: Props) {
       className={`bg-surface-800 border border-white/10 rounded-2xl ${sizeClass} flex flex-col gap-3`}
     >
       <ReviewStars rating={review.rating} size={featured ? 'lg' : 'md'} />
-      <blockquote className={`${quoteSize} text-slate-100 leading-relaxed italic`}>
+      {/* dir="auto" lets the browser apply the Unicode bidi algorithm so an
+          Arabic/Hebrew/Farsi quote flows right-to-left and the typographic
+          quotes (“ ”) end up on the correct side. See test/integration/reviews-rtl.mjs. */}
+      <blockquote dir="auto" className={`${quoteSize} text-slate-100 leading-relaxed italic`}>
         &ldquo;{review.quote}&rdquo;
       </blockquote>
       <div className="mt-auto pt-3 border-t border-white/5 flex items-baseline justify-between text-sm">
         <div>
-          <span className="text-white font-semibold">{review.author}</span>
+          <span dir="auto" className="text-white font-semibold">{review.author}</span>
           <span className="text-slate-400"> · {review.source}</span>
         </div>
         <span className="text-slate-500 text-xs tabular-nums">{review.date}</span>
