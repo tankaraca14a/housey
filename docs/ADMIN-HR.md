@@ -315,7 +315,18 @@ Vaš izbor se pamti na vašem uređaju (prelazi između stranica i preko browser
 
 ![EN način](./admin-screenshots-hr/18-en-nacin-vrh.png)
 
-Sve — oznake u kalendaru, tekst gumba, oznake statusa, dijalozi za potvrdu — prilagođava se odabranom jeziku.
+U admin stranici sve — oznake u kalendaru, tekst gumba, oznake statusa, dijalozi za potvrdu — prilagođava se odabranom jeziku.
+
+### 7.1 Što vide gosti
+
+Izbornik se nalazi i na vašoj **javnoj** stranici (svaka stranica — Početna, O nama, Galerija, Rezervacija, Lokacija, Recenzije, Kontakt). Gost koji dolazi iz Njemačke vidi njemačke oznake, gost iz Italije vidi talijanske, itd. Cijela stranica — uključujući nazive mjeseci i dana u kalendaru rezervacija, tablicu cijena, sve oznake u formama, sve poruke o greškama, svaki gumb "Pošalji poruku" / "Pošalji zahtjev za rezervaciju" — prebacuje se na jezik koji posjetitelj odabere.
+
+Izbor posjetitelja se pamti na **njegovom** uređaju, neovisno o vašem. Vi i hrvatski gost možete istovremeno imati otvorenu stranicu, vi na engleskom, on na hrvatskom, i nijedna postavka ne utječe na drugu.
+
+Ispod: početna stranica na hrvatskom i stranica za rezervaciju na njemačkom. Ista stranica, isti podaci, drugi jezik ovisno o tome tko čita.
+
+![Početna stranica na hrvatskom](./admin-screenshots-hr/25-public-home-hr.png)
+![Stranica za rezervaciju na njemačkom](./admin-screenshots-hr/25-public-booking-de.png)
 
 ---
 

@@ -315,9 +315,20 @@ The choice is remembered on your device (it persists across pages and across bro
 
 ![HR mode](./admin-screenshots/18-hr-mode-top.png)
 
-Everything — calendar labels, button text, status badges, confirmation dialogs — adapts to the chosen language.
+In your admin page everything — calendar labels, button text, status badges, confirmation dialogs — adapts to the chosen language.
 
 ![HR mode bookings](./admin-screenshots/19-hr-mode-bookings.png)
+
+### 7.1 What guests see
+
+The picker also lives on your **public** site (every page — Home, About, Gallery, Booking, Location, Reviews, Contact). A guest visiting from Germany sees German labels, a guest from Italy sees Italian, and so on. The whole site — including the booking calendar's month and day names, the pricing table, every form label, every validation message, every "Send Message" / "Submit Booking Request" button — switches to whichever language the visitor picks.
+
+The visitor's choice is remembered on **their** device, independently of yours. You and a Croatian guest can both have the site open at the same time, you in English, them in Croatian, and neither setting affects the other.
+
+Below: the home page in Croatian, and the booking page in German. Same site, same data, different language for whichever visitor is reading.
+
+![Home page in Croatian](./admin-screenshots/25-public-home-hr.png)
+![Booking page in German](./admin-screenshots/25-public-booking-de.png)
 
 ---
 
