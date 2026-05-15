@@ -22,13 +22,21 @@ Use for any form a non-logged-in user submits. NOT for admin-side forms — thos
 ```
 app/<route>/page.tsx        # client component with the form
 app/api/<route>/route.ts    # POST handler
-app/lib/schemas/<thing>.ts  # zod schema, shared
+app/lib/<thing>.ts          # validators + types (live alongside the model)
 ```
 
-## Schema (shared)
+Where the validator lives depends on whether error messages need to be translated:
+
+- **Static error strings** (English-only, or no i18n): put the schema in `app/lib/<thing>.ts` next to the model. Both the client form (via `zodResolver`) and the route handler import the same exported `schema` constant. This is the cleanest split.
+
+- **Translated error messages** (i18n required): the schema must be built *inside* the page component with `useMemo` so it can call `useT()`. See `app/booking/page.tsx:292` for the real-world example — `bookingSchema` is defined inside the component because its error messages need to render in the user's chosen language. The server still validates separately in `app/api/<route>/route.ts` via a plain validator function (housey calls these `validate<Thing>Input` — see `app/lib/bookings.ts`), since the server has no React context.
+
+Both shapes coexist in this repo. Pick by whether the form is i18n.
+
+## Schema (static-error version)
 
 ```ts
-// app/lib/schemas/contact.ts
+// app/lib/contact.ts — only when error strings don't need translation
 import { z } from 'zod';
 
 export const contactSchema = z.object({
@@ -40,6 +48,18 @@ export const contactSchema = z.object({
 export type ContactInput = z.infer<typeof contactSchema>;
 ```
 
+## Schema (i18n version)
+
+```tsx
+// inside app/<route>/page.tsx
+const t = useT();
+const formSchema = useMemo(() => z.object({
+  name:    z.string().min(1, t.formNameRequired).max(120),
+  email:   z.string().email(t.formEmailInvalid),
+  // ...
+}), [t]);
+```
+
 ## Client form
 
 ```tsx
@@ -47,7 +67,7 @@ export type ContactInput = z.infer<typeof contactSchema>;
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { contactSchema, type ContactInput } from '@/app/lib/schemas/contact';
+import { contactSchema, type ContactInput } from '@/app/lib/contact';
 
 export default function ContactPage() {
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } =
@@ -112,7 +132,7 @@ Notes:
 ```ts
 // app/api/contact/route.ts
 import { NextResponse } from 'next/server';
-import { contactSchema } from '@/app/lib/schemas/contact';
+import { contactSchema } from '@/app/lib/contact';
 import { Resend } from 'resend';
 
 export async function POST(request: Request) {
@@ -161,7 +181,7 @@ export async function POST(request: Request) {
 ```ts
 // test/unit/contact-schema.test.mjs
 import { describe, it, expect } from 'vitest';
-import { contactSchema } from '@/app/lib/schemas/contact';
+import { contactSchema } from '@/app/lib/contact';
 
 describe('contactSchema', () => {
   it('accepts a valid payload', () => {
