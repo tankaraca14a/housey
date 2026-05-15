@@ -328,6 +328,20 @@ Ispod: početna stranica na hrvatskom i stranica za rezervaciju na njemačkom. I
 ![Početna stranica na hrvatskom](./admin-screenshots-hr/25-public-home-hr.png)
 ![Stranica za rezervaciju na njemačkom](./admin-screenshots-hr/25-public-booking-de.png)
 
+### 7.2 Emailovi za potvrdu / odbijanje rezervacije
+
+Kad gost ispuni obrazac za rezervaciju, jezik koji je odabrao se **sprema uz njegovu rezervaciju** zajedno s imenom, datumima i porukom. Kad kasnije kliknete **Potvrdi** ili **Odbij** na toj rezervaciji u adminu, email automatski ide na jeziku gosta:
+
+- Njemački gost dobije `"Ihre Buchung ist bestätigt!"` (ili `"Buchungsanfrage aktualisiert"` za odbijanje).
+- Francuski gost dobije `"Votre réservation est confirmée !"` / `"Mise à jour de la demande de réservation"`.
+- Talijanski gost dobije `"La tua prenotazione è confermata!"` / `"Aggiornamento sulla richiesta di prenotazione"`.
+- Hrvatski gost dobije `"Vaša rezervacija je potvrđena!"` / `"Ažuriranje zahtjeva za rezervaciju"`.
+- Engleski gost dobije originalni engleski tekst.
+
+Vi sami ne birate jezik; to je jezik koji je gost odabrao kad je poslao obrazac. Ako je rezervacija starija od ove funkcionalnosti (starije rezervacije) ili nekako nema upisan jezik, email se vraća na engleski. Gumbi Potvrdi/Odbij u adminu se ponašaju identično bez obzira na sve — samo kliknete, a pravi jezik ode van.
+
+Notifikacije s kontakt obrasca koje dolaze u vaš inbox su uvijek na **hrvatskom** (oznake: Ime, E-mail, Predmet, Poruka). Sam predmet i poruka koju je posjetitelj napisao ostaju na jeziku na kojem ih je on napisao.
+
 ---
 
 ## 8. Odjava

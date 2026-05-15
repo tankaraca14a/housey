@@ -330,6 +330,20 @@ Below: the home page in Croatian, and the booking page in German. Same site, sam
 ![Home page in Croatian](./admin-screenshots/25-public-home-hr.png)
 ![Booking page in German](./admin-screenshots/25-public-booking-de.png)
 
+### 7.2 Booking confirmation / decline emails
+
+When a guest fills the booking form, the language they picked is **saved on their booking row** along with their name, dates, and message. When you later click **Confirm** or **Decline** on that booking in the admin, the email goes out in the guest's language automatically:
+
+- A German guest gets `"Ihre Buchung ist bestätigt!"` (or `"Buchungsanfrage aktualisiert"` for decline).
+- A French guest gets `"Votre réservation est confirmée !"` / `"Mise à jour de la demande de réservation"`.
+- An Italian guest gets `"La tua prenotazione è confermata!"` / `"Aggiornamento sulla richiesta di prenotazione"`.
+- A Croatian guest gets `"Vaša rezervacija je potvrđena!"` / `"Ažuriranje zahtjeva za rezervaciju"`.
+- An English guest gets the original English template.
+
+You don't pick the language yourself; it's whatever the guest picked when they submitted the form. If the booking pre-dates this feature (older rows) or somehow has no language recorded, the email falls back to English. The Confirm/Decline buttons in the admin behave identically regardless — you just click, and the right language goes out.
+
+The contact-form notifications that you receive in your own inbox are always in **Croatian** (the labels: Ime, E-mail, Predmet, Poruka). The visitor's typed subject and message stay in whatever language they wrote them.
+
 ---
 
 ## 8. Logging out
