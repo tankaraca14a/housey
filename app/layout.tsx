@@ -2,6 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import SocialLinks from "./components/SocialLinks";
+import { LangProvider } from "./components/LangProvider";
+import { LangPicker } from "./components/LangPicker";
 
 // Open Graph / Twitter card metadata. The image is one of the existing
 // gallery photos. When socials are configured in env vars they show up in
@@ -38,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)]">
+        <LangProvider>
         <header className="border-b border-white/10 bg-surface-900/80 backdrop-blur">
           <nav className="container flex items-center justify-between h-16 text-sm">
             <Link href="/" className="font-semibold text-brand-400 tracking-wide">Housey</Link>
@@ -52,15 +55,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <li><Link href="/reviews" className="hover:text-brand-300 transition-colors">Reviews</Link></li>
               <li><Link href="/contact" className="hover:text-brand-300 transition-colors">Contact</Link></li>
             </ul>
-            {/* Mobile fallback: a single compact button linking to the gallery (the
-                most likely destination for a guest landing on the home page). The
-                full site map is in the footer. */}
-            <Link
-              href="/gallery"
-              className="sm:hidden text-xs px-3 py-1.5 rounded-lg bg-surface-700 text-slate-200 hover:bg-surface-600 transition border border-white/10"
-            >
-              Menu
-            </Link>
+            <div className="flex items-center gap-3">
+              <LangPicker />
+              {/* Mobile fallback: a single compact button linking to the gallery (the
+                  most likely destination for a guest landing on the home page). The
+                  full site map is in the footer. */}
+              <Link
+                href="/gallery"
+                className="sm:hidden text-xs px-3 py-1.5 rounded-lg bg-surface-700 text-slate-200 hover:bg-surface-600 transition border border-white/10"
+              >
+                Menu
+              </Link>
+            </div>
           </nav>
         </header>
         <main className="flex-1">{children}</main>
@@ -85,6 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
         </footer>
+        </LangProvider>
       </body>
     </html>
   );

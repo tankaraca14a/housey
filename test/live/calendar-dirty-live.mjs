@@ -41,8 +41,8 @@ const page = await ctx.newPage();
 
 try {
   await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
-  const lang = page.locator("button:has-text('HR'), button:has-text('EN')").first();
-  if ((await lang.textContent())?.trim() === 'EN') await lang.click();
+  await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+  await page.reload({ waitUntil: 'networkidle' });
   await page.fill('input[type=password]', PASS);
   await page.locator('button[type=submit]').click();
   await page.waitForSelector('h1', { timeout: 15_000 });

@@ -303,10 +303,15 @@ Nema ničega za uključiti, nema postavke za zapamtiti. Zalijepite tekst točno 
 
 ## 7. Prebacivanje jezika
 
-Mali gumb u gornjem desnom kutu prebacuje između hrvatskog i engleskog. Oznaka pokazuje JEZIK NA KOJI ĆE SE PREBACITI ako kliknete:
+U gornjem desnom kutu svake stranice (admin i javne stranice) nalazi se mali **izbornik jezika** (dropdown). Prvi put kad se otvori stranica, prikazuje se na **engleskom**. Kliknite izbornik i odaberite jezik:
 
-- Gumb piše **EN** → stranica je trenutno na HR; klik prebacuje na engleski
-- Gumb piše **HR** → stranica je trenutno na EN; klik prebacuje na hrvatski
+- **EN — English** (zadano)
+- **HR — Hrvatski**
+- **DE — Deutsch**
+- **IT — Italiano**
+- **FR — Français**
+
+Vaš izbor se pamti na vašem uređaju (prelazi između stranica i preko browser sesija), pa kad odaberete hrvatski ostajete na hrvatskom dok ponovno ne promijenite. Gosti imaju vlastiti pamćeni izbor na svom uređaju.
 
 ![EN način](./admin-screenshots-hr/18-en-nacin-vrh.png)
 

@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { upload } from "@vercel/blob/client";
 import type { Image as ImageRow, Category } from "@/app/lib/images";
+import { useLang } from "@/app/components/LangProvider";
+import type { Lang } from "@/app/lib/i18n/types";
 // The admin password is no longer hardcoded. It's typed at login and held
 // in React state for the session (cleared on tab close). Verification is
 // done by an authenticated GET — if the server returns 200 the password
@@ -98,7 +100,7 @@ interface Translations {
   reviewFeaturedLabel: string;
 }
 
-const translations: Record<"hr" | "en", Translations> = {
+const translations: Record<Lang, Translations> = {
   hr: {
     adminLogin: "Admin prijava",
     password: "Lozinka",
@@ -271,9 +273,265 @@ const translations: Record<"hr" | "en", Translations> = {
     reviewUrlLabel: "URL (optional)",
     reviewFeaturedLabel: "Featured (shown on home page)",
   },
+  de: {
+    adminLogin: "Admin-Anmeldung",
+    password: "Passwort",
+    login: "Anmelden",
+    wrongPassword: "Falsches Passwort",
+    blockedDates: "Blockierte Termine",
+    saveChanges: "Änderungen speichern",
+    saving: "Speichern...",
+    changesSaved: "Änderungen gespeichert!",
+    saveFailed: "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+    clickToBlock: "Klicken Sie auf Termine, um zu blockieren/freizugeben",
+    previous: "Vorherige",
+    next: "Nächste",
+    loading: "Laden...",
+    blocked: "Blockiert",
+    available: "Verfügbar",
+    past: "Vergangen",
+    monthNames: [
+      "Januar", "Februar", "März", "April", "Mai", "Juni",
+      "Juli", "August", "September", "Oktober", "November", "Dezember",
+    ],
+    dayNames: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+    bookings: "Buchungen",
+    refresh: "Aktualisieren",
+    noBookings: "Noch keine Buchungen",
+    loadingBookings: "Buchungen werden geladen...",
+    checkIn: "Anreise",
+    checkOut: "Abreise",
+    guests: "Gäste",
+    message: "Nachricht",
+    confirm: "Bestätigen",
+    decline: "Ablehnen",
+    confirmed: "Bestätigt",
+    declined: "Abgelehnt",
+    pending: "Ausstehend",
+    confirming: "Bestätigen...",
+    declining: "Ablehnen...",
+    total: "insgesamt",
+    pendingCount: "ausstehend",
+    submitted: "Eingereicht",
+    logout: "Abmelden",
+    delete: "Löschen",
+    deleting: "Löschen...",
+    deleteConfirm: "Diese Buchung löschen?",
+    deleteConfirm2: "Möchten Sie die Buchung wirklich endgültig löschen für:",
+    undo: "Rückgängig",
+    deletedToast: "Buchung gelöscht",
+    edit: "Bearbeiten",
+    editing: "Bearbeiten...",
+    save: "Speichern",
+    cancel: "Abbrechen",
+    addBooking: "Buchung hinzufügen",
+    confirmConfirm: "Diese Buchung bestätigen?",
+    confirmConfirm2: "Der Gast wird PER E-MAIL benachrichtigt, dass die Buchung BESTÄTIGT ist, und diese Termine werden blockiert:",
+    declineConfirm: "Diese Buchung ablehnen?",
+    declineConfirm2: "Der Gast wird PER E-MAIL über die Ablehnung informiert:",
+    editedToast: "Buchung bearbeitet",
+    editUndoFailed: "Rückgängig fehlgeschlagen",
+    creating: "Erstellen...",
+    nameLabel: "Name",
+    emailLabel: "E-Mail",
+    phoneLabel: "Telefon",
+    statusLabel: "Status",
+    saveFailedShort: "Speichern fehlgeschlagen",
+    imageDeletedToast: "Foto gelöscht",
+    imageDeleteConfirm: "Dieses Foto löschen?",
+    imageDeleteConfirm2: "Foto wirklich löschen?",
+    unsavedCalendarWarning: "Sie haben ungespeicherte Kalenderänderungen. Wirklich verwerfen?",
+    confirmedToast: "Bestätigt",
+    declinedToast: "Abgelehnt",
+    reviewsHeading: "Bewertungen",
+    addReview: "Bewertung hinzufügen",
+    editReview: "Bewertung bearbeiten",
+    noReviews: "Noch keine Bewertungen",
+    loadingReviews: "Bewertungen werden geladen...",
+    reviewDeleteConfirm: "Diese Bewertung löschen?",
+    reviewDeleteConfirm2: "Bewertung wirklich löschen von:",
+    reviewDeletedToast: "Bewertung gelöscht",
+    reviewAuthorLabel: "Autor",
+    reviewSourceLabel: "Quelle",
+    reviewRatingLabel: "Bewertung",
+    reviewQuoteLabel: "Zitat",
+    reviewDateLabel: "Datum",
+    reviewUrlLabel: "URL (optional)",
+    reviewFeaturedLabel: "Hervorgehoben (auf der Startseite angezeigt)",
+  },
+  it: {
+    adminLogin: "Accesso amministratore",
+    password: "Password",
+    login: "Accedi",
+    wrongPassword: "Password errata",
+    blockedDates: "Date bloccate",
+    saveChanges: "Salva modifiche",
+    saving: "Salvataggio...",
+    changesSaved: "Modifiche salvate!",
+    saveFailed: "Salvataggio fallito. Riprova.",
+    clickToBlock: "Clicca sulle date per bloccare/sbloccare",
+    previous: "Precedente",
+    next: "Successivo",
+    loading: "Caricamento...",
+    blocked: "Bloccato",
+    available: "Disponibile",
+    past: "Passato",
+    monthNames: [
+      "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+      "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre",
+    ],
+    dayNames: ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"],
+    bookings: "Prenotazioni",
+    refresh: "Aggiorna",
+    noBookings: "Nessuna prenotazione",
+    loadingBookings: "Caricamento prenotazioni...",
+    checkIn: "Check-in",
+    checkOut: "Check-out",
+    guests: "Ospiti",
+    message: "Messaggio",
+    confirm: "Conferma",
+    decline: "Rifiuta",
+    confirmed: "Confermata",
+    declined: "Rifiutata",
+    pending: "In attesa",
+    confirming: "Conferma in corso...",
+    declining: "Rifiuto in corso...",
+    total: "totale",
+    pendingCount: "in attesa",
+    submitted: "Inviata",
+    logout: "Esci",
+    delete: "Elimina",
+    deleting: "Eliminazione...",
+    deleteConfirm: "Eliminare questa prenotazione?",
+    deleteConfirm2: "Vuoi eliminare definitivamente la prenotazione di:",
+    undo: "Annulla",
+    deletedToast: "Prenotazione eliminata",
+    edit: "Modifica",
+    editing: "Modifica...",
+    save: "Salva",
+    cancel: "Annulla",
+    addBooking: "Aggiungi prenotazione",
+    confirmConfirm: "Confermare questa prenotazione?",
+    confirmConfirm2: "Verrà inviata UN'EMAIL all'ospite che la prenotazione è CONFERMATA e queste date saranno bloccate:",
+    declineConfirm: "Rifiutare questa prenotazione?",
+    declineConfirm2: "Verrà inviata UN'EMAIL all'ospite per il rifiuto:",
+    editedToast: "Prenotazione modificata",
+    editUndoFailed: "Annullamento fallito",
+    creating: "Creazione...",
+    nameLabel: "Nome",
+    emailLabel: "Email",
+    phoneLabel: "Telefono",
+    statusLabel: "Stato",
+    saveFailedShort: "Salvataggio fallito",
+    imageDeletedToast: "Foto eliminata",
+    imageDeleteConfirm: "Eliminare questa foto?",
+    imageDeleteConfirm2: "Eliminare davvero questa foto?",
+    unsavedCalendarWarning: "Hai modifiche al calendario non salvate. Vuoi davvero scartarle?",
+    confirmedToast: "Confermata",
+    declinedToast: "Rifiutata",
+    reviewsHeading: "Recensioni",
+    addReview: "Aggiungi recensione",
+    editReview: "Modifica recensione",
+    noReviews: "Nessuna recensione",
+    loadingReviews: "Caricamento recensioni...",
+    reviewDeleteConfirm: "Eliminare questa recensione?",
+    reviewDeleteConfirm2: "Eliminare davvero la recensione di:",
+    reviewDeletedToast: "Recensione eliminata",
+    reviewAuthorLabel: "Autore",
+    reviewSourceLabel: "Fonte",
+    reviewRatingLabel: "Valutazione",
+    reviewQuoteLabel: "Citazione",
+    reviewDateLabel: "Data",
+    reviewUrlLabel: "URL (opzionale)",
+    reviewFeaturedLabel: "In evidenza (mostrata in homepage)",
+  },
+  fr: {
+    adminLogin: "Connexion admin",
+    password: "Mot de passe",
+    login: "Connexion",
+    wrongPassword: "Mot de passe incorrect",
+    blockedDates: "Dates bloquées",
+    saveChanges: "Enregistrer les modifications",
+    saving: "Enregistrement...",
+    changesSaved: "Modifications enregistrées !",
+    saveFailed: "Échec de l'enregistrement. Veuillez réessayer.",
+    clickToBlock: "Cliquez sur les dates pour bloquer/débloquer",
+    previous: "Précédent",
+    next: "Suivant",
+    loading: "Chargement...",
+    blocked: "Bloqué",
+    available: "Disponible",
+    past: "Passé",
+    monthNames: [
+      "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+      "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
+    ],
+    dayNames: ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+    bookings: "Réservations",
+    refresh: "Actualiser",
+    noBookings: "Aucune réservation",
+    loadingBookings: "Chargement des réservations...",
+    checkIn: "Arrivée",
+    checkOut: "Départ",
+    guests: "Voyageurs",
+    message: "Message",
+    confirm: "Confirmer",
+    decline: "Refuser",
+    confirmed: "Confirmée",
+    declined: "Refusée",
+    pending: "En attente",
+    confirming: "Confirmation...",
+    declining: "Refus...",
+    total: "total",
+    pendingCount: "en attente",
+    submitted: "Envoyée",
+    logout: "Déconnexion",
+    delete: "Supprimer",
+    deleting: "Suppression...",
+    deleteConfirm: "Supprimer cette réservation ?",
+    deleteConfirm2: "Voulez-vous vraiment supprimer définitivement la réservation de :",
+    undo: "Annuler",
+    deletedToast: "Réservation supprimée",
+    edit: "Modifier",
+    editing: "Modification...",
+    save: "Enregistrer",
+    cancel: "Annuler",
+    addBooking: "Ajouter une réservation",
+    confirmConfirm: "Confirmer cette réservation ?",
+    confirmConfirm2: "Un E-MAIL sera envoyé au voyageur indiquant que sa réservation est CONFIRMÉE et ces dates seront bloquées :",
+    declineConfirm: "Refuser cette réservation ?",
+    declineConfirm2: "Un E-MAIL sera envoyé au voyageur pour le refus :",
+    editedToast: "Réservation modifiée",
+    editUndoFailed: "Échec de l'annulation",
+    creating: "Création...",
+    nameLabel: "Nom",
+    emailLabel: "E-mail",
+    phoneLabel: "Téléphone",
+    statusLabel: "Statut",
+    saveFailedShort: "Échec de l'enregistrement",
+    imageDeletedToast: "Photo supprimée",
+    imageDeleteConfirm: "Supprimer cette photo ?",
+    imageDeleteConfirm2: "Vraiment supprimer cette photo ?",
+    unsavedCalendarWarning: "Vous avez des modifications de calendrier non enregistrées. Vraiment les abandonner ?",
+    confirmedToast: "Confirmée",
+    declinedToast: "Refusée",
+    reviewsHeading: "Avis",
+    addReview: "Ajouter un avis",
+    editReview: "Modifier l'avis",
+    noReviews: "Aucun avis",
+    loadingReviews: "Chargement des avis...",
+    reviewDeleteConfirm: "Supprimer cet avis ?",
+    reviewDeleteConfirm2: "Vraiment supprimer l'avis de :",
+    reviewDeletedToast: "Avis supprimé",
+    reviewAuthorLabel: "Auteur",
+    reviewSourceLabel: "Source",
+    reviewRatingLabel: "Note",
+    reviewQuoteLabel: "Citation",
+    reviewDateLabel: "Date",
+    reviewUrlLabel: "URL (facultatif)",
+    reviewFeaturedLabel: "Mis en avant (affiché sur la page d'accueil)",
+  },
 };
-
-type Lang = "hr" | "en";
 
 interface CalendarMonthProps {
   year: number;
@@ -446,7 +704,9 @@ function StatusBadge({ status, t }: { status: Booking["status"]; t: Translations
 }
 
 export default function AdminPage() {
-  const [lang, setLang] = useState<Lang>("hr");
+  // The picker in the top nav (LangPicker, via LangProvider in app/layout.tsx)
+  // is the single source of truth for `lang` site-wide. We just consume it.
+  const { lang } = useLang();
   const t = translations[lang];
 
   const [authenticated, setAuthenticated] = useState(false);
@@ -1371,17 +1631,12 @@ export default function AdminPage() {
     }
   };
 
-  const LangToggle = () => (
-    <button
-      onClick={() => setLang((l) => (l === "hr" ? "en" : "hr"))}
-      // Mobile: sit below the site nav header (h-16) so the nav links
-      // don't overlap and intercept clicks. Desktop: top-right corner.
-      className="fixed top-20 right-3 sm:top-4 sm:right-4 z-50 px-3 py-1.5 text-xs font-bold bg-surface-700 hover:bg-surface-600 text-slate-300 border border-white/10 rounded-lg transition"
-      title={lang === "hr" ? "Switch to English" : "Prebaci na Hrvatski"}
-    >
-      {lang === "hr" ? "EN" : "HR"}
-    </button>
-  );
+  // The old HR/EN toggle that lived here as a fixed button has been removed —
+  // the global LangPicker in app/layout.tsx (top nav) now controls language
+  // for the whole site, admin included. Kept as a no-op render so any
+  // <LangToggle /> reference elsewhere doesn't break, but the picker in the
+  // header is the only thing the owner clicks.
+  const LangToggle = () => null;
 
   const [monthOffset, setMonthOffset] = useState(0);
   const now = new Date();
@@ -2123,7 +2378,11 @@ export default function AdminPage() {
                           <p className="mt-3 text-xs text-slate-600">
                             {t.submitted}{" "}
                             {new Date(booking.createdAt).toLocaleString(
-                              lang === "hr" ? "hr-HR" : "en-GB",
+                              // Map each supported language to a sensible locale
+                              // for date formatting. en-GB keeps day-month-year
+                              // order (matches HR / DE / IT / FR conventions
+                              // better than en-US).
+                              { hr: "hr-HR", en: "en-GB", de: "de-DE", it: "it-IT", fr: "fr-FR" }[lang],
                               {
                                 day: "2-digit",
                                 month: "short",

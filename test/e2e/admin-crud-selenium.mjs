@@ -93,8 +93,13 @@ try {
   log('=== A. Login ===');
   await driver.get(`${BASE}/admin`);
   await driver.wait(until.elementLocated(By.css('input[type="password"]')), 5000);
-  // Switch to EN for stable matchers
-  await clickByCss('button[title]');
+  // EN is now the global default (LangProvider in app/layout.tsx); the old
+  // HR/EN toggle has been replaced by a 5-language picker. Force-set the
+  // language in localStorage and reload so this suite is deterministic
+  // regardless of any leftover state from a prior run.
+  await driver.executeScript("window.localStorage.setItem('housey-lang', 'en');");
+  await driver.navigate().refresh();
+  await driver.wait(until.elementLocated(By.css('input[type="password"]')), 5000);
   await driver.sleep(150);
   await driver.findElement(By.css('input[type="password"]')).sendKeys(PASS, Key.RETURN);
   await driver.wait(until.elementLocated(By.css('h3')), 8000);

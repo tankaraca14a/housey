@@ -48,8 +48,12 @@ await shot('01-login-empty');
 await page.fill('input[type="password"]', PASS);
 await shot('02-login-filled');
 
-// Switch to English for the guide
-await page.locator('button:has-text("HR"), button:has-text("EN")').first().click();
+// EN is the default; the LangPicker in the top nav initialises to "en". If a
+// previous run wrote "hr" / "de" / "it" / "fr" to localStorage, force it to
+// EN so the EN doc's screenshots match the language label they describe.
+await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+await page.reload({ waitUntil: 'networkidle' });
+await page.fill('input[type="password"]', PASS);
 await page.waitForTimeout(150);
 
 await page.locator('button[type="submit"]').click();
@@ -298,17 +302,14 @@ await page.waitForTimeout(300);
 
 // ─── 9. HR mode ──────────────────────────────────────────────────────────────
 console.log('─── HR mode ───');
-// We're currently in EN. The lang toggle button shows the OTHER language
-// (so it shows "HR" when we're in EN, and "EN" when we're in HR).
-// Click whichever is visible.
-const toggle = page.locator('button[title*="Hrvatski"], button[title*="English"]').first();
-await toggle.click();
+// Pick "hr" in the global LangPicker (header dropdown) and capture two
+// shots so the EN doc can show what the page looks like in Croatian.
+await page.locator('[data-testid="lang-picker"]').selectOption('hr');
 await page.waitForTimeout(500);
 await page.evaluate(() => window.scrollTo(0, 0));
 await page.waitForTimeout(200);
 await shot('18-hr-mode-top');
 
-// Scroll to bookings in HR mode
 const bookingsHrHeader = page.locator('h2:has-text("Rezervacije")');
 if (await bookingsHrHeader.count() > 0) {
   await bookingsHrHeader.scrollIntoViewIfNeeded();
@@ -317,7 +318,7 @@ if (await bookingsHrHeader.count() > 0) {
 }
 
 // Switch back to EN for the logout screenshot
-await page.locator('button[title*="Hrvatski"], button[title*="English"]').first().click();
+await page.locator('[data-testid="lang-picker"]').selectOption('en');
 await page.waitForTimeout(300);
 
 // ─── 10. Logout ──────────────────────────────────────────────────────────────

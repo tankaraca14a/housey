@@ -82,10 +82,10 @@ try {
   log('=== A. Login + open Reviews ===');
   await driver.get(`${BASE}/admin`);
   await driver.wait(until.elementLocated(By.css('input[type="password"]')), 8000);
-  // Click language toggle button (HR ↔ EN). If currently EN, leave alone; otherwise switch.
-  const langBtn = await driver.findElement(By.css('button[title]'));
-  const langTxt = (await langBtn.getText()).trim();
-  if (langTxt === 'EN') await langBtn.click();
+  // Force EN — see admin-crud-selenium.mjs for the migration rationale.
+  await driver.executeScript("window.localStorage.setItem('housey-lang', 'en');");
+  await driver.navigate().refresh();
+  await driver.wait(until.elementLocated(By.css('input[type="password"]')), 5000);
   await driver.sleep(150);
   await driver.findElement(By.css('input[type="password"]')).sendKeys(PASS, Key.RETURN);
   await driver.wait(until.elementLocated(By.css('[data-testid="review-add-trigger"]')), 8000);

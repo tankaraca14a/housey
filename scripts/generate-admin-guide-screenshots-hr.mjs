@@ -33,16 +33,18 @@ page.on('dialog', async (d) => {
   await d.accept();
 });
 
-// ─── 1. Login (HR is default) ───────────────────────────────────────────────
+// ─── 1. Login (force HR via the new global picker — EN is now default) ─────
 console.log('─── Prijava ───');
 await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
+// Set HR before the login form is interacted with so the labels render in HR.
+await page.evaluate(() => window.localStorage.setItem('housey-lang', 'hr'));
+await page.reload({ waitUntil: 'networkidle' });
 await page.waitForSelector('input[type="password"]');
 await shot('01-prijava-prazna');
 
 await page.fill('input[type="password"]', PASS);
 await shot('02-prijava-popunjena');
 
-// Do NOT switch language — default is HR
 await page.locator('button[type="submit"]').click();
 await page.waitForSelector('h1', { timeout: 15000 });
 await page.waitForSelector('h3:has-text("2026")', { timeout: 15000 });
@@ -246,15 +248,14 @@ await page.locator('[data-testid="review-cancel"]').click();
 await page.waitForTimeout(300);
 
 console.log('─── EN način (za usporedbu) ───');
-const toggle = page.locator('button[title*="Hrvatski"], button[title*="English"]').first();
-await toggle.click();
+await page.locator('[data-testid="lang-picker"]').selectOption('en');
 await page.waitForTimeout(500);
 await page.evaluate(() => window.scrollTo(0, 0));
 await page.waitForTimeout(200);
 await shot('18-en-nacin-vrh');
 
 // Switch back to HR
-await page.locator('button[title*="Hrvatski"], button[title*="English"]').first().click();
+await page.locator('[data-testid="lang-picker"]').selectOption('hr');
 await page.waitForTimeout(300);
 
 console.log('─── Odjava ───');

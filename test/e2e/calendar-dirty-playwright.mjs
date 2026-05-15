@@ -19,9 +19,10 @@ const page = await ctx.newPage();
 
 async function login() {
   await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
-  // Switch to English for predictable selectors.
-  const lang = page.locator("button:has-text('HR'), button:has-text('EN')").first();
-  if ((await lang.textContent())?.trim() === 'EN') await lang.click();
+  // EN is the global default now; force it explicitly to neutralise any
+  // leftover localStorage from a prior run.
+  await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+  await page.reload({ waitUntil: 'networkidle' });
   await page.fill('input[type=password]', PASS);
   await page.locator('button[type=submit]').click();
   await page.waitForSelector('h1');

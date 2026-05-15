@@ -104,7 +104,7 @@ ok(dur && /\d+ nights/.test(dur), '2b: date range successfully selected');
 await page.fill('input[placeholder="John Doe"]', 'UI Test Guest');
 await page.fill('input[placeholder="john@example.com"]', 'uitest@example.invalid');
 await page.fill('input[placeholder="+1 234 567 890"]', '+385 91 555 0002');
-await page.selectOption('select', '2');
+await page.selectOption('main select', '2');
 await page.fill('textarea', 'Submitted by Playwright e2e suite — please disregard.');
 await page.screenshot({ path: join(SCREENS, 'C-02-form-filled.png'), fullPage: true });
 

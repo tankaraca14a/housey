@@ -27,9 +27,12 @@ const page = await ctx.newPage();
 page.on('dialog', async (d) => await d.accept());
 
 try {
-  log('=== A. Login in HR (default locale) ===');
+  log('=== A. Login in HR (force via LangPicker — EN is now global default) ===');
   await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
-  // HR is the default on this site; don't touch the lang toggle.
+  // EN is the global default; this suite explicitly tests HR labels, so
+  // we set the LangProvider's localStorage key to 'hr' and reload.
+  await page.evaluate(() => window.localStorage.setItem('housey-lang', 'hr'));
+  await page.reload({ waitUntil: 'networkidle' });
   await page.fill('input[type=password]', PASS);
   await page.locator('button[type=submit]').click();
   await page.waitForSelector('[data-testid="review-add-trigger"]', { timeout: 8000 });

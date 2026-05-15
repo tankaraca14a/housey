@@ -60,8 +60,10 @@ const driver = buildDriver();
 async function login() {
   await driver.get(`${BASE}/admin`);
   await driver.wait(until.elementLocated(By.css('input[type="password"]')), 5000);
-  // Switch to EN
-  await driver.findElement(By.xpath("//button[normalize-space()='HR' or normalize-space()='EN']")).click();
+  // Force EN deterministically — see admin-crud-selenium.mjs for why.
+  await driver.executeScript("window.localStorage.setItem('housey-lang', 'en');");
+  await driver.navigate().refresh();
+  await driver.wait(until.elementLocated(By.css('input[type="password"]')), 5000);
   await driver.sleep(200);
   await driver.findElement(By.css('input[type="password"]')).sendKeys(PASS, Key.RETURN);
   await driver.wait(until.elementLocated(By.css('h3')), 8000);

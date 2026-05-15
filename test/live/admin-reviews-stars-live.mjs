@@ -93,9 +93,11 @@ try {
   if (stalePurged > 0) log(`     (purged ${stalePurged} stale sentinel rows before starting)`);
   await driver.get(`${BASE}/admin`);
   await driver.wait(until.elementLocated(By.css('input[type="password"]')), 10_000);
-  const langBtn = await driver.findElement(By.css('button[title]'));
-  const langTxt = (await langBtn.getText()).trim();
-  if (langTxt === 'EN') await langBtn.click(); // prefer Croatian UI for owner-realistic flow
+  // Force HR for owner-realistic flow (EN is the global default, but Ivana
+  // herself uses Croatian). Set via the new LangPicker's localStorage key.
+  await driver.executeScript("window.localStorage.setItem('housey-lang', 'hr');");
+  await driver.navigate().refresh();
+  await driver.wait(until.elementLocated(By.css('input[type="password"]')), 5000);
   await driver.sleep(200);
   await driver.findElement(By.css('input[type="password"]')).sendKeys(PASS, Key.RETURN);
   await driver.wait(until.elementLocated(By.css('[data-testid="review-add-trigger"]')), 10_000);

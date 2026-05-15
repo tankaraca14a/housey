@@ -77,9 +77,11 @@ await shot(page, 'A-01-login');
 
 assert(await page.locator('input[type="password"]').count() === 1, 'A1: Login form renders');
 
-// Switch admin to English for stable month names
-const langBtn = page.locator('button:has-text("EN"), button:has-text("HR")').first();
-await langBtn.click(); // currently HR by default → EN
+// EN is the global default now (LangProvider in app/layout.tsx). Force-set
+// it via the LangPicker's localStorage key in case a prior run left a
+// different value behind.
+await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+await page.reload({ waitUntil: 'networkidle' });
 await page.waitForTimeout(200);
 
 await page.fill('input[type="password"]', 'ivana2026');

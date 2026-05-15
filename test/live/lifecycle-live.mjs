@@ -88,7 +88,7 @@ try {
   await page.fill('input[placeholder="John Doe"]', `Lifecycle-${TAG}`);
   await page.fill('input[placeholder="john@example.com"]', SENTINEL_EMAIL);
   await page.fill('input[placeholder="+1 234 567 890"]', '+385 91 555 9999');
-  await page.selectOption('select', '2');
+  await page.selectOption('main select', '2');
   await page.fill('textarea', 'Hardcore lifecycle test booking — will be cleaned up.');
   await page.screenshot({ path: join(SCREENS, '01-form-filled.png'), fullPage: true });
 

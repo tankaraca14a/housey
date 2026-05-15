@@ -60,7 +60,7 @@ for (const engine of ENGINES) {
     await page.fill('input[placeholder="John Doe"]', `${engine.name} Cross-Browser`);
     await page.fill('input[placeholder="john@example.com"]', `${engine.name}@example.invalid`);
     await page.fill('input[placeholder="+1 234 567 890"]', '+385 91 555 0099');
-    await page.selectOption('select', '2');
+    await page.selectOption('main select', '2');
     await page.fill('textarea', `Cross-browser sanity from ${engine.name}.`);
     let postStatus = null;
     page.on('response', (r) => { if (r.url().endsWith('/api/booking')) postStatus = r.status(); });
@@ -93,8 +93,8 @@ for (const engine of ENGINES) {
     // === /admin login + Save ===
     console.log(`  --- /admin ---`);
     await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
-    const lang = page.locator("button:has-text('HR'), button:has-text('EN')").first();
-    if ((await lang.textContent())?.trim() === 'EN') await lang.click();
+    await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+    await page.reload({ waitUntil: 'networkidle' });
     await page.fill('input[type=password]', PASS);
     await page.locator('button[type=submit]').click();
     await page.waitForSelector('h1', { timeout: 10_000 });

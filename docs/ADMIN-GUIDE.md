@@ -303,10 +303,15 @@ There's nothing to toggle, no setting to remember. Paste the text exactly as the
 
 ## 7. Switching language
 
-The small button in the top-right corner toggles between Croatian and English. The current language label is shown:
+There's a small **language picker** dropdown in the top-right corner of every page (admin and public site alike). The first time anyone opens the site it defaults to **English**. Click the dropdown and pick a language:
 
-- Button says **EN** → site is currently in HR; click to switch to English
-- Button says **HR** → site is currently in EN; click to switch to Croatian
+- **EN — English** (default)
+- **HR — Hrvatski**
+- **DE — Deutsch**
+- **IT — Italiano**
+- **FR — Français**
+
+The choice is remembered on your device (it persists across pages and across browser sessions), so once you pick Croatian you stay in Croatian until you change it again. Visitors get their own remembered choice on their own device.
 
 ![HR mode](./admin-screenshots/18-hr-mode-top.png)
 

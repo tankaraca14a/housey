@@ -63,9 +63,10 @@ try {
   try {
     await driver.get(`${BASE}/admin`);
     await driver.wait(until.elementLocated(By.css('input[type=password]')), 8000);
-    // Switch to English for predictable selectors
-    const lang = await driver.findElement(By.xpath("//button[normalize-space()='HR' or normalize-space()='EN']"));
-    await lang.click();
+    // Force EN deterministically — see admin-crud-selenium.mjs for why.
+    await driver.executeScript("window.localStorage.setItem('housey-lang', 'en');");
+    await driver.navigate().refresh();
+    await driver.wait(until.elementLocated(By.css('input[type=password]')), 5000);
     await driver.sleep(150);
     await driver.findElement(By.css('input[type=password]')).sendKeys(PASS);
     await driver.findElement(By.css('button[type=submit]')).click();
@@ -153,8 +154,10 @@ try {
     // initial fetch would re-bounce to the password screen, so just log back in.
     await driver.navigate().refresh();
     await driver.wait(until.elementLocated(By.css('input[type=password]')), 6000);
-    const langAgain = await driver.findElement(By.xpath("//button[normalize-space()='HR' or normalize-space()='EN']"));
-    if ((await langAgain.getText()).trim() === 'EN') { /* already in HR, switch to EN */ await langAgain.click(); }
+    // Force EN again — localStorage persists across reloads, but be explicit.
+    await driver.executeScript("window.localStorage.setItem('housey-lang', 'en');");
+    await driver.navigate().refresh();
+    await driver.wait(until.elementLocated(By.css('input[type=password]')), 5000);
     await driver.sleep(150);
     await driver.findElement(By.css('input[type=password]')).sendKeys(PASS);
     await driver.findElement(By.css('button[type=submit]')).click();

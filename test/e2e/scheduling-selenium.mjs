@@ -80,9 +80,10 @@ try {
   await driver.wait(until.elementLocated(By.css('input[type="password"]')), 5000);
   await shot('S-A-01-login');
 
-  // Toggle to EN
-  const lang = await driver.findElement(By.css('button[title*="English"], button[title*="Hrvatski"]'));
-  await lang.click();
+  // Force EN — see admin-crud-selenium.mjs.
+  await driver.executeScript("window.localStorage.setItem('housey-lang', 'en');");
+  await driver.navigate().refresh();
+  await driver.wait(until.elementLocated(By.css('input[type="password"]')), 5000);
   await driver.sleep(150);
 
   await driver.findElement(By.css('input[type="password"]')).sendKeys('ivana2026', Key.RETURN);
@@ -158,7 +159,10 @@ try {
   await driver.findElement(By.css('input[placeholder="John Doe"]')).sendKeys('Selenium Test Guest');
   await driver.findElement(By.css('input[placeholder="john@example.com"]')).sendKeys('selenium@example.invalid');
   await driver.findElement(By.css('input[placeholder="+1 234 567 890"]')).sendKeys('+385 91 555 5555');
-  await driver.findElement(By.css('select')).sendKeys('2 guests');
+  // Pick the guests select in the booking form, not the global LangPicker.
+  // findElement(By.css('select')) used to be unambiguous; now the picker
+  // in the top nav also matches.
+  await driver.findElement(By.css('main select')).sendKeys('2 guests');
   await driver.findElement(By.css('textarea')).sendKeys('Submitted via Selenium WebDriver.');
   await shot('S-C-01-form-filled');
 

@@ -71,7 +71,9 @@ log('\n=== 2. Fill form + submit ===');
 await page.fill('input[placeholder="John Doe"]',         GUEST.name);
 await page.fill('input[placeholder="john@example.com"]', GUEST.email);
 await page.fill('input[placeholder="+1 234 567 890"]',   GUEST.phone);
-await page.selectOption('select',                        GUEST.guests);
+// Use the guests select inside <main>, not the global LangPicker that
+// now lives in the top nav and would otherwise match a bare 'select'.
+await page.selectOption('main select',                   GUEST.guests);
 await page.fill('textarea',                              GUEST.message);
 await page.screenshot({ path: join(SCREENS, '02-form-filled.png'), fullPage: true });
 

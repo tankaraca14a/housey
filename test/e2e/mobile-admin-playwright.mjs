@@ -39,9 +39,9 @@ try {
 
   // ── 1. Login form ─────────────────────────────────────────────────────────
   await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
-  // Toggle to EN (default is HR)
-  const lang = page.locator("button:has-text('HR'), button:has-text('EN')").first();
-  if ((await lang.textContent())?.trim() === 'EN') await lang.click();
+  // EN is the global default now; force it explicitly via the picker.
+  await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+  await page.reload({ waitUntil: 'networkidle' });
 
   // Password input is visible and fits the viewport horizontally
   const pwInput = page.locator('input[type=password]');

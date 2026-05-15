@@ -82,8 +82,9 @@ try {
 
   await driver.get(`${BASE}/admin`);
   await driver.wait(until.elementLocated(By.css('input[type=password]')), 8000);
-  const lang = await driver.findElement(By.xpath("//button[normalize-space()='HR' or normalize-space()='EN']"));
-  if ((await lang.getText()).trim() === 'EN') await lang.click(); // switch to EN
+  await driver.executeScript("window.localStorage.setItem('housey-lang', 'en');");
+  await driver.navigate().refresh();
+  await driver.wait(until.elementLocated(By.css('input[type=password]')), 5000);
   await driver.sleep(150);
   await driver.findElement(By.css('input[type=password]')).sendKeys(PASS, Key.RETURN);
   await driver.wait(until.elementLocated(By.css('h1')), 10000);

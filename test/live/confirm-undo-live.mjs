@@ -67,9 +67,9 @@ try {
   // ── 2. Log into admin in browser ──────────────────────────────────────────
   console.log('\n=== 2. Admin login (real browser) ===');
   await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle' });
-  // Switch to EN if HR is showing (default is HR; the toggle shows the OTHER lang)
-  const lang = page.locator("button:has-text('HR'), button:has-text('EN')").first();
-  if ((await lang.textContent())?.trim() === 'EN') await lang.click();
+  // EN is the global default; force it explicitly to neutralise prior state.
+  await page.evaluate(() => window.localStorage.setItem('housey-lang', 'en'));
+  await page.reload({ waitUntil: 'networkidle' });
   await page.fill('input[type=password]', PASS);
   await page.locator('button[type=submit]').click();
   await page.waitForSelector('h1', { timeout: 15_000 });
