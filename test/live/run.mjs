@@ -16,6 +16,7 @@ const FILES = [
   'calendar-dirty-live.mjs',
   'email-delivery-live.mjs',
   'images-lifecycle-live.mjs',
+  'admin-reviews-stars-live.mjs',
 ];
 
 let failed = 0;
