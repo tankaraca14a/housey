@@ -22,6 +22,15 @@ export const LANG_LABELS: Record<Lang, { short: string; native: string }> = {
 // across navigations and across sessions on the same device.
 export const LANG_STORAGE_KEY = "housey-lang";
 
+// Cookie name. Mirrors LANG_STORAGE_KEY so the same string serves both
+// client (LangProvider writes it) and server (RootLayout +
+// generateMetadata read it via next/headers cookies()). Why both:
+// localStorage is client-only and unavailable to SSR / crawlers; the
+// cookie travels with every request so the server can render the page
+// in the correct language on first paint, OG/Twitter metadata can be
+// localised, and the <html lang="…"> attribute matches the content.
+export const LANG_COOKIE_NAME = "housey-lang";
+
 export function isLang(v: unknown): v is Lang {
   return typeof v === "string" && (SUPPORTED_LANGS as readonly string[]).includes(v);
 }

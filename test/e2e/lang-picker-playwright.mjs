@@ -137,10 +137,32 @@ try {
   const p2 = await ctx2.newPage();
   await p2.goto(`${BASE}/`, { waitUntil: 'networkidle' });
   await p2.evaluate(() => window.localStorage.removeItem('housey-lang'));
+  // Also clear cookies — the server-side render now uses the cookie too.
+  await p2.context().clearCookies();
   await p2.reload({ waitUntil: 'networkidle' });
   const cleared = await p2.locator('[data-testid="lang-picker"]').inputValue();
-  ok(cleared === 'en', `9a: after clearing storage, picker defaults to "en" (got "${cleared}")`);
+  ok(cleared === 'en', `9a: after clearing storage + cookie, picker defaults to "en" (got "${cleared}")`);
   await ctx2.close();
+
+  log('\n=== 10. Picker writes a cookie → server renders next page in chosen lang ===');
+  // Closes the loop: the client picker writes housey-lang to localStorage
+  // AND to a cookie. The next request the browser makes carries the
+  // cookie, so the SERVER renders the page in the chosen language with
+  // no flash of EN. This test proves the cookie path works in addition
+  // to the storage path.
+  const ctx3 = await browser.newContext({ viewport: { width: 1400, height: 900 } });
+  const p3 = await ctx3.newPage();
+  await p3.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await p3.locator('[data-testid="lang-picker"]').selectOption('de');
+  await p3.waitForTimeout(200);
+  const cookies = await p3.context().cookies();
+  const langCookie = cookies.find((c) => c.name === 'housey-lang');
+  ok(langCookie?.value === 'de', `10a: picker wrote housey-lang=de cookie (got "${langCookie?.value}")`);
+  // Reload — browser sends cookie, server reads it, renders in DE on first paint.
+  await p3.reload({ waitUntil: 'networkidle' });
+  const htmlLang = await p3.evaluate(() => document.documentElement.getAttribute('lang'));
+  ok(htmlLang === 'de', `10b: server-side <html lang="de"> after reload (got "${htmlLang}")`);
+  await ctx3.close();
 } catch (e) {
   log(`\nFATAL: ${e.stack || e}`);
   failures++;

@@ -140,9 +140,12 @@ try {
   const afterReload = await pickerValue();
   ok(afterReload === 'de', `7a: reload preserves "de" (got "${afterReload}")`);
 
-  log('\n=== 8. localStorage cleared => returns to "en" ===');
+  log('\n=== 8. localStorage + cookie cleared => returns to "en" ===');
   await driver.get(`${BASE}/`);
   await driver.executeScript("window.localStorage.removeItem('housey-lang');");
+  // SSR uses the cookie too — clear it or the server will keep
+  // rendering in the most recently picked language.
+  await driver.manage().deleteCookie('housey-lang');
   await driver.navigate().refresh();
   await driver.wait(until.elementLocated(By.css('[data-testid="lang-picker"]')), 8000);
   const cleared = await pickerValue();
