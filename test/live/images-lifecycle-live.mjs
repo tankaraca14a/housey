@@ -63,13 +63,19 @@ try {
       metadataPostStatus = res.status();
     }
   });
+  // CRITICAL: capture baseline tile count BEFORE upload. The grid already
+  // has every existing image rendered, so waiting for `tiles.length > 0`
+  // returns instantly without ever giving the upload chain a chance to
+  // complete. Wait for the count to GROW past baseline instead.
+  const baselineTileCount = await page.locator(`[data-testid^="image-tile-"]`).count();
   await page.setInputFiles(`[data-testid='image-upload-input']`, FIXTURE);
   // Wait for the upload + metadata POST to complete. Generous timeout
   // because Blob direct-upload includes a real HTTP PUT to Vercel.
-  await page.waitForFunction(() => {
-    const tiles = document.querySelectorAll('[data-testid^="image-tile-"]');
-    return tiles.length > 0;
-  }, { timeout: 60_000 });
+  await page.waitForFunction(
+    (n) => document.querySelectorAll('[data-testid^="image-tile-"]').length > n,
+    baselineTileCount,
+    { timeout: 60_000 },
+  );
   await page.waitForTimeout(500);
   ok(metadataPostStatus === 200, `2a: metadata POST returned 200 (${metadataPostStatus})`);
 
