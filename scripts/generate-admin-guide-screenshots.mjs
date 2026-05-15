@@ -19,7 +19,7 @@ const PASS = 'ivana2026';
 
 const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext({
-  viewport: { width: 1400, height: 1100 },
+  viewport: { width: 1400, height: 1500 },
   deviceScaleFactor: 2, // crisp retina screenshots
 });
 const page = await ctx.newPage();
@@ -254,6 +254,47 @@ if (uploadBox) {
   });
   console.log('  ✓ 17-upload-button.png');
 }
+
+// ─── 8b. Reviews section ─────────────────────────────────────────────────────
+console.log('─── Reviews ───');
+const reviewsHeader = page.locator('h2:has-text("Reviews")');
+await reviewsHeader.scrollIntoViewIfNeeded();
+await page.waitForTimeout(800);
+
+// 21 — full Reviews section showing two seeded tiles (one featured).
+// Find the .mt-16 wrapper that contains the whole Reviews section. The
+// h2 is 3 levels deep inside it: h2 -> heading-grid -> flex-row -> mt-16.
+const reviewsSection = page.locator(
+  'xpath=//h2[normalize-space()="Reviews"]/ancestor::div[contains(@class, "mt-16")][1]',
+);
+await reviewsSection.scrollIntoViewIfNeeded();
+await page.waitForTimeout(250);
+await reviewsSection.screenshot({ path: join(OUT, '21-reviews-list.png') });
+console.log('  ✓ 21-reviews-list.png');
+
+// Open the Add Review panel for the star widget shots
+await page.locator('[data-testid="review-add-trigger"]').click();
+await page.waitForSelector('[data-testid="review-edit-panel"]');
+await page.waitForTimeout(400);
+const panel = page.locator('[data-testid="review-edit-panel"]');
+await panel.scrollIntoViewIfNeeded();
+await page.waitForTimeout(200);
+
+// 22 — Add review form, rating defaulted to 5 (all stars amber).
+// element.screenshot auto-clips to the element's exact bounds, even
+// if it extends beyond the current viewport.
+await panel.screenshot({ path: join(OUT, '22-review-form-default.png') });
+console.log('  ✓ 22-review-form-default.png');
+
+// Click star 3, capture the same panel showing 3 amber + 2 slate + "3/5"
+await page.locator('[data-testid="review-rating-3"]').click();
+await page.waitForTimeout(200);
+await panel.screenshot({ path: join(OUT, '23-review-form-rating-3.png') });
+console.log('  ✓ 23-review-form-rating-3.png');
+
+// Close without saving so we leave the seeded list untouched
+await page.locator('[data-testid="review-cancel"]').click();
+await page.waitForTimeout(300);
 
 // ─── 9. HR mode ──────────────────────────────────────────────────────────────
 console.log('─── HR mode ───');

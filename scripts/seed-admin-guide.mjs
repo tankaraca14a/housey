@@ -21,11 +21,15 @@ const messages = lang === 'hr'
       anna:   'Bok! Veselimo se proslavi godišnjice na vašem prekrasnom mjestu!',
       marco:  'Obiteljski godišnji odmor, jedva čekamo more!',
       tomas:  'Samo 3 noći, ako može.',
+      review1: 'Najljepše mjesto za odmor uz more. Domaćica je topla, kuća tiha, voda kristalno čista.',
+      review2: 'Savršena lokacija, mir i izlasci sunca koji se pamte. Vraćamo se sigurno.',
     }
   : {
       anna:   "Hi! We're really looking forward to celebrating our anniversary at your beautiful place!",
       marco:  "Family summer holiday, can't wait for the sea!",
       tomas:  'Could we do just 3 nights?',
+      review1: 'The most beautiful spot we have found on the Adriatic. Quiet, crystal sea, warm host.',
+      review2: 'Perfect location, peaceful mornings, sunsets we will never forget. We will be back.',
     };
 
 const bookings = [
@@ -106,6 +110,33 @@ const images = [
   },
 ];
 
+const reviews = [
+  {
+    id: 'guide-review-1',
+    author: 'Anna & Marco',
+    source: 'Airbnb',
+    rating: 5,
+    quote: messages.review1,
+    date: '2025-08-15',
+    url: 'https://airbnb.com/r/example-1',
+    featured: true,
+    sortOrder: 1,
+    createdAt: '2026-05-12T10:00:00.000Z',
+  },
+  {
+    id: 'guide-review-2',
+    author: 'Elena',
+    source: 'Booking.com',
+    rating: 4,
+    quote: messages.review2,
+    date: '2025-09-02',
+    featured: false,
+    sortOrder: 2,
+    createdAt: '2026-05-12T10:01:00.000Z',
+  },
+];
+
 writeFileSync(join(ROOT, 'data/bookings.json'), JSON.stringify(bookings, null, 2) + '\n');
 writeFileSync(join(ROOT, 'data/images.json'), JSON.stringify(images, null, 2) + '\n');
-console.log(`seeded data/bookings.json (${bookings.length}) + data/images.json (${images.length}) — lang=${lang}`);
+writeFileSync(join(ROOT, 'data/reviews.json'), JSON.stringify(reviews, null, 2) + '\n');
+console.log(`seeded data/bookings.json (${bookings.length}) + data/images.json (${images.length}) + data/reviews.json (${reviews.length}) — lang=${lang}`);

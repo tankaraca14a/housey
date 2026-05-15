@@ -17,7 +17,7 @@ const PASS = 'ivana2026';
 
 const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext({
-  viewport: { width: 1400, height: 1100 },
+  viewport: { width: 1400, height: 1500 },
   deviceScaleFactor: 2,
 });
 const page = await ctx.newPage();
@@ -213,6 +213,37 @@ if (uploadBox) {
   });
   console.log('  ✓ 17-upload-gumb.png');
 }
+
+console.log('─── Recenzije ───');
+const reviewsHeader = page.locator('h2:has-text("Recenzije")');
+await reviewsHeader.scrollIntoViewIfNeeded();
+await page.waitForTimeout(800);
+
+const reviewsSection = page.locator(
+  'xpath=//h2[normalize-space()="Recenzije"]/ancestor::div[contains(@class, "mt-16")][1]',
+);
+await reviewsSection.scrollIntoViewIfNeeded();
+await page.waitForTimeout(250);
+await reviewsSection.screenshot({ path: join(OUT, '21-recenzije-lista.png') });
+console.log('  ✓ 21-recenzije-lista.png');
+
+await page.locator('[data-testid="review-add-trigger"]').click();
+await page.waitForSelector('[data-testid="review-edit-panel"]');
+await page.waitForTimeout(400);
+const panel = page.locator('[data-testid="review-edit-panel"]');
+await panel.scrollIntoViewIfNeeded();
+await page.waitForTimeout(200);
+
+await panel.screenshot({ path: join(OUT, '22-recenzija-forma-zadana.png') });
+console.log('  ✓ 22-recenzija-forma-zadana.png');
+
+await page.locator('[data-testid="review-rating-3"]').click();
+await page.waitForTimeout(200);
+await panel.screenshot({ path: join(OUT, '23-recenzija-ocjena-3.png') });
+console.log('  ✓ 23-recenzija-ocjena-3.png');
+
+await page.locator('[data-testid="review-cancel"]').click();
+await page.waitForTimeout(300);
 
 console.log('─── EN način (za usporedbu) ───');
 const toggle = page.locator('button[title*="Hrvatski"], button[title*="English"]').first();

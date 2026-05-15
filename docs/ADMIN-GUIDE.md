@@ -22,13 +22,14 @@ Type your password (the same one you've been using), then click **Login**.
 
 ## 2. The admin page at a glance
 
-Once you're logged in, you'll see one big page with three sections:
+Once you're logged in, you'll see one big page with four sections:
 
 ![Full admin overview](./admin-screenshots/03-overview-top.png)
 
 1. **The Calendar at the top** — for blocking dates when you'll be using the house yourself.
 2. **Images** — to upload and manage the photos on the public site.
-3. **Bookings** (scroll down) — every reservation from guests, plus a way to add your own.
+3. **Reviews** (scroll down) — quotes from past guests, with star ratings, that you publish on the public site.
+4. **Bookings** (scroll further down) — every reservation from guests, plus a way to add your own.
 
 You can scroll the whole page — nothing is hidden behind buttons or menus.
 
@@ -211,7 +212,82 @@ The photo disappears from the grid immediately, AND an **Undo** toast appears at
 
 ---
 
-## 6. Switching language
+## 6. Guest reviews
+
+Reviews are real quotes from people who have stayed at the house. You copy them in from wherever they came (Airbnb, Booking.com, a private message, an email) and they appear on your **/reviews** page on the public site. Anything you mark as **Featured** also shows on the home page, so it's the first thing new visitors see.
+
+You are the only person who can add or edit reviews. Guests do NOT leave reviews on your site — they still leave them on Airbnb / Booking / Google like before. You decide which ones to publish here.
+
+![Reviews list](./admin-screenshots/21-reviews-list.png)
+
+### 6.1 Adding a review
+
+Scroll down to the **Reviews** section (it sits between Images and Bookings) and click the blue **+ Add review** button. A form appears:
+
+![Add review form, default 5 stars](./admin-screenshots/22-review-form-default.png)
+
+Fill in:
+
+- **Author** — the guest's first name and last initial (e.g. `Anna M.` or `Anna & Marco`). Keep it short — this is all that shows on the public site.
+- **Source** — where the review came from. Free text, type whatever helps you remember: `Airbnb`, `Booking.com`, `Direct`, `WhatsApp`, `Email`, `Google`. The field is pre-filled with `Airbnb`; type over it if needed.
+- **Rating** — see 6.2 below.
+- **Date** — the date the guest left the review. Already filled with today; change it if you remember the original date.
+- **Quote** — paste the review text exactly as the guest wrote it. One or two sentences works best — long paragraphs get cut off on phones.
+- **URL (optional)** — if the review is published online (Airbnb, Google), paste its link here. Leaving it blank is fine.
+- **Featured (shown on home page)** — tick this if you want the review to appear on your front page. Best for your absolute favourites; the home page only highlights a few.
+
+Click **Save**. The review immediately appears in the list above (and on the public site within seconds).
+
+### 6.2 Setting the star rating
+
+You set the rating by clicking on the stars. **A new review starts at 5 stars** (the highest). To give a lower rating, click the star at the position you want:
+
+- Click the **3rd star** → you get a 3-star rating (3 yellow, 2 grey)
+- Click the **1st star** → 1-star rating (1 yellow, 4 grey)
+- Click the **5th star** → back to 5
+
+![Rating clicked at 3](./admin-screenshots/23-review-form-rating-3.png)
+
+The little **"3/5"** label on the right always confirms the current value. Click any star at any time to change it — you can keep adjusting until it looks right.
+
+> **For Booking.com reviews:** their scores come out of 10. Divide by 2 and round normally — a `9` becomes 5 stars here, an `8` becomes 4, a `7` becomes 4 (round up if the number ends in `.5`).
+
+### 6.3 Featuring a review
+
+Each review tile has three buttons at the bottom: **✎ Edit**, **★ Feature** (or **Unstar** if it's already featured), and **🗑** (delete).
+
+Click **★ Feature** to put the review on the home page. Featured reviews:
+
+- get a small yellow **★ FEATURED** badge on the tile in your admin view
+- show up on the home page in a short row of cards above the footer
+- still appear on the full **/reviews** page
+
+The home page shows the first three featured reviews. If you mark more than three as featured, the extras only appear on the /reviews page.
+
+Click **Unstar** on a featured review to remove it from the home page. The review itself stays — only the home-page placement is removed.
+
+### 6.4 Editing a review
+
+Click **✎ Edit** on any review tile. The same form opens, pre-filled with what you originally saved. Change anything (the stars too — click on a different star to change the rating). Click **Save** — the review updates immediately, the public site refreshes within seconds.
+
+Click **Cancel** if you opened it by mistake — nothing gets written.
+
+### 6.5 Deleting a review
+
+Click the red **🗑** button on a review tile.
+
+You'll see one confirmation: *"Delete this review by [author]?"* → **OK**.
+
+The review disappears from the list **immediately**, and an **Undo** toast appears in the bottom-right of the screen with a 10-second countdown — same pattern as bookings and photos:
+
+- **Click Undo within 10 seconds** → the review comes back, nothing ever changed.
+- **Wait 10 seconds** → the review is permanently gone.
+
+> If you accidentally click 🗑 and don't see the toast right away, scroll to the bottom-right corner of the page — that's where the undo lives.
+
+---
+
+## 7. Switching language
 
 The small button in the top-right corner toggles between Croatian and English. The current language label is shown:
 
@@ -226,7 +302,7 @@ Everything — calendar labels, button text, status badges, confirmation dialogs
 
 ---
 
-## 7. Logging out
+## 8. Logging out
 
 Click the **Logout** button (top right).
 
@@ -238,7 +314,7 @@ This wipes your password from the browser's memory. Useful if you're on a shared
 
 ---
 
-## 8. What to do if something goes wrong
+## 9. What to do if something goes wrong
 
 ### "I clicked Confirm on the wrong booking"
 
@@ -276,6 +352,15 @@ This wipes your password from the browser's memory. Useful if you're on a shared
 - **Within 10 seconds:** click the **Undo** button in the toast at the bottom-right corner.
 - **After 10 seconds:** the photo's bytes are gone from storage. You'll need to re-upload from your phone.
 
+### "I deleted the wrong review"
+
+- **Within 10 seconds:** click the **Undo** button in the toast at the bottom-right corner.
+- **After 10 seconds:** the review is gone. Find the original (Airbnb / Booking / email) and add it again with **+ Add review** — copy/paste the same quote.
+
+### "I gave a review the wrong star rating"
+
+- Click **✎ Edit** on the review tile, click on the correct star (e.g. click the 4th star to set 4 stars), click **Save**. The public site updates within seconds.
+
 ### "The page won't load / something looks broken"
 
 - Refresh the page (Cmd/Ctrl + R).
@@ -296,7 +381,7 @@ You don't need to remember these — the admin page enforces them automatically:
 
 - **Double-bookings:** If two guests submit overlapping dates, the second one is rejected with a clear error. They never both land as pending.
 - **Misclicks on destructive actions:** Confirm, Decline, and Delete each require two clicks through confirmation dialogs.
-- **Permanent loss from a fumble:** Booking Confirm, Decline, Delete, Edit, AND photo Delete each have a 10-second undo. The toast appears in the bottom-right corner of the screen.
+- **Permanent loss from a fumble:** Booking Confirm, Decline, Delete, Edit, photo Delete, AND review Delete each have a 10-second undo. The toast appears in the bottom-right corner of the screen.
 - **Email sent by mistake:** Confirm and Decline emails are NOT sent until the 10-second undo window passes. Click Undo and the email is never dispatched, the guest never knows.
 - **Losing unsaved calendar work:** If you marked some dates and forget to click Save Changes, the page asks "you have unsaved changes, really discard?" before letting you log out, refresh, or close the tab.
 - **Lost reservations from a Resend hiccup:** Bookings save to the database BEFORE the email goes out. If email fails for any reason, the booking is still there and you see it in the list.
@@ -310,7 +395,6 @@ These exist on the backlog as GitHub issues — none of them block you from runn
 - **Instagram / Facebook links** ([#2](https://github.com/tankaraca14a/housey/issues/2)) — once you create the accounts, ping Mihaela with the URLs.
 - **More featured photos visible at once** ([#7](https://github.com/tankaraca14a/housey/issues/7)) — currently only the first 3 featured photos get the hero spots.
 - **Owner-written posts** ([#8](https://github.com/tankaraca14a/housey/issues/8)) — a "Stories" / "Diary" / "News" section where you publish short updates from the house (olive harvest, sea temperature, recipes). Edited via the admin.
-- **Guest reviews with stars** ([#9](https://github.com/tankaraca14a/housey/issues/9)) — curated review citations with star ratings, copied in from Airbnb / Booking.com / private guests so you choose which ones show.
 - **FAQ section** ([#10](https://github.com/tankaraca14a/housey/issues/10)) — admin-edited Q+A pairs (wifi, checkin time, parking, breakfast, etc.) so guests don't email the same questions over and over.
 - **House Rules page** ([#11](https://github.com/tankaraca14a/housey/issues/11)) — single markdown page you edit yourself.
 - **Pricing display** ([#12](https://github.com/tankaraca14a/housey/issues/12)) — "from €X / night" shown before guests submit the booking form, with optional seasonal breakdown.

@@ -22,13 +22,14 @@ Upišite lozinku (istu koju ste do sad koristili) i kliknite **Prijava**.
 
 ## 2. Admin stranica na prvi pogled
 
-Nakon prijave vidjet ćete jednu veliku stranicu s tri sekcije:
+Nakon prijave vidjet ćete jednu veliku stranicu s četiri sekcije:
 
 ![Pregled admin stranice](./admin-screenshots-hr/03-pregled-vrh.png)
 
 1. **Kalendar na vrhu** — za blokiranje datuma kada ćete vi koristiti kuću.
 2. **Slike** — za prijenos i upravljanje fotografijama na javnoj stranici.
-3. **Rezervacije** (skrolajte dolje) — sve rezervacije od gostiju, plus način da sami dodate svoju.
+3. **Recenzije** (skrolajte dolje) — citati gostiju s ocjenama zvjezdicama, koje objavljujete na javnoj stranici.
+4. **Rezervacije** (skrolajte još dalje) — sve rezervacije od gostiju, plus način da sami dodate svoju.
 
 Možete skrolati cijelu stranicu — ništa nije skriveno iza gumba ili izbornika.
 
@@ -211,7 +212,82 @@ Fotografija odmah nestane iz mreže, A toast s gumbom **Poništi** se pojavi u d
 
 ---
 
-## 6. Prebacivanje jezika
+## 6. Recenzije gostiju
+
+Recenzije su pravi citati ljudi koji su odsjeli u kući. Vi ih kopirate odakle god su stigle (Airbnb, Booking.com, privatna poruka, e-mail) i pojavljuju se na vašoj **/reviews** stranici na javnom sajtu. Sve što označite kao **Featured** također se prikazuje na početnoj stranici, pa je to prvo što novi posjetitelji vide.
+
+Vi ste jedina osoba koja može dodavati ili uređivati recenzije. Gosti NE pišu recenzije na samoj stranici, i dalje ih ostavljaju na Airbnbu / Bookingu / Googleu kao i prije. Vi birate koje od njih objaviti ovdje.
+
+![Popis recenzija](./admin-screenshots-hr/21-recenzije-lista.png)
+
+### 6.1 Dodavanje recenzije
+
+Skrolajte do sekcije **Recenzije** (smještena je između Slika i Rezervacija) i kliknite plavi gumb **+ Dodaj recenziju**. Pojavi se obrazac:
+
+![Obrazac za dodavanje recenzije, zadanih 5 zvjezdica](./admin-screenshots-hr/22-recenzija-forma-zadana.png)
+
+Popunite:
+
+- **Autor** — ime gosta i početno slovo prezimena (npr. `Ana M.` ili `Anna & Marco`). Neka bude kratko, ovo je sve što se prikazuje na javnoj stranici.
+- **Izvor** — odakle je recenzija. Slobodan tekst, upišite što vam pomaže zapamtiti: `Airbnb`, `Booking.com`, `Direkt`, `WhatsApp`, `Email`, `Google`. Polje je prepunjeno s `Airbnb`, prepišite po potrebi.
+- **Ocjena** — pogledajte 6.2 ispod.
+- **Datum** — datum kada je gost ostavio recenziju. Već popunjen današnjim datumom, promijenite ako se sjećate izvornog datuma.
+- **Citat** — zalijepite tekst recenzije točno onako kako ga je gost napisao. Najbolje radi jedna ili dvije rečenice, dugi paragrafi se odsijeku na mobitelu.
+- **URL (opcionalno)** — ako je recenzija objavljena online (Airbnb, Google), zalijepite link ovdje. Slobodno možete ostaviti prazno.
+- **Istaknuti (prikaz na početnoj)** — označite kvačicom ako želite da se recenzija prikaže na vašoj početnoj stranici. Najbolje za vaše apsolutne favorite, početna stranica prikazuje samo nekoliko.
+
+Kliknite **Spremi**. Recenzija se odmah pojavi u popisu iznad (i na javnoj stranici unutar nekoliko sekundi).
+
+### 6.2 Postavljanje ocjene zvjezdicama
+
+Ocjenu postavljate klikom na zvjezdice. **Nova recenzija počinje s 5 zvjezdica** (najvišom). Za nižu ocjenu, kliknite zvjezdicu na poziciji koju želite:
+
+- Kliknite **3. zvjezdicu** → dobivate ocjenu 3 (3 žute, 2 sive)
+- Kliknite **1. zvjezdicu** → ocjena 1 (1 žuta, 4 sive)
+- Kliknite **5. zvjezdicu** → opet 5
+
+![Ocjena postavljena na 3](./admin-screenshots-hr/23-recenzija-ocjena-3.png)
+
+Mala oznaka **"3/5"** desno uvijek potvrđuje trenutnu vrijednost. Kliknite bilo koju zvjezdicu bilo kada za promjenu, možete podešavati dok ne izgleda kako treba.
+
+> **Za Booking.com recenzije:** njihove ocjene idu od 1 do 10. Podijelite s 2 i normalno zaokružite, `9` postaje 5 zvjezdica ovdje, `8` postaje 4, `7` postaje 4 (zaokružite naviše ako broj završava na `.5`).
+
+### 6.3 Označavanje recenzije kao istaknute
+
+Svaka pločica recenzije ima tri gumba na dnu: **✎ Uredi**, **★ Feature** (ili **Unstar** ako je već istaknuta), i **🗑** (brisanje).
+
+Kliknite **★ Feature** da stavite recenziju na početnu stranicu. Istaknute recenzije:
+
+- dobivaju malu žutu **★ FEATURED** oznaku na pločici u admin pogledu
+- prikazuju se na početnoj stranici u kratkom redu kartica iznad podnožja
+- i dalje se pojavljuju na cijeloj **/reviews** stranici
+
+Početna stranica prikazuje prve tri istaknute recenzije. Ako označite više od tri kao istaknute, dodatne se vide samo na /reviews stranici.
+
+Kliknite **Unstar** na istaknutoj recenziji da je maknete s početne stranice. Sama recenzija ostaje, miče se samo s početne stranice.
+
+### 6.4 Uređivanje recenzije
+
+Kliknite **✎ Uredi** na bilo kojoj pločici recenzije. Otvara se isti obrazac, prepunjen s onim što ste izvorno spremili. Promijenite što god (i zvjezdice, kliknite drugu zvjezdicu za promjenu ocjene). Kliknite **Spremi** — recenzija se odmah ažurira, javna stranica se osvježi unutar nekoliko sekundi.
+
+Kliknite **Odustani** ako ste otvorili greškom, ništa se ne sprema.
+
+### 6.5 Brisanje recenzije
+
+Kliknite crveni gumb **🗑** na pločici recenzije.
+
+Vidjet ćete jednu potvrdu: *"Obrisati recenziju od [autor]?"* → **OK**.
+
+Recenzija **odmah** nestane iz popisa, a toast s gumbom **Poništi** se pojavi u donjem desnom kutu s odbrojavanjem od 10 sekundi, jednako kao kod rezervacija i fotografija:
+
+- **Kliknite Poništi unutar 10 sekundi** → recenzija se vraća, ništa se nije promijenilo.
+- **Pričekajte 10 sekundi** → recenzija je trajno uklonjena.
+
+> Ako slučajno kliknete 🗑 i ne vidite toast odmah, skrolajte do donjeg desnog kuta stranice, tu se nalazi gumb Poništi.
+
+---
+
+## 7. Prebacivanje jezika
 
 Mali gumb u gornjem desnom kutu prebacuje između hrvatskog i engleskog. Oznaka pokazuje JEZIK NA KOJI ĆE SE PREBACITI ako kliknete:
 
@@ -224,7 +300,7 @@ Sve — oznake u kalendaru, tekst gumba, oznake statusa, dijalozi za potvrdu —
 
 ---
 
-## 7. Odjava
+## 8. Odjava
 
 Kliknite **Odjava** gumb (gornji desni kut).
 
@@ -236,7 +312,7 @@ Ovo briše vašu lozinku iz memorije preglednika. Korisno ako ste na zajedničko
 
 ---
 
-## 8. Što učiniti ako nešto pođe po zlu
+## 9. Što učiniti ako nešto pođe po zlu
 
 ### "Kliknula sam Potvrdi na pogrešnu rezervaciju"
 
@@ -274,6 +350,15 @@ Ovo briše vašu lozinku iz memorije preglednika. Korisno ako ste na zajedničko
 - **Unutar 10 sekundi:** kliknite **Poništi** gumb u toastu u donjem desnom kutu.
 - **Nakon 10 sekundi:** bytes fotografije su otišli iz spremišta. Morate ponovno prenijeti s telefona.
 
+### "Slučajno sam obrisala krivu recenziju"
+
+- **Unutar 10 sekundi:** kliknite **Poništi** gumb u toastu u donjem desnom kutu.
+- **Nakon 10 sekundi:** recenzija je trajno uklonjena. Pronađite izvornik (Airbnb / Booking / email) i ponovno je dodajte preko **+ Dodaj recenziju**, kopirajte i zalijepite isti citat.
+
+### "Dala sam recenziji krivi broj zvjezdica"
+
+- Kliknite **✎ Uredi** na pločici recenzije, kliknite na ispravnu zvjezdicu (npr. 4. zvjezdicu za ocjenu 4), kliknite **Spremi**. Javna stranica se osvježi unutar nekoliko sekundi.
+
 ### "Stranica se ne učitava / nešto izgleda neispravno"
 
 - Osvježite stranicu (Cmd/Ctrl + R).
@@ -294,7 +379,7 @@ Ne morate ovo pamtiti — admin stranica ovo automatski provodi:
 
 - **Dvostruke rezervacije:** Ako dva gosta pošalju preklapajuće datume, drugi se odbije s jasnom porukom. Nikad ne završe oba kao na čekanju.
 - **Pogrešni klikovi na destruktivne radnje:** Potvrdi, Odbij i Obriši svaki zahtijevaju dva klika kroz dijaloge za potvrdu.
-- **Trajni gubitak zbog pogreške:** Potvrda rezervacije, Odbijanje, Brisanje, Uređivanje I Brisanje fotografije svako imaju 10-sekundno poništavanje. Toast se pojavi u donjem desnom kutu zaslona.
+- **Trajni gubitak zbog pogreške:** Potvrda rezervacije, Odbijanje, Brisanje, Uređivanje, Brisanje fotografije I Brisanje recenzije svako imaju 10-sekundno poništavanje. Toast se pojavi u donjem desnom kutu zaslona.
 - **Email poslan slučajno:** Emailovi za Potvrdi i Odbij se NE šalju dok ne prođe 10-sekundni prozor poništavanja. Kliknite Poništi i email nikad neće biti poslan, gost nikad neće znati.
 - **Gubljenje nespremljenih izmjena kalendara:** Ako ste označili neke datume i zaboravili kliknuti Spremi promjene, stranica pita "imate nespremljene promjene, stvarno odustati?" prije nego što vam dopusti da se odjavite, osvježite ili zatvorite karticu.
 - **Izgubljene rezervacije zbog problema s emailom:** Rezervacije se spremaju u bazu PRIJE nego što email ode. Ako email ne uspije iz bilo kojeg razloga, rezervacija je još uvijek tamo i vidite je u listi.
@@ -308,7 +393,6 @@ Postoji na listi zadataka kao GitHub issues — ništa od ovoga vas ne sprječav
 - **Instagram / Facebook linkovi** ([#2](https://github.com/tankaraca14a/housey/issues/2)) — kad napravite račune, javite Mihaeli URL-ove.
 - **Više istaknutih fotografija vidljivo odjednom** ([#7](https://github.com/tankaraca14a/housey/issues/7)) — trenutno samo prve 3 istaknute fotografije dobivaju hero pozicije.
 - **Vaši zapisi (Priče / Dnevnik / Novosti)** ([#8](https://github.com/tankaraca14a/housey/issues/8)) — sekcija gdje objavljujete kratke vijesti iz kuće (berba maslina, temperatura mora, recepti). Uređuje se kroz admin.
-- **Recenzije gostiju sa zvjezdicama** ([#9](https://github.com/tankaraca14a/housey/issues/9)) — citati s ocjenom zvjezdicama, kopirani iz Airbnb / Booking.com / privatnih gostiju, vi birate koje se prikazuju.
 - **FAQ sekcija (pitanja i odgovori)** ([#10](https://github.com/tankaraca14a/housey/issues/10)) — admin-uređeni parovi pitanja+odgovora (wifi, vrijeme dolaska, parking, doručak…) tako da gosti ne pišu ista pitanja stalno.
 - **Kućni red** ([#11](https://github.com/tankaraca14a/housey/issues/11)) — jedna markdown stranica koju sami uređujete.
 - **Prikaz cijene** ([#12](https://github.com/tankaraca14a/housey/issues/12)) — "od €X / noć" prikazano prije nego gost pošalje formu, s opcionalnom sezonskom razlikom.
