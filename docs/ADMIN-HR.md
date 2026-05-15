@@ -285,6 +285,20 @@ Recenzija **odmah** nestane iz popisa, a toast s gumbom **Poništi** se pojavi u
 
 > Ako slučajno kliknete 🗑 i ne vidite toast odmah, skrolajte do donjeg desnog kuta stranice, tu se nalazi gumb Poništi.
 
+### 6.6 Recenzije na arapskom, hebrejskom, perzijskom ili drugim pismima koja se čitaju zdesna nalijevo
+
+Ako vam gost ostavi recenziju na arapskom, hebrejskom, perzijskom ili bilo kojem drugom pismu koje se čita zdesna nalijevo, **samo je zalijepite kao i bilo koju drugu**. Obrazac automatski prepoznaje smjer dok lijepite, pa će se tekst poravnati desno u poljima Autor i Citat, točno kako će izgledati na javnoj stranici.
+
+![Engleska i arapska recenzija jedna pored druge](./admin-screenshots-hr/24-recenzije-rtl.png)
+
+Na javnoj stranici **/reviews** svaka pločica se preokreće neovisno:
+
+- Engleska, hrvatska ili talijanska recenzija ostaje poravnata lijevo, otvarajući navodnik na lijevoj strani.
+- Arapska, hebrejska ili perzijska recenzija se preokreće desno, otvarajući navodnik na desnoj strani.
+- Mješoviti citat (arapska recenzija koja spominje "Airbnb" latinicom, na primjer) također ispravno teče, preglednik se sam pobrine.
+
+Nema ničega za uključiti, nema postavke za zapamtiti. Zalijepite tekst točno onako kako ga je gost napisao i kliknite **Spremi**.
+
 ---
 
 ## 7. Prebacivanje jezika

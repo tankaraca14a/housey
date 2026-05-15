@@ -285,6 +285,20 @@ The review disappears from the list **immediately**, and an **Undo** toast appea
 
 > If you accidentally click 🗑 and don't see the toast right away, scroll to the bottom-right corner of the page — that's where the undo lives.
 
+### 6.6 Reviews in Arabic, Hebrew, Farsi, or other right-to-left scripts
+
+If a guest leaves a review in Arabic, Hebrew, Farsi, or any right-to-left script, **just paste it in like any other quote**. The form auto-detects the direction as you paste, so the text will appear right-aligned in the Author and Quote boxes — you'll see what the public site will see.
+
+![English + Arabic reviews side by side](./admin-screenshots/24-reviews-rtl.png)
+
+On the public **/reviews** page, each card flips independently:
+
+- An English / Croatian / Italian review stays left-aligned, opening quote on the left.
+- An Arabic / Hebrew / Farsi review flips to right-aligned, opening quote on the right.
+- A mixed-language quote (an Arabic review that mentions "Airbnb" in Latin letters, for example) flows correctly too — the browser figures it out.
+
+There's nothing to toggle, no setting to remember. Paste the text exactly as the guest wrote it and click **Save**.
+
 ---
 
 ## 7. Switching language
