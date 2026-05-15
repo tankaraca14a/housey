@@ -67,8 +67,13 @@ export function LangProvider({
       window.localStorage.setItem(LANG_STORAGE_KEY, next);
       // Also write a long-lived cookie so server renders + metadata can
       // honour the choice on the next request. 1 year; SameSite=Lax so
-      // it travels on top-level navigations but not cross-site.
-      document.cookie = `${LANG_COOKIE_NAME}=${next}; max-age=31536000; path=/; SameSite=Lax`;
+      // it travels on top-level navigations but not cross-site. Add
+      // Secure on HTTPS so the cookie never leaks over a plaintext
+      // downgrade (Vercel is HTTPS-only in prod; dev on http:// skips
+      // Secure so the cookie still works locally).
+      const isHttps = window.location.protocol === "https:";
+      const secure = isHttps ? "; Secure" : "";
+      document.cookie = `${LANG_COOKIE_NAME}=${next}; max-age=31536000; path=/; SameSite=Lax${secure}`;
     } catch {
       // best-effort persistence; in-memory state still updates so the
       // page reacts immediately even if storage / cookie write fails.
