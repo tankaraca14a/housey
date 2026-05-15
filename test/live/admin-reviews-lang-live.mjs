@@ -105,22 +105,37 @@ try {
   ok(patch.body.review?.translations?.it?.startsWith('Recensione'), `D2: IT key added`);
   ok(patch.body.review?.translations?.de === undefined, `D3: DE key dropped after wholesale replace`);
 
+  // Helper: pull every <blockquote> inner text from an HTML response.
+  // We grep blockquote-only because Next.js ships the full Review row
+  // (incl. all translations) inside the serialized RSC payload, which
+  // would defeat a naive "html.includes(...)" test. Visible quote text
+  // is what actually changes per visitor language, and it lives inside
+  // <blockquote ...>"...QUOTE..."</blockquote>.
+  const blockquoteRe = /<blockquote\b[^>]*>([\s\S]*?)<\/blockquote>/gi;
+  const blockquoteTexts = (html) => {
+    const out = [];
+    let m;
+    while ((m = blockquoteRe.exec(html)) !== null) {
+      out.push(m[1].replace(/&ldquo;|&rdquo;|"/g, '').trim());
+    }
+    return out;
+  };
+
   // ── E. /reviews HTML with no cookie (default EN visitor) ───────────────────
   log('\n=== E. SSR /reviews on EN ===');
   const en = await getHtml('/reviews');
   ok(en.status === 200, `E1: /reviews → 200`);
-  ok(en.text.includes('Sentinel test review'), `E2: EN visitor sees English original`);
-  ok(!en.text.includes('Probna recenzija'), `E3: HR translation NOT rendered for EN visitor`);
+  const enQuotes = blockquoteTexts(en.text);
+  ok(enQuotes.some((q) => q.includes('Sentinel test review')), `E2: EN visitor's blockquote shows English original`);
+  ok(!enQuotes.some((q) => q.includes('Probna recenzija')), `E3: EN visitor's blockquote does NOT render HR translation`);
 
   // ── F. /reviews HTML with HR cookie ────────────────────────────────────────
   log('\n=== F. SSR /reviews on HR (cookie) ===');
   const hr = await getHtml('/reviews', 'housey-lang=hr');
   ok(hr.status === 200, `F1: /reviews?cookie=hr → 200`);
-  // The HR cookie is read server-side by RootLayout/getServerLang; the
-  // first-paint HTML should already include the Croatian translation
-  // since ReviewCard picks translations[visitorLang] when it exists.
-  ok(hr.text.includes('Probna recenzija'), `F2: HR visitor sees Croatian translation in SSR HTML`);
-  ok(!hr.text.includes('Sentinel-Testbewertung'), `F3: DE translation NOT served to HR visitor`);
+  const hrQuotes = blockquoteTexts(hr.text);
+  ok(hrQuotes.some((q) => q.includes('Probna recenzija')), `F2: HR visitor's blockquote renders Croatian translation`);
+  ok(!hrQuotes.some((q) => q.includes('Sentinel test review')), `F3: HR visitor's blockquote does NOT render English original`);
 } catch (e) {
   log(`\nFATAL: ${e.stack || e}`);
   failures++;

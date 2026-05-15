@@ -308,6 +308,9 @@ Svaka recenzija ima padajući izbornik **Izvorni jezik** odmah pored datuma. Oda
 Zašto je to važno:
 
 - Kada posjetitelj na stranici čita na **drugom** jeziku od izvornika recenzije, ispod kartice pojavljuje se mala sive boje oznaka: *„na engleskom”*, *„na hrvatskom”*, *„na njemačkom”*. Tako odmah zna da citat nije pokvaren niti na krivom mjestu, samo je na drugom jeziku i može iskoristiti prevoditelja svog preglednika ako želi.
+
+  ![HR posjetitelj vidi oznaku „na engleskom” na engleskoj recenziji](./admin-screenshots-hr/33-review-badge.png)
+
 - Kada se posjetiteljev jezik **podudara** s izvornikom, oznaka se ne prikazuje, jer bi bila šum.
 - Starije recenzije od prije ove funkcionalnosti nemaju postavljen izvorni jezik. Naprosto nikad ne pokazuju oznaku, što je u redu: citat se prikazuje kako jest.
 
@@ -324,6 +327,9 @@ Kako to radi:
 - Upišite prijevod samo na jezicima koje stvarno imate. Ostala polja ostavite prazna; prazna polja se ne spremaju.
 - Polje za izvorni jezik je skriveno (bilo bi duplikat polja **Citat** iznad).
 - Na javnoj stranici, posjetitelj čiji jezik ima prijevod vidi prevedeni citat, bez jezične oznake (jer je citat sada na njegovom jeziku). Ispod citata stoji mala poveznica **Prikaži izvornik**; klikom se vraća na izvorni tekst i oznaka se ponovno pojavljuje.
+
+  ![HR posjetitelj vidi hrvatski prijevod + „Prikaži izvornik”](./admin-screenshots-hr/34-review-toggle.png)
+
 - Posjetitelj čiji jezik nema prijevod dobiva izvorni citat i oznaku *„na {jezik}”*, točno kao u §6.7.
 
 Koristite štedljivo. Stranica nikad sama strojno ne prevodi recenzije, ono što zalijepite je ono što posjetitelji vide. Ako je gost napisao nešto posebno lijepo na hrvatskom i želite da i njemački posjetitelji to osjete, zalijepite svoj njemački prijevod u polje **DE** i spremite.

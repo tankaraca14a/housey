@@ -221,6 +221,33 @@ try {
   ok(tBad.status === 400, `13a: translation in original lang → 400 (got ${tBad.status})`);
   ok(/original/.test(tBad.body.error || ''), `13b: error mentions 'original' (${tBad.body.error})`);
 
+  // ── 13b. PATCH lang to a code already in translations → conflict resolved
+  log('\n=== 13b. PATCH lang shadows a translation key → cleaned ===');
+  const conflictCreate = await api('POST', '/api/admin/reviews', {
+    author: 'Conflict Soak',
+    source: 'Direct',
+    rating: 5,
+    quote: 'English original',
+    date: '2025-08-15',
+    featured: false,
+    sortOrder: 860,
+    lang: 'en',
+    translations: { hr: 'Hrvatski prijevod', de: 'Deutsche Übersetzung' },
+  });
+  ok(conflictCreate.status === 200, `13b-a: setup row created`);
+  const conflictId = conflictCreate.body.review?.id;
+  if (conflictId) langIds.push(conflictId);
+
+  if (conflictId) {
+    // PATCH lang=hr — the existing translations.hr would now duplicate
+    // quote. Route must drop it from the merged map.
+    const conflict = await api('PATCH', `/api/admin/reviews/${conflictId}`, { lang: 'hr' });
+    ok(conflict.status === 200, `13b-b: PATCH lang=hr → 200`);
+    ok(conflict.body.review?.lang === 'hr', `13b-c: lang now 'hr'`);
+    ok(conflict.body.review?.translations?.hr === undefined, `13b-d: conflicting HR key dropped from translations`);
+    ok(conflict.body.review?.translations?.de === 'Deutsche Übersetzung', `13b-e: non-conflicting DE key preserved`);
+  }
+
   // ── 14. Sanitisation: garbage keys + non-string values dropped ────────────
   log('\n=== 14. Sanitisation strips garbage ===');
   const tDirty = await api('POST', '/api/admin/reviews', {

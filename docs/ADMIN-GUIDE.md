@@ -308,6 +308,9 @@ Each review has an **Original language** dropdown right next to the date. Pick w
 Why it matters:
 
 - When a visitor on the site is reading in a **different** language from the review's original, a tiny grey badge appears at the bottom of the card: *"in Croatian"*, *"auf Englisch"*, *"in francese"*. They know the quote isn't broken or in the wrong place, it's just in another language and they can use their browser's built-in translate if they want.
+
+  ![EN visitor sees "in Croatian" badge on a Croatian review](./admin-screenshots/33-review-badge.png)
+
 - When the visitor's language **matches** the review's original, no badge appears — it would be noise.
 - Older reviews from before this feature existed have no original language set. They simply never show a badge, which is fine: the quote renders as-is.
 
@@ -324,6 +327,9 @@ How it works:
 - Type a translation only in the languages you actually have. Leave the others blank; empty slots are not saved.
 - The original-language slot is hidden (it would be a duplicate of the **Quote** field above).
 - On the public site, a visitor whose language has a translation sees the translated quote, with no language badge (because the quote is now in their language). A small **Show original** link sits under the quote; clicking it swaps to the source text and the badge appears.
+
+  ![DE visitor sees a German translation + "Original anzeigen" toggle](./admin-screenshots/34-review-toggle.png)
+
 - A visitor whose language doesn't have a translation gets the original quote and the *"in {language}"* badge, exactly like §6.7.
 
 Use this sparingly. The site never machine-translates reviews — what you paste is what visitors see. If a guest wrote something especially nice in Croatian and you want German visitors to feel it too, paste your own German translation into the **DE** slot and save.

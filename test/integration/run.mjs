@@ -32,6 +32,7 @@ const FILES = [
   'reviews-scale.mjs',
   'reviews-empty-states.mjs',
   'reviews-rtl.mjs',
+  'reviews-lang-soak.mjs',
   'booking-email-lang.mjs',
   'i18n-ssr.mjs',
 ];

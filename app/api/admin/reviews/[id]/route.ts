@@ -62,6 +62,29 @@ export async function PATCH(
   const err = validateReviewPatch(patch);
   if (err) return NextResponse.json({ error: err }, { status: 400 });
 
+  // If the patch changes `lang` to a code that already exists as a key
+  // in the stored row's translations map, we need to drop that key from
+  // the merged result — otherwise the stored row ends up with a
+  // translation that duplicates `quote`, which violates the same
+  // invariant the create-time validator enforces. Easiest fix: fetch
+  // the existing row, compute the merged translations, and rewrite
+  // patch.translations to the cleaned map. If the caller already passed
+  // translations in this PATCH, we operate on that map; otherwise we
+  // operate on the stored map.
+  if (patch.lang !== undefined) {
+    const existing = await reviewsRepo.list().then((rows) => rows.find((r) => r.id === id));
+    if (existing) {
+      const source = patch.translations !== undefined
+        ? patch.translations
+        : existing.translations;
+      if (source && patch.lang in source) {
+        const cleaned: Partial<Record<Lang, string>> = { ...source };
+        delete cleaned[patch.lang];
+        patch.translations = Object.keys(cleaned).length === 0 ? undefined : cleaned;
+      }
+    }
+  }
+
   try {
     const updated = await reviewsRepo.patch(id, patch);
     if (!updated) return NextResponse.json({ error: 'not found' }, { status: 404 });
