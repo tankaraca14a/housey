@@ -2,6 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { FeaturedReviewsStrip } from "@/app/components/FeaturedReviewsStrip";
 
+// Force a fresh render on every request so the FeaturedReviewsStrip
+// reflects the latest owner edits (un-feature, rating change, delete)
+// the moment the admin saves. Without this Next.js may treat the home
+// page as cacheable and the featured strip can lag a deploy behind.
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <>

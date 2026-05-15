@@ -26,6 +26,7 @@ const FILES = [
   'booking-conflict.mjs',
   'email-resilience.mjs',
   'reviews-api.mjs',
+  'reviews-public-render.mjs',
 ];
 
 let failed = 0;

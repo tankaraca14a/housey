@@ -5,6 +5,13 @@
 import { reviews as reviewsRepo } from '@/app/lib/store-factory';
 import { ReviewCard } from '@/app/components/ReviewCard';
 
+// Always render fresh: admin mutations (PATCH featured/rating, POST, DELETE)
+// must show on the public page within the next request, not after the next
+// deploy or a Next.js cache revalidate window. Without this, dev-mode and
+// prod-mode disagree on whether a flipped `featured` flag drops the row off
+// the home page strip — see test/integration/reviews-public-render.mjs.
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Reviews — Housey',
   description: 'What past guests say about staying at Housey, Vela Luka.',

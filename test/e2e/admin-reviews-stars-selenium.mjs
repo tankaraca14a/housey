@@ -156,6 +156,30 @@ try {
   ok(true, 'G1: rating persisted as 4');
   await shot('G-saved-4');
 
+  // ── G2. FEATURED toggle (★ Feature / Unstar) round-trip ────────────────────
+  // The row was created at E with featured=false (default). Click ★ Feature,
+  // verify the API row flips to featured=true. Click again (button is now
+  // labelled Unstar), verify it flips back to false.
+  log('\n=== G2. Featured toggle: ★ Feature -> Unstar ===');
+  const initialRow = (await api('GET', '/api/admin/reviews')).body.reviews.find((x) => x.id === created.id);
+  ok(initialRow?.featured === false, `G2a: row starts with featured=false`);
+  await driver.findElement(By.css(`[data-testid="review-featured-toggle-${created.id}"]`)).click();
+  await driver.wait(async () => {
+    const r = await api('GET', '/api/admin/reviews');
+    const row = (r.body.reviews || []).find((x) => x.id === created.id);
+    return row && row.featured === true;
+  }, 6000, 'featured did not flip to true');
+  ok(true, 'G2b: featured -> true via UI');
+
+  await driver.findElement(By.css(`[data-testid="review-featured-toggle-${created.id}"]`)).click();
+  await driver.wait(async () => {
+    const r = await api('GET', '/api/admin/reviews');
+    const row = (r.body.reviews || []).find((x) => x.id === created.id);
+    return row && row.featured === false;
+  }, 6000, 'featured did not flip back to false');
+  ok(true, 'G2c: featured -> false via UI (Unstar)');
+  await shot('G2-after-unstar');
+
   // ── H. DELETE row (10s undo grace window; row hidden immediately) ──────────
   log('\n=== H. Delete row (UI hides immediately, undo grace) ===');
   const before = (await api('GET', '/api/admin/reviews')).body.reviews.length;
