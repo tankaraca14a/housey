@@ -4,6 +4,28 @@ Project-scoped Claude Code skills for building, shipping, and maintaining websit
 
 The skills are organized by the lifecycle of building a website from an empty repo. Each one references the next sensible step at the bottom.
 
+## Stack assumptions (read first)
+
+These skills are **the owner's personal stack playbook**, not generic web advice. They assume:
+
+| Layer | Assumption |
+|---|---|
+| Framework | **Next.js 16** (App Router) + TypeScript |
+| Styling | **Tailwind CSS v4**, hand-rolled components |
+| Hosting | **Vercel** (CLI + Marketplace integrations) |
+| Persistence | **Upstash KV** (Redis) + **Vercel Blob** for files, file-JSON backend locally |
+| Email | **Resend** transactional |
+| Forms | **react-hook-form** + **zod** |
+| Auth | Hand-rolled single-password admin (no Clerk / Auth.js) |
+| Tests | Vitest (unit) + Playwright + Selenium (e2e) + node-fetch (integration) |
+| Identity | Multi-account git via SSH config + git includeIfs |
+| i18n | In-file `translations: Record<Lang, Translations>` dict; HR + EN for the owner's sites |
+| Image conversion | `heic2any` for iPhone HEIC → JPEG in-browser |
+
+If a future project uses a different framework (SvelteKit / Astro / Rails / etc.), most of these skills DON'T transfer — the design philosophy does (recoverable destructive actions, persist-first-then-email, hard test-isolation), but the specific recipes don't.
+
+Two skills are framework-neutral: `/setup-multi-identity-git`, `/write-admin-guide`. The principles inside `/add-undo-pattern` and `/recoverability-audit` transfer to any framework but the example code is React.
+
 ## 0. Bootstrap (empty repo → running locally)
 
 | Skill | What |
