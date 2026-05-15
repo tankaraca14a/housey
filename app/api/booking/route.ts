@@ -23,11 +23,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'invalid JSON body' }, { status: 400 });
   }
 
-  const { name, email, phone, checkIn, checkOut, guests, message } = body as Record<string, string>;
+  const { name, email, phone, checkIn, checkOut, guests, message, lang } = body as Record<string, string>;
   const err = validateBookingInput({ name, email, phone, checkIn, checkOut, guests });
   if (err) {
     return NextResponse.json({ error: err }, { status: 400 });
   }
+  // Narrow the guest's chosen language to our 5-lang set; default to 'en'
+  // for any other value (back-compat, defensive against typos in old clients).
+  const guestLang: 'en' | 'hr' | 'de' | 'it' | 'fr' =
+    (['en', 'hr', 'de', 'it', 'fr'] as const).includes(lang as 'en' | 'hr' | 'de' | 'it' | 'fr')
+      ? (lang as 'en' | 'hr' | 'de' | 'it' | 'fr')
+      : 'en';
 
   // Persist FIRST. A failure here is a real save failure (KV down, etc.) —
   // we MUST not lose bookings, so reject with 503 and let the client retry.
@@ -61,6 +67,7 @@ export async function POST(request: NextRequest) {
       guests,
       message: message ?? '',
       status: 'pending',
+      lang: guestLang,
     });
   } catch (e) {
     console.error('booking persist failed:', e);

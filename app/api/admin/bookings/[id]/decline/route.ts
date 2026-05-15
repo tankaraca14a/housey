@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { bookings as bookingsRepo } from '@/app/lib/store-factory';
+import { declineEmail } from '@/app/lib/i18n/emails';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
 
@@ -28,21 +29,13 @@ export async function POST(
   if (process.env.RESEND_API_KEY) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
+      // Render the decline body in the guest's recorded language.
+      const { subject, html } = declineEmail(booking);
       const { error } = await resend.emails.send({
         from: 'Housey <noreply@tankaraca.com>',
         to: [booking.email],
-        subject: 'Booking Request — Housey, Vela Luka',
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-            <h2 style="color: #e07b2e;">Booking Request Update</h2>
-            <p>Dear ${booking.name},</p>
-            <p>Thank you for your interest in staying at <strong>Housey, Vela Luka</strong>.</p>
-            <p>Unfortunately, we're unable to accommodate your request for the dates <strong>${booking.checkIn}</strong> to <strong>${booking.checkOut}</strong>, as these dates are not available.</p>
-            <p>We'd love to host you on different dates! Please check our availability and feel free to submit a new booking request. We hope to welcome you to Vela Luka soon.</p>
-            <p>If you have any questions or would like to discuss alternative dates, don't hesitate to reach out at <a href="mailto:tankaraca14a@gmail.com">tankaraca14a@gmail.com</a>.</p>
-            <p>Warm regards,<br><strong>The Housey Team</strong></p>
-          </div>
-        `,
+        subject,
+        html,
       });
       if (error) {
         emailError = typeof error === 'string' ? error : JSON.stringify(error);

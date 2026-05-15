@@ -32,6 +32,7 @@ const FILES = [
   'reviews-scale.mjs',
   'reviews-empty-states.mjs',
   'reviews-rtl.mjs',
+  'booking-email-lang.mjs',
 ];
 
 let failed = 0;

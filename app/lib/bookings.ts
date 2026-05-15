@@ -14,6 +14,10 @@ export interface Booking {
   message: string;
   status: 'pending' | 'confirmed' | 'declined';
   createdAt: string;
+  // Language code the guest used when submitting via the public site.
+  // Optional for backward compat with rows written before i18n shipped;
+  // confirm/decline email templates fall back to 'en' when absent.
+  lang?: 'en' | 'hr' | 'de' | 'it' | 'fr';
 }
 
 const STATUSES = ['pending', 'confirmed', 'declined'] as const;
@@ -31,7 +35,8 @@ export function isBooking(x: unknown): x is Booking {
     typeof b.guests === 'string' &&
     typeof b.message === 'string' &&
     typeof b.status === 'string' && (STATUSES as readonly string[]).includes(b.status) &&
-    typeof b.createdAt === 'string'
+    typeof b.createdAt === 'string' &&
+    (b.lang === undefined || (typeof b.lang === 'string' && ['en','hr','de','it','fr'].includes(b.lang)))
   );
 }
 

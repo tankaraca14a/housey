@@ -13,13 +13,16 @@ export async function POST(request: NextRequest) {
       from: 'Housey Contact <contact@tankaraca.com>',
       to: ['tankaraca14a@gmail.com'],
       replyTo: email,
-      subject: `Contact Form: ${subject}`,
+      // Ivana receives this email — labels in her own language. The
+      // visitor's own subject + message stay in whatever language they
+      // wrote them (that's their content, not our chrome).
+      subject: `Kontakt obrazac: ${subject}`,
       html: `
-        <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <p><strong>Message:</strong></p>
+        <h2>Nova poruka s kontakt obrasca</h2>
+        <p><strong>Ime:</strong> ${name}</p>
+        <p><strong>E-mail:</strong> ${email}</p>
+        <p><strong>Predmet:</strong> ${subject}</p>
+        <p><strong>Poruka:</strong></p>
         <p>${message.replace(/\n/g, '<br>')}</p>
       `,
     });

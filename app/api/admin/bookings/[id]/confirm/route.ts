@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { bookings as bookingsRepo, blockedDates as blockedRepo } from '@/app/lib/store-factory';
 import { recordAudit } from '@/app/lib/blocked-dates-audit';
+import { confirmEmail } from '@/app/lib/i18n/emails';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ivana2026';
 
@@ -74,33 +75,15 @@ export async function POST(
   if (process.env.RESEND_API_KEY) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
+      // Build the body in the guest's chosen language (recorded on the
+      // booking row at POST time). Falls back to EN for older rows that
+      // pre-date i18n.
+      const { subject, html } = confirmEmail(booking);
       const { error } = await resend.emails.send({
         from: 'Housey <noreply@tankaraca.com>',
         to: [booking.email],
-        subject: 'Booking Confirmed — Housey, Vela Luka',
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-            <h2 style="color: #e07b2e;">Your Booking is Confirmed! 🎉</h2>
-            <p>Dear ${booking.name},</p>
-            <p>We're thrilled to confirm your booking at <strong>Housey, Vela Luka</strong>. We can't wait to welcome you!</p>
-
-            <div style="background: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="margin-top: 0;">Booking Details</h3>
-              <p><strong>Check-in:</strong> ${booking.checkIn} at 16:00</p>
-              <p><strong>Check-out:</strong> ${booking.checkOut} at 10:00</p>
-              <p><strong>Guests:</strong> ${booking.guests}</p>
-            </div>
-
-            <div style="background: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="margin-top: 0;">Address</h3>
-              <p>Tankaraca 14a, Vela Luka, Korčula</p>
-            </div>
-
-            <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:tankaraca14a@gmail.com">tankaraca14a@gmail.com</a>.</p>
-            <p>We look forward to your stay!</p>
-            <p>Warm regards,<br><strong>The Housey Team</strong></p>
-          </div>
-        `,
+        subject,
+        html,
       });
       if (error) {
         emailError = typeof error === 'string' ? error : JSON.stringify(error);

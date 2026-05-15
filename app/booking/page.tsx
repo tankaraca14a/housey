@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useT } from "@/app/components/LangProvider";
+import { useLang, useT } from "@/app/components/LangProvider";
 import type { PublicStrings } from "@/app/lib/i18n/public";
 
 // ---------- helpers ----------
@@ -279,6 +279,7 @@ type BookingForm = {
 
 export default function BookingPage() {
   const t = useT();
+  const { lang } = useLang();
   const [submitted, setSubmitted] = useState(false);
   const [blockedDates, setBlockedDates] = useState<Set<string>>(new Set());
   const [checkIn, setCheckIn] = useState<string | null>(null);
@@ -364,6 +365,10 @@ export default function BookingPage() {
           ...data,
           checkIn,
           checkOut,
+          // Pass the current language so the API can record it on the
+          // booking and confirm/decline emails go out in the guest's
+          // language. Server narrows to the 5-lang set + defaults to en.
+          lang,
         }),
       });
 
