@@ -334,6 +334,8 @@ Kako to radi:
 
 Koristite štedljivo. Stranica nikad sama strojno ne prevodi recenzije, ono što zalijepite je ono što posjetitelji vide. Ako je gost napisao nešto posebno lijepo na hrvatskom i želite da i njemački posjetitelji to osjete, zalijepite svoj njemački prijevod u polje **DE** i spremite.
 
+> **Ne želite sami prevoditi?** Pošaljite izvornu recenziju Mihaeli — vidi §6.9 dolje. Ona je prevede na svom Macu i objavi na svih pet jezika umjesto vas.
+
 ### 6.9 Slanje recenzije Mihaeli na prijevod
 
 Ako ne želite svaku recenziju prepisivati na pet jezika, možete je proslijediti Mihaeli. Otvorite adresu **`/submit-review`** (zabilježite je jednom — nije u javnoj navigaciji). Upišite istu admin lozinku, ispunite obrazac, kliknite **Pošalji Mihaeli**.
@@ -563,4 +565,4 @@ Postoji na listi zadataka kao GitHub issues — ništa od ovoga vas ne sprječav
 
 ---
 
-*Posljednje ažuriranje: ovaj dokument i njegovi screenshotovi su ponovno generirani pokretanjem `node scripts/generate-admin-guide-screenshots-hr.mjs` nad lokalnom kopijom housey admin stranice. Ako nešto ikad izgleda drugačije od onoga što je prikazano ovdje, sama stranica je izvor istine.*
+*Posljednje ažuriranje: osnovni admin-flow screenshotovi (01–20) se ponovno generiraju s `node scripts/generate-admin-guide-screenshots-hr.mjs` nad lokalnom kopijom housey admin stranice. Noviji screenshotovi za recenzije/stranicu/inbox (24, 30–37) snimaju se tijekom commitova koji isporučuju te značajke i žive uz kod. Ako nešto ikad izgleda drugačije od onoga što je prikazano ovdje, sama stranica je izvor istine.*
