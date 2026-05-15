@@ -38,7 +38,9 @@ Once you're logged in, you'll see one big page with four sections:
 3. **Reviews** (scroll down) — quotes from past guests, with star ratings, that you publish on the public site.
 4. **Bookings** (scroll further down) — every reservation from guests, plus a way to add your own.
 
-You can scroll the whole page — nothing is hidden behind buttons or menus.
+You can scroll the whole page — nothing is hidden behind buttons or menus. Here's the same page scrolled all the way down, so you can see how the four sections stack:
+
+![Full admin page, scrolled to show every section](./admin-screenshots/04-overview-full.png)
 
 ---
 
@@ -93,6 +95,8 @@ You will see **two confirmation dialogs in a row** before anything actually happ
 2. *"This will EMAIL the guest that their booking is CONFIRMED and block these dates: [guest name + dates]"* → click **OK** if you're sure
 
 After both OKs, the booking row immediately shows **Confirmed** (green badge), the ✓ Confirm and ✗ Decline buttons disappear, and an **Undo** toast slides in at the bottom-right with a 10-second countdown:
+
+![Confirmed booking row, after the green badge has replaced the Pending one](./admin-screenshots/10-confirmed-row.png)
 
 ![Confirm undo toast](./admin-screenshots/14b-confirm-toast.png)
 
@@ -393,10 +397,12 @@ The picker also lives on your **public** site (every page — Home, About, Galle
 
 The visitor's choice is remembered on **their** device, independently of yours. You and a Croatian guest can both have the site open at the same time, you in English, them in Croatian, and neither setting affects the other.
 
-Below: the home page in Croatian, and the booking page in German. Same site, same data, different language for whichever visitor is reading.
+Below: the home page in Croatian, the booking page in German, the home page in French, and the booking page in Italian. Same site, same data, different language for whichever visitor is reading.
 
 ![Home page in Croatian](./admin-screenshots/25-public-home-hr.png)
 ![Booking page in German](./admin-screenshots/25-public-booking-de.png)
+![Home page in French](./admin-screenshots/25-public-home-fr.png)
+![Booking page in Italian](./admin-screenshots/25-public-booking-it.png)
 
 ### 7.2 Booking confirmation / decline emails
 

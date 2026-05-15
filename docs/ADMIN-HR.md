@@ -38,7 +38,9 @@ Nakon prijave vidjet ćete jednu veliku stranicu s četiri sekcije:
 3. **Recenzije** (skrolajte dolje) — citati gostiju s ocjenama zvjezdicama, koje objavljujete na javnoj stranici.
 4. **Rezervacije** (skrolajte još dalje) — sve rezervacije od gostiju, plus način da sami dodate svoju.
 
-Možete skrolati cijelu stranicu — ništa nije skriveno iza gumba ili izbornika.
+Možete skrolati cijelu stranicu — ništa nije skriveno iza gumba ili izbornika. Evo iste stranice skrolane do dna, da vidite kako se sve četiri sekcije slažu jedna ispod druge:
+
+![Cijela admin stranica, skrolana tako da se vide sve sekcije](./admin-screenshots-hr/04-pregled-cijela.png)
 
 ---
 
@@ -93,6 +95,8 @@ Vidjet ćete **dva dijaloga za potvrdu jedan za drugim**, da ne možete slučajn
 2. *"Ovo će poslati email gostu da je rezervacija POTVRĐENA i blokirat će datume: [ime gosta + datumi]"* → kliknite **OK** ako ste sigurni
 
 Nakon oba OK-a, redak rezervacije odmah prikazuje **Potvrđeno** (zelena oznaka), gumbi ✓ Potvrdi i ✗ Odbij nestanu, A toast s gumbom **Poništi** se pojavi u donjem desnom kutu s odbrojavanjem od 10 sekundi:
+
+![Potvrđen redak rezervacije, nakon što je zelena oznaka zamijenila oznaku Na čekanju](./admin-screenshots-hr/10-potvrdjen-red.png)
 
 ![Potvrdi undo toast](./admin-screenshots-hr/14b-potvrdi-toast.png)
 
@@ -391,10 +395,12 @@ Izbornik se nalazi i na vašoj **javnoj** stranici (svaka stranica — Početna,
 
 Izbor posjetitelja se pamti na **njegovom** uređaju, neovisno o vašem. Vi i hrvatski gost možete istovremeno imati otvorenu stranicu, vi na engleskom, on na hrvatskom, i nijedna postavka ne utječe na drugu.
 
-Ispod: početna stranica na hrvatskom i stranica za rezervaciju na njemačkom. Ista stranica, isti podaci, drugi jezik ovisno o tome tko čita.
+Ispod: početna stranica na hrvatskom, stranica za rezervaciju na njemačkom, početna na francuskom i stranica za rezervaciju na talijanskom. Ista stranica, isti podaci, drugi jezik ovisno o tome tko čita.
 
 ![Početna stranica na hrvatskom](./admin-screenshots-hr/25-public-home-hr.png)
 ![Stranica za rezervaciju na njemačkom](./admin-screenshots-hr/25-public-booking-de.png)
+![Početna stranica na francuskom](./admin-screenshots-hr/25-public-home-fr.png)
+![Stranica za rezervaciju na talijanskom](./admin-screenshots-hr/25-public-booking-it.png)
 
 ### 7.2 Emailovi za potvrdu / odbijanje rezervacije
 
