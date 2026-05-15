@@ -417,6 +417,64 @@ Ovo briše vašu lozinku iz memorije preglednika. Korisno ako ste na zajedničko
 
 ---
 
+## 10. Vaša javna stranica na prvi pogled
+
+Cijeli ovaj vodič dosad je bio o **admin** stranici — onome što vidite samo vi, na `/admin`. Ostatak svijeta vidi **javnu stranicu** na `https://www.tankaraca.com` (ili samo `tankaraca.com`). Ne morate se prijaviti da je vidite; samo upišite adresu u bilo koji preglednik.
+
+Ima sedam stranica, sve povezane iz gornje navigacijske trake. Izbornik jezika (gore desno, vidi §7) je na svakoj od njih i zadano je engleski; posjetitelji biraju jezik i cijela stranica se prebacuje.
+
+### 10.1 Početna
+
+Naslovna stranica. Velika fotografija iz zraka, riječ "HOUSEY", podnaslov u jednoj liniji, gumb **Rezervirajte** koji vodi na stranicu za rezervaciju, i kratki "što je ovdje" panel značajki ispod. Ako imate recenzije označene kao **Istaknute** u §6.3, pojavljuju se kao traka pri dnu ove stranice.
+
+![Početna stranica](./admin-screenshots-hr/30-site-home.png)
+
+### 10.2 O nama
+
+Tekst opisuje kuću: pozdravna poruka, dva okvira s popisom soba i sadržaja, paragraf "Lokacija", i poziv na akciju **Rezervirajte boravak**. Ova stranica **ne** čita iz admina — tekst je dio same stranice. Ako ikad želite promijeniti, javite Mihaeli.
+
+![Stranica O nama](./admin-screenshots-hr/30-site-about.png)
+
+### 10.3 Galerija
+
+Svaka fotografija na ovoj stranici dolazi iz sekcije **Slike** vašeg admina (§5). Skup koji vidite u admin mreži je točno ono što galerija prikazuje, istim redoslijedom. Prenesite fotografiju, pojavi se za nekoliko sekundi. Obrišite fotografiju (nakon 10-sekundnog poništavanja), nestane.
+
+Posjetitelji mogu filtrirati po kategoriji (Iz zraka, More i obala, Eksterijer, Terasa, Interijer) gumbima na vrhu, i kliknuti bilo koju fotografiju da je otvore u punom zaslonu s navigacijom strelicama.
+
+![Stranica Galerija](./admin-screenshots-hr/30-site-gallery.png)
+
+### 10.4 Rezervacija
+
+Stranica gdje gosti rade rezervaciju. Odaberu dolazak + odlazak na 3-mjesečnom kalendaru (isti onaj koji vidite u §3 — vaši blokirani datumi se ovdje prikazuju precrtano, nedostupni), ispune ime / email / telefon / broj gostiju, i kliknu **Pošalji zahtjev za rezervaciju**.
+
+Što se događa kod slanja: rezervacija stiže u vašu admin sekciju **Rezervacije** (§4) kao **Na čekanju**. Obično ćete primiti i email obavijest. Rezervacija nosi jezik koji je gost koristio: ako su bili na njemačkoj verziji kad su slali, vaš email za Potvrdu ili Odbijanje vraća im se na njemačkom (vidi §7.2).
+
+![Stranica za rezervaciju](./admin-screenshots-hr/30-site-booking.png)
+
+### 10.5 Lokacija
+
+Statična karta + adresa + upute za putovanje (Split aerodrom, trajekt, autom, iz Dubrovnika). Bez interakcije. Ako se vaš broj telefona ili bilo što na ovoj stranici ikad promijeni, javite Mihaeli.
+
+![Stranica Lokacija](./admin-screenshots-hr/30-site-location.png)
+
+### 10.6 Recenzije
+
+Svaka recenzija koju objavite kroz §6 admina pojavljuje se ovdje, s **Istaknutim** u većim karticama na vrhu. Ako obrišete recenziju (nakon 10-sekundnog poništavanja), nestaje i s ove stranice. Okvir (naslov "Recenzije", opis, poruka "Još nema recenzija") se prebacuje s jezikom posjetitelja.
+
+![Stranica Recenzije](./admin-screenshots-hr/30-site-reviews.png)
+
+### 10.7 Kontakt
+
+Mali obrazac: Ime, E-mail, Predmet, Poruka. Kad posjetitelj pošalje, vi dobijete email u inbox (`tankaraca14a@gmail.com`) s **hrvatski označenim** okvirom (`Ime`, `E-mail`, `Predmet`, `Poruka`) — sami predmet i poruka koju je posjetitelj napisao ostaju na jeziku na kojem ih je on napisao. **Kliknite Reply u Gmailu** da odgovorite; Reply-To je postavljen na posjetitelja, pa vaš odgovor ide na pravo mjesto.
+
+![Stranica Kontakt](./admin-screenshots-hr/30-site-contact.png)
+
+### 10.8 Kako pregledati stranicu kao posjetitelj
+
+Otvorite `https://www.tankaraca.com` (ili `tankaraca.com`) u privatnom / incognito prozoru. Tamo niste prijavljeni, pa vidite točno ono što gost vidi. Koristite izbornik jezika (gore desno) da prebacujete između EN / HR / DE / IT / FR — cijela stranica se ažurira, uključujući naslove stranica, tekst gumba, i poruke o greškama u obrascu za rezervaciju. Zatvorite privatni prozor kad završite i vaša admin sesija u redovnom pregledniku ostaje nepromijenjena.
+
+---
+
 ## Od čega vas sustav štiti
 
 Ne morate ovo pamtiti — admin stranica ovo automatski provodi:

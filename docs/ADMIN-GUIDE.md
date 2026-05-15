@@ -419,6 +419,64 @@ This wipes your password from the browser's memory. Useful if you're on a shared
 
 ---
 
+## 10. Your public site at a glance
+
+This whole guide so far has been about the **admin** page — what only you see, at `/admin`. The rest of the world sees the **public site** at `https://www.tankaraca.com` (or just `tankaraca.com`). You don't need to log in to view it; just type the address in any browser.
+
+It has seven pages, all linked from the top navigation bar. The language picker (top-right, see §7) is on every one of them and defaults to English; visitors can pick their language and the whole site flips.
+
+### 10.1 Home
+
+The landing page. Big aerial photo, the word "HOUSEY", a one-line subtitle, a **Book Now** button that jumps to the booking page, and a short "what's here" features panel underneath. If you have any reviews marked **Featured** in §6.3, they also appear as a strip near the bottom of this page.
+
+![Home page](./admin-screenshots/30-site-home.png)
+
+### 10.2 About
+
+Hard-coded prose describing the house: a welcome paragraph, two boxes listing rooms and amenities, a "The Location" paragraph, and a **Book Your Stay** call to action. This page does **not** read from the admin — the text is part of the site itself. If you ever want to change it, ask Mihaela.
+
+![About page](./admin-screenshots/30-site-about.png)
+
+### 10.3 Gallery
+
+Every photo on this page comes from the **Images** section of your admin (§5). The set you see in the admin grid is exactly what the gallery shows, in the same order. Upload a photo, it appears within seconds. Delete a photo (after the 10-second undo), it's gone.
+
+Visitors can filter by category (Aerial, Sea & Coast, Exterior, Terrace, Interior) using the buttons at the top, and click any photo to open it full-screen with arrow-key navigation.
+
+![Gallery page](./admin-screenshots/30-site-gallery.png)
+
+### 10.4 Booking
+
+The page where guests make a reservation. They pick check-in + check-out on a 3-month calendar (the same one you see in §3 — your blocked dates render here as struck-through, unavailable), fill in name / email / phone / number of guests, and click **Submit Booking Request**.
+
+What happens on submit: the booking arrives in your admin **Bookings** section (§4) as **Pending**. You'll typically also receive an email notification. The booking carries the language the guest used: if they were on the German version when they submitted, your Confirm or Decline email goes back to them in German (see §7.2).
+
+![Booking page](./admin-screenshots/30-site-booking.png)
+
+### 10.5 Location
+
+Static map + address + travel instructions (Split airport, ferry, by car, from Dubrovnik). No interaction. If your phone number or anything on this page ever changes, ask Mihaela.
+
+![Location page](./admin-screenshots/30-site-location.png)
+
+### 10.6 Reviews
+
+Every review you publish through §6 of the admin appears here, with **Featured** ones in bigger cards at the top. If you delete a review (after the 10-second undo), it's gone from this page too. The chrome (the "Reviews" heading, the description, the "No reviews yet" message) flips with the visitor's language.
+
+![Reviews page](./admin-screenshots/30-site-reviews.png)
+
+### 10.7 Contact
+
+A small form: Name, Email, Subject, Message. When a visitor submits it, you get an email in your inbox (`tankaraca14a@gmail.com`) with **Croatian-labelled** chrome (`Ime`, `E-mail`, `Predmet`, `Poruka`) — the visitor's own subject + message stay in whatever language they wrote them. **Hit Reply in Gmail** to write back; the Reply-To is set to the visitor, so your reply goes to the right place.
+
+![Contact page](./admin-screenshots/30-site-contact.png)
+
+### 10.8 How to preview the site as a visitor would
+
+Open `https://www.tankaraca.com` (or `tankaraca.com`) in a private / incognito window. You're not logged in there, so you see exactly what a guest sees. Use the language picker (top-right) to flip through EN / HR / DE / IT / FR — the entire site updates, including page titles, button text, and the booking form's validation messages. Close the private window when done and your admin session in your regular browser is unaffected.
+
+---
+
 ## What the system protects you from
 
 You don't need to remember these — the admin page enforces them automatically:
